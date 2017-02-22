@@ -93,8 +93,6 @@ class Pathname {
 
   // get the segments of a path like this : ["/", "/path", "/path/example"]
   segmentf() {
-    // Possible disk matches
-    let resolves = [];
     const pathArray = this.chop;
     let segments = [];
     // If its a root path, skip segments
