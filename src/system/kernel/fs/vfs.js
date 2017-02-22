@@ -130,12 +130,12 @@ class VFS {
       return -1;
     }
     // Assume failure until success
-    let add = -1;
+    let addedInode = -1;
     if (type === "f") {
-      add = disk.mkFile(name, parentInode);
+      addedInode = disk.mkFile(name, parentInode);
     }
     else if (type === "d") {
-      add = disk.mkDir(name, parentInode);
+      addedInode = disk.mkDir(name, parentInode);
     }
     else if (type === "l" && target !== null) {
       const targetInode = this.resolve(target);
@@ -143,21 +143,21 @@ class VFS {
         console.warn("Target inode to hard link not resolved");
         return -1;
       }
-      add = disk.mkLink(name, parentInode, targetInode);
+      addedInode = disk.mkLink(name, parentInode, targetInode);
     }
     else if (type === "sl" && target !== null) {
-      add = disk.mkSymLink(name, parentInode, target);
+      addedInode = disk.mkSymLink(name, parentInode, target);
     }
     else {
       console.warn("Unknown type : " + type);
       return -1;
     }
     // Check if successful addition
-    if (add < 0) {
+    if (addedInode < 0) {
       console.warn("Inode addition error");
       return -1;
     }
-    return pathname.clean();
+    return addedInode;
   }
 
   // mkPath() wrappers
