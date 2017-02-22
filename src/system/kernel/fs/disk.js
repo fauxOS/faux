@@ -83,7 +83,7 @@ class Disk {
     if (inode < 0) {
       return -1;
     }
-    const path = new Pathname(targetPath).clean();
+    const path = new Pathname(targetPath).clean;
     inode.redirect = path;
     return inode;
   }

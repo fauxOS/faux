@@ -29,16 +29,14 @@ class VFS {
   // Resolve a path to the mounted that disk it is on
   // This is the first step to trace a path, before inodes are involved
   getDisk(path) {
-    const segments = [];
-    const resolves = [];
-    const pathArray = new Pathname(path).chop();
-    for (let i = 0; i <= pathArray.length; i++) {
-      let matchPath = pathArray.slice(0, i);
-      segments.push( "/" + matchPath.join("/") );
-    }
+    const pathname = new Pathname(path);
+    const segments = pathname.segment;
+    // All the mount points
     const mounts = Object.keys(this.mounts);
+    // Array of resolved mounted disks
+    const resolves = [];
     for (let i in mounts) {
-      let mount = new Pathname(mounts[i]).clean();
+      let mount = new Pathname(mounts[i]).clean;
       for (let i in segments) {
         if (segments[i] === mount) {
           resolves.push(mount);
@@ -47,7 +45,7 @@ class VFS {
     }
     const mountPoint = resolves.pop();
     const disk = this.mounts[mountPoint];
-    const mountPointSegLen = new Pathname(mountPoint).chop().length;
+    const mountPointSegLen = new Pathname(mountPoint).chop.length;
     let returnPathArray = [];
     if (mountPointSegLen <= 1) {
       returnPathArray = pathArray.slice( mountPointSegLen );

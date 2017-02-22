@@ -6,11 +6,19 @@
 class Pathname {
   constructor(input) {
     this.input = input;
+    // Make all the functions run right on construction
+    this.clean = this.cleanf();
+    this.chop = this.chopf();
+    this.name = this.namef();
+    this.basename = this.basenamef();
+    this.parent = this.parentf();
+    this.extentions = this.extentionsf();
+    this.segment = this.segmentf();
   }
 
   // clean up a crazy path
   // e.g. "/some///./../some/strange/././path" => "/some/strange/path"
-  clean() {
+  cleanf() {
     let clean = [];
     // Split the path by "/", match() because it doesn't add empty strings
     const pathArray = this.input.match( /[^/]+/g );
@@ -30,8 +38,8 @@ class Pathname {
 
   // Chop a path into an array of names
   // "/paths/are/like/arrays" => ["paths", "are", "like", "arrays"]
-  chop() {
-    const segments = this.clean().match( /[^/]+/g );
+  chopf() {
+    const segments = this.clean.match( /[^/]+/g );
     if (segments === null) {
       return ["/"];
     }
@@ -41,14 +49,14 @@ class Pathname {
   }
 
   // Just the name of the file/directory the path leads to
-  name() {
-    return this.chop().pop()
+  namef() {
+    return this.chop[ this.chop.length - 1 ];
   }
 
   // Basename from the normal name
   // "filename.txt" => "filename"
-  basename() {
-    const name = this.name();
+  basenamef() {
+    const name = this.name;
     if ( name === "" ) {
       return name;
     }
@@ -65,21 +73,39 @@ class Pathname {
 
   // Parent name, get the directory holding this
   // "/directories/hold/files/like-this-one" => "/directories/hold/files"
-  parent() {
-    if ( this.name() === "/" ) {
+  parentf() {
+    if ( this.name === "/" ) {
       return null;
     }
     else {
       // Get the length of the path without the name in it
-      const parentLen = this.clean().length - this.name().length;
+      const parentLen = this.clean.length - this.name.length;
       // Slice the name out of the path
-      return this.clean().slice( 0, parentLen );
+      return this.clean.slice( 0, parentLen );
     }
   }
 
   // Extentions array from the name
   // "archive.tar.gz" => [".tar", ".gz"]
-  extentions() {
-    return this.name().match( /\.[^\.]+/g );
+  extentionsf() {
+    return this.name.match( /\.[^\.]+/g );
+  }
+
+  // get the segments of a path like this : ["/", "/path", "/path/example"]
+  segmentf() {
+    const pathArray = this.chop;
+    let segments = [];
+    // If its a root path, skip segments
+    if ( this.name === "/" ) {
+      segments = ["/"];
+    }
+    // Else, any other path
+    else {
+      for (let i = 0; i <= pathArray.length; i++) {
+        let matchPath = pathArray.slice(0, i);
+        segments.push( "/" + matchPath.join("/") );
+      }
+    }
+    return segments;
   }
 }
