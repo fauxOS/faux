@@ -93,15 +93,41 @@ define(function (require) {
     },
 
     "Resolve a disk from path": function() {
-      var mountPoint = this.mountPoint("/");
-      var disk = this.mounts[mountPoint];
-      assert.equal(disk, this.mounts["/"],
-        "Resolves mount point and disk from a path");
+      var blah = box.fs.mount(new Disk(), "/blah");
+      var blahDoop = box.fs.mount(new Disk(), "/blah/doop");
+      var mountPointFoy = box.fs.mountPoint("/blah/doop/foy");
+      var mountPointGlo = box.fs.mountPoint("/blah/glo");
+      assert.equal(box.fs.mounts[mountPointFoy], box.fs.mounts["/blah/doop"],
+        "Resolves to relevant mount point");
+      assert.equal(box.fs.mounts[mountPointGlo], box.fs.mounts["/blah"],
+        "Resolves to relevant mount point");
     },
 
-    "Resolve paths to inodes": function() {
+    "Hard resolve a path": function() {
       box.fs.resolveHard("/");
-      box.fs.resolve("/");
+    },
+
+    "Resolve path from symbolic link": function() {
+      box.fs.resolveHard("/");
+    },
+
+    "Remove a file": function() {
+      box.fs.rm("/linkToName");
+      assert.isTrue(g.rootInode.files["linkToName"] === undefined,
+        "Remove a file by path");
+    },
+
+    "Make a directory": function() {
+      g.newDir = box.fs.mkdir("/newDir");
+      var newDirInode = g.rootInode.files["newDir"];
+      assert.isTrue(g.rootDisk.inodes[newDirInode].files !== undefined,
+        "Make a directory");
+    },
+
+    "Touch a file": function() {
+      box.fs.touch("/newDir/newFile");
+      assert.isTrue(g.newDir.files["newFile"] !== undefined,
+        "Make a new file");
     }
   });
 });
