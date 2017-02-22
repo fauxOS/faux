@@ -43,23 +43,22 @@ define(function (require) {
 
     setUp: function() {
       g.rootDisk = box.fs.mounts["/"];
-      g.inodeID = g.rootDisk.addInode("type", "name", 0);
-      g.rootDisk.mkLink("linkToName", 0, g.inodeID);
-      g.symLinkID = g.rootDisk.mkSymLink("symLinkToName", 0, "/./relative/link/../../name");
+      g.rootInode = box.fs.resolve("/");
+      g.inode = g.rootDisk.addInode("type", "name", g.rootInode);
+      g.rootDisk.mkLink("linkToName", g.rootInode, g.inode);
+      g.symLinkID = g.rootDisk.mkSymLink("symLinkToName", g.rootInode, "/./relative/link/../../name");
     },
 
     "Adds inodes to the table correctly": function() {
-      assert.isAbove(g.rootDisk.inodes.length, g.inodeID,
-        "Adding a normal inode will increment up to next available id");
       assert.equal(g.rootDisk.addInode("type", "name/with/slashes", 0), -1,
         "Adding an inode with slashes returns -1");
     },
     "Adds inodes to parent directory list": function() {
-      assert.equal(g.rootDisk.inodes[0].files["name"], g.inodeID,
-        "Adding an inode will add the name entry to its parent directory");
+      assert.equal(g.rootInode.files["name"], g.inode.id,
+        "Adds an entry to its parent directory");
     },
     "Linking inodes works": function() {
-      assert.equal(g.rootDisk.inodes[0].files["linkToName"], g.inodeID,
+      assert.equal(g.rootInode.files["linkToName"], g.inode.id,
         "Hard linking works");
       assert.equal(g.rootDisk.inodes[ g.rootDisk.inodes[0].files["symLinkToName"] ].redirect, "/name",
         "Symbolic links are clean and redirect to set path");

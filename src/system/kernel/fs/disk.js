@@ -22,7 +22,9 @@ class Disk {
   }
 
   // Add a new inode to the disk
-  addInode(type, name, parent) {
+  // Defaults to just adding an inode, but if you pass
+  // `parentInode` as an Inode instance, it will add the name to the parent file list
+  addInode(type, name=null, parentInode=null) {
     // Reject if name contains a "/"
     if ( name.match("/") ) {
       console.warn("No '/' allowed in a name");
@@ -31,54 +33,58 @@ class Disk {
     const id = this.inodes.length;
     this.inodes[id] = new Inode({
       links: 1,
-      type: type
+      type: type,
+      id: id
     });
-    this.inodes[parent].files[name] = id;
-    return id;
+    // Check if inode and directory
+    if (parentInode instanceof Inode && parentInode.type === "d") {
+      parentInode.files[name] = id;
+    }
+    return this.inodes[id];
   }
 
   // Add a new file to the disk
-  mkFile(name, parent) {
-    const id = this.addInode("f", name, parent);
-    if (id < 0) {
+  mkFile(name, parentInode) {
+    const inode = this.addInode("f", name, parentInode);
+    if (inode < 0) {
       return -1;
     }
-    this.inodes[id].data = "";
-    return id;
+    inode.data = "";
+    return inode;
   }
 
   // Add a new directory Inode to the disk
-  mkDir(name, parent) {
-    const id = this.addInode("d", name, parent);
-    if (id < 0) {
+  mkDir(name, parentInode) {
+    const inode = this.addInode("d", name, parentInode);
+    if (inode < 0) {
       return -1;
     }
-    this.inodes[id].files = {
-      ".": id,
-      "..": parent
+    inode.files = {
+      ".": inode.id,
+      "..": parentInode.id
     }
-    return id;
+    return inode;
   }
 
   // Make a hard link inode
-  mkLink(name, parent, targetID) {
+  mkLink(name, parentInode, targetInode) {
     // Same as in addInode, not very DRY I know...
     if ( name.match("/") ) {
       console.warn("No '/' allowed in a name");
       return -1;
     }
-    this.inodes[parent].files[name] = targetID;
-    return targetID;
+    parentInode.files[name] = targetInode.id;
+    return targetInode;
   }
 
   // Make a symbolic link inode
-  mkSymLink(name, parent, targetPath) {
-    const id = this.addInode("sl", name, parent);
-    if (id < 0) {
+  mkSymLink(name, parentInode, targetPath) {
+    const inode = this.addInode("sl", name, parentInode);
+    if (inode < 0) {
       return -1;
     }
     const path = new Pathname(targetPath).clean();
-    this.inodes[id].redirect = path;
-    return id;
+    inode.redirect = path;
+    return inode;
   }
 }
