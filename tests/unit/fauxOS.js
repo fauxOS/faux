@@ -9,32 +9,36 @@ define(function (require) {
     name: "Pathname",
 
     setUp: function() {
-      g.path = new Pathname("/hello/././///../waddup//world.tar.gz");
+      g.path = new Pathname("/hello/././///../waddup//path//././world.tar.gz");
     },
 
     "Basename": function() {
-      assert.deepEqual(g.path.basename(), "world",
+      assert.deepEqual(g.path.basename, "world",
         "Extracts a file or directory's basename");
     },
     "Chop path segments": function() {
-      assert.deepEqual(g.path.chop(), ["waddup", "world.tar.gz"],
+      assert.deepEqual(g.path.chop, ["waddup", "path", "world.tar.gz"],
         "Chops a path into segments");
     },
     "Clean / normalize": function() {
-      assert.deepEqual(g.path.clean(), "/waddup/world.tar.gz",
+      assert.deepEqual(g.path.clean, "/waddup/path/world.tar.gz",
         "Cleans up / normalizes a messy path");
     },
     "Extentions array": function() {
-      assert.deepEqual(g.path.extentions(), [".tar", ".gz"],
+      assert.deepEqual(g.path.extentions, [".tar", ".gz"],
         "Can return an array of the file's extentions");
     },
     "Name": function() {
-      assert.deepEqual(g.path.name(), "world.tar.gz",
+      assert.deepEqual(g.path.name, "world.tar.gz",
         "Gets a file or directory name");
     },
     "Parent path": function() {
-      assert.deepEqual(g.path.parent(), "/waddup/",
+      assert.deepEqual(g.path.parent, "/waddup/path/",
         "Finds the file or directory's parent directory");
+    },
+    "Path segments": function() {
+      assert.deepEqual(g.path.segment, ["/", "/waddup", "/waddup/path", "/waddup/path/world.tar.gz"],
+        "Can extract an array of every path from root to the input file/dir");
     }
   });
 
