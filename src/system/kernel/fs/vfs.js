@@ -28,7 +28,7 @@ class VFS {
 
   // Resolve a path to the mounted that disk it is on
   // This is the first step to trace a path, before inodes are involved
-  getDisk(path) {
+  mountPoint(path) {
     const pathname = new Pathname(path);
     const segments = pathname.segment;
     // All the mount points
@@ -44,28 +44,21 @@ class VFS {
       }
     }
     const mountPoint = resolves.pop();
-    const disk = this.mounts[mountPoint];
-    const mountPointSegLen = new Pathname(mountPoint).chop.length;
-    let returnPathArray = [];
-    if (mountPointSegLen <= 1) {
-      returnPathArray = pathArray.slice( mountPointSegLen );
-    }
-    else {
-      returnPathArray = pathArray.slice( mountPointSegLen - 1 );
-    }
-    return {
-      disk: disk,
-      pathArray: returnPathArray
-    };
+    return mountPoint;
   }
 
   // Resolve path to an inode, don't follow symbolic links
   resolveHard(path) {
     let inode = 0;
     const trace = [inode];
-    const resolveInfo = this.getDisk(path);
-    const disk = resolveInfo.disk;
-    const pathArray = resolveInfo.pathArray;
+    const pathname = new Pathname(path);
+    const mountPoint = this.mountPoint(pathname.clean);
+    const disk = this.mounts[mountPoint];
+    const diskLocalPath = pathname.clean.substring( mountPoint.length );
+    if (diskLocalPath === "") {
+      return disk.inodes[inode];
+    }
+    const pathArray = new Pathname(diskLocalPath).chop;
     for (let i in pathArray) {
       const name = pathArray[i];
       const inodeObj = disk.inodes[inode];
@@ -93,6 +86,10 @@ class VFS {
       return -1;
     }
     const inode = this.resolveHard(path);
+    if (inode < 0) {
+      console.warn("Error on hard resolve");
+      return -1;
+    }
     if (inode.type === "sl") {
       redirectCount++;
       return this.resolve(inode.redirect, redirectCount);
@@ -103,15 +100,14 @@ class VFS {
   // Remove an inode from its parent directory by path
   rm(path) {
     const pathname = new Pathname(path);
-    const parent = pathname.parent();
-    const name = pathname.name();
-    const disk = this.getDisk(parent).disk;
+    const parent = pathname.parent;
     const parentInode = this.resolve(parent);
+    const name = pathname.name;
     if ( parentInode < 0 ) {
       console.warn("Parent directory, " + parent + " not resolved");
       return -1;
     }
-    return delete disk.inodes[parentInode].files[name];
+    return delete parentInode.files[name];
   }
 
   // Make a path, and add it as a file or directory
@@ -119,10 +115,11 @@ class VFS {
   // For hard or symbolic links, target should be the path to redirect to
   mkPath(type, path, target=null) {
     const pathname = new Pathname(path);
-    const parent = pathname.parent();
-    const name = pathname.name();
-    const disk = this.getDisk(parent).disk;
+    const parent = pathname.parent;
     const parentInode = this.resolve(parent);
+    const name = pathname.name;
+    const mountPoint = this.mountPoint(pathname.clean);
+    const disk = this.mounts[mountPoint];
     if ( parentInode < 0 ) {
       console.warn("Parent directory, " + parent + " not resolved");
       return -1;

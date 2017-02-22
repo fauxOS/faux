@@ -12,6 +12,7 @@ class Disk {
     this.inodes = [
       new Inode({
         links: 1,
+        id: 0,
         type: "d",
         files: {
           ".": 0,

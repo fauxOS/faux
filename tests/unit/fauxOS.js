@@ -93,7 +93,10 @@ define(function (require) {
     },
 
     "Resolve a disk from path": function() {
-      box.fs.getDisk("/");
+      var mountPoint = this.mountPoint("/");
+      var disk = this.mounts[mountPoint];
+      assert.equal(disk, this.mounts["/"],
+        "Resolves mount point and disk from a path");
     },
 
     "Resolve paths to inodes": function() {
