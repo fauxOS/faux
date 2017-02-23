@@ -28,7 +28,6 @@ class Disk {
   addInode(type, name=null, parentInode=null) {
     // Reject if name contains a "/"
     if ( name.match("/") ) {
-      console.warn("No '/' allowed in a name");
       return -1;
     }
     const id = this.inodes.length;
@@ -71,7 +70,6 @@ class Disk {
   mkLink(name, parentInode, targetInode) {
     // Same as in addInode, not very DRY I know...
     if ( name.match("/") ) {
-      console.warn("No '/' allowed in a name");
       return -1;
     }
     parentInode.files[name] = targetInode.id;
