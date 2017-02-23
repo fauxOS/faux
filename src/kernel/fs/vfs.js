@@ -63,14 +63,12 @@ class VFS {
       const name = pathArray[i];
       const inodeObj = disk.inodes[inode];
       if (inodeObj.files === undefined) {
-        console.warn("Could not resolve path to inodes completely, stopping at inode : " + inode);
-        console.warn(trace);
+        // Could not resolve path to inodes completely
         return -1;
       }
       inode = inodeObj.files[name];
       if (inode === undefined) {
-        console.warn("Could not find end inode, failed at segment name : " + name);
-        console.warn(trace);
+        // Could not find end inode, failed at segment name
         return -1;
       }
       trace.push(inode);
@@ -82,12 +80,12 @@ class VFS {
   resolve(path, redirectCount=0) {
     // Don't follow if we get to 50 symbolic link redirects
     if (redirectCount >= 50) {
-      console.warn("Max symbolic link redirect count reached (50) at " + path);
+      // Max symbolic link redirect count reached (50)
       return -1;
     }
     const inode = this.resolveHard(path);
     if (inode < 0) {
-      console.warn("Error on hard resolve");
+      // Error on hard resolve
       return -1;
     }
     if (inode.type === "sl") {
@@ -104,7 +102,7 @@ class VFS {
     const parentInode = this.resolve(parent);
     const name = pathname.name;
     if ( parentInode < 0 ) {
-      console.warn("Parent directory, " + parent + " not resolved");
+      // Parent directory not resolved
       return -1;
     }
     return delete parentInode.files[name];
@@ -121,7 +119,7 @@ class VFS {
     const mountPoint = this.mountPoint(pathname.clean);
     const disk = this.mounts[mountPoint];
     if ( parentInode < 0 ) {
-      console.warn("Parent directory, " + parent + " not resolved");
+      // Parent directory not resolved
       return -1;
     }
     // Assume failure until success
@@ -135,7 +133,7 @@ class VFS {
     else if (type === "l" && target !== null) {
       const targetInode = this.resolve(target);
       if ( targetInode < 0 ) {
-        console.warn("Target inode to hard link not resolved");
+        // Target inode to hard link not resolved
         return -1;
       }
       addedInode = disk.mkLink(name, parentInode, targetInode);
@@ -144,12 +142,12 @@ class VFS {
       addedInode = disk.mkSymLink(name, parentInode, target);
     }
     else {
-      console.warn("Unknown type : " + type);
+      // Unknown type
       return -1;
     }
     // Check if successful addition
     if (addedInode < 0) {
-      console.warn("Inode addition error");
+      // Inode addition error
       return -1;
     }
     return addedInode;
