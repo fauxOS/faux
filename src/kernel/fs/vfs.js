@@ -3,6 +3,7 @@ class VFS {
     this.mounts = {
       "/": rootDisk
     };
+    this.opened = {};
   }
 
   // Mount a disk
