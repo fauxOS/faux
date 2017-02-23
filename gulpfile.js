@@ -6,22 +6,53 @@ var concat = require('gulp-concat');
 var babel = require('gulp-babel')
 var uglify = require('gulp-uglify');
 
-gulp.task("system", function(cb) {
+gulp.task("fs", function(cb) {
   pump([
-    gulp.src("src/system/**/*.js"),
+    gulp.src("src/kernel/fs/*.js"),
     order([
-      "kernel/pathname.js",
-      "kernel/fs/*",
-      "computer.js"
+      "pathname.js",
+      "disk.js",
+      "vfs.js",
+      "*"
     ]),
-    concat("system.js"),
-    gulp.dest("temp_build/")
+    concat("fs.js"),
+    gulp.dest("build/.kernel/")
   ], cb);
 });
 
-gulp.task("finalize", function(cb) {
+gulp.task("proc", function(cb) {
   pump([
-    gulp.src( ["src/lib/**/*", "temp_build/**/*"] ),
+    gulp.src("src/kernel/proc/*.js"),
+    order([
+      "*"
+    ]),
+    concat("proc.js"),
+    gulp.dest("build/.kernel/")
+  ], cb);
+});
+
+gulp.task("kernel", ["fs", "proc"], function(cb) {
+  pump([
+    gulp.src("build/.kernel/*.js"),
+    order([
+      "fs.js",
+      "proc.js",
+      "*"
+    ]),
+    concat("kernel.js"),
+    gulp.dest("build/")
+  ], cb);
+});
+
+gulp.task("default", ["kernel"], function(cb) {
+  pump([
+    gulp.src( ["src/misc.js", "build/*.js", "src/computer.js"] ),
+    order([
+      "misc.js",
+      "kernel.js",
+      "*",
+      "computer.js"
+    ]),
     concat("fauxOS.js"),
     babel({
       presets: ["es2015"]
@@ -30,5 +61,3 @@ gulp.task("finalize", function(cb) {
     gulp.dest("./"),
   ], cb);
 });
-
-gulp.task("default", [ "system" ]);

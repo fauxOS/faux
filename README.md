@@ -20,7 +20,7 @@ To build it yourself, you need to get [Gulp](http://gulpjs.com)
 ### Building
 
 + Clone this repository : `git clone https://github.com/fauxOS/fauxOS.git`
-+ Enter and build : `cd fauxOS; ./build`
++ Enter and build : `cd fauxOS; gulp`
 + Add the built file to your server : `cp /fauxOS.js ~/webserver/fauxOS.js`
 + Include the script : `<script src="/fauxOS.js"></script>`
 
