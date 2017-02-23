@@ -24,6 +24,8 @@ gulp.task("proc", function(cb) {
   pump([
     gulp.src("src/kernel/proc/*.js"),
     order([
+      "filedesc.js",
+      "process.js",
       "*"
     ]),
     concat("proc.js"),
