@@ -25,7 +25,9 @@ define({
 		]
 	},
 
-  suites: [ "tests/unit/fauxOS" ],
+  suites: [
+		"tests/unit/pathname"
+	],
 
 	functionalSuites: [ ],
 
