@@ -5,9 +5,6 @@ function genUUID() {
   });
 }
 
-// Just an alias
-blobToURI = URL.createObjectURL;
-
 // Turn a string into a blob,
 // then the blob to an addressable URI,
 // and finally make a new web worker from that URI
@@ -16,7 +13,7 @@ function mkWorker(scriptStr) {
     [scriptStr],
     {type: "application/javascript"}
   );
-  const uri = blobToURI(blob);
+  const uri = URL.createObjectURL(blob);
   return new Worker(uri);
 }
 
