@@ -5,16 +5,24 @@ function genUUID() {
   });
 }
 
+// Just an alias
+blobToURI = URL.createObjectURL;
+
+// Turn a string into a blob,
+// then the blob to an addressable URI,
+// and finally make a new web worker from that URI
 function mkWorker(scriptStr) {
   const blob = new Blob(
     [scriptStr],
     {type: "application/javascript"}
   );
-  const uri = URL.createObjectURL(blob);
+  const uri = blobToURI(blob);
   return new Worker(uri);
 }
 
-function loadFile() {
+// Load a local file and return a Promise
+// The Promise resolves to a file object
+function loadLocalFile() {
   const input = document.createElement("input");
   input.type = "file";
   input.click();
@@ -25,7 +33,9 @@ function loadFile() {
   });
 }
 
-function readFile(blob, readAs="readAsText") {
+// Wrapper around FileReader, returns a Promise
+// Promise by default resolves to a string
+function readLocalFile(blob, readAs="readAsText") {
   const reader = new FileReader();
   reader[readAs](blob);
   return new Promise(function(resolve, reject) {
