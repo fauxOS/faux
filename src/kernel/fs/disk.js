@@ -23,8 +23,8 @@ class Disk {
   }
 
   // Add a new inode to the disk
-  // Defaults to just adding an inode, but if you pass
-  // `parentInode` as an Inode instance, it will add the name to the parent file list
+  // Defaults to just adding an inode, but if you pass a parent directory inode in,
+  // it will add `name` as an entry in `parentInode`
   addInode(type, name=null, parentInode=null) {
     // Reject if name contains a "/"
     if ( name.match("/") ) {
