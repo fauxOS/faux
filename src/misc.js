@@ -41,3 +41,9 @@ function readLocalFile(blob, readAs="readAsText") {
     };
   });
 }
+
+// Wrapper to open a local file
+// Example usage: openLocalFile().then(console.log);
+function openLocalFile() {
+  return loadLocalFile().then(readLocalFile);
+}
