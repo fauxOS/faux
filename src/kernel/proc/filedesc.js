@@ -1,6 +1,6 @@
 class FileDesc {
-  constructor(path, fs=window.box.fs) {
+  constructor(path) {
     this.path = path;
-    this.inode = fs.resolve(this.path);
+    this.inode = box.fs.resolve(this.path);
   }
 }

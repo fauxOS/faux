@@ -48,9 +48,11 @@ gulp.task("kernel", ["fs", "proc"], function(cb) {
 
 gulp.task("default", ["kernel"], function(cb) {
   pump([
-    gulp.src( ["src/misc.js", "build/*.js", "src/computer.js"] ),
+    gulp.src( ["src/misc/*.js", "build/*.js", "src/computer.js"] ),
     order([
       "misc.js",
+      "errors.js",
+      "syscalls.js",
       "kernel.js",
       "*",
       "computer.js"
