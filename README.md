@@ -11,7 +11,8 @@ Installing is very straight-forward, it's one script in your web page.
 ### Dependencies
 
 FauxOS has no runtime dependencies, just include it in your `<head>`.
-If you don't want to build, simply copy from the pre-built [`/dist/fauxOS.js`](https://raw.githubusercontent.com/fauxOS/fauxOS/master/dist/fauxOS.js).
+If you don't want to build, simply copy from the pre-built
+[`/dist/fauxOS.js`](https://raw.githubusercontent.com/fauxOS/fauxOS/master/dist/fauxOS.js).
 
 To build it yourself, you need to get [Gulp](http://gulpjs.com)
 

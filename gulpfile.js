@@ -46,9 +46,25 @@ gulp.task("kernel", ["fs", "proc"], function(cb) {
   ], cb);
 });
 
-gulp.task("default", ["kernel"], function(cb) {
+gulp.task("lib", function(cb) {
   pump([
-    gulp.src( ["src/misc/*.js", "build/*.js", "src/computer.js"] ),
+    gulp.src( ["src/programs/lib/*.js"] ),
+    order([
+      "lib.js",
+      "*"
+    ]),
+    concat("lib.js"),
+    babel({
+      presets: ["es2015"]
+    }),
+    uglify( {mangle: false} ),
+    gulp.dest("dist/")
+  ], cb);
+});
+
+gulp.task("default", ["kernel", "lib"], function(cb) {
+  pump([
+    gulp.src( ["src/misc/*.js", "build/kernel.js", "src/computer.js"] ),
     order([
       "misc.js",
       "errors.js",
@@ -62,6 +78,6 @@ gulp.task("default", ["kernel"], function(cb) {
       presets: ["es2015"]
     }),
     uglify( {mangle: false} ),
-    gulp.dest("dist/"),
+    gulp.dest("dist/")
   ], cb);
 });
