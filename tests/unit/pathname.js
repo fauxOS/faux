@@ -2,7 +2,7 @@ define(function (require) {
   var registerSuite = require('intern!object');
   var assert = require('intern/chai!assert');
   var expect = require('intern/chai!expect');
-  require('fauxOS.js');
+  require('dist/fauxOS.js');
   const g = {};
 
   registerSuite({

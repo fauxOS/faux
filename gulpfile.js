@@ -62,6 +62,6 @@ gulp.task("default", ["kernel"], function(cb) {
       presets: ["es2015"]
     }),
     uglify( {mangle: false} ),
-    gulp.dest("./"),
+    gulp.dest("dist/"),
   ], cb);
 });

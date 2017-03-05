@@ -20,7 +20,7 @@ define({
 		packages: [
 			{
 				name: 'fauxOS',
-				location: '.'
+				location: 'dist'
 			}
 		]
 	},
