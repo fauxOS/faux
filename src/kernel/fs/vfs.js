@@ -3,7 +3,6 @@ class VFS {
     this.mounts = {
       "/": rootDisk
     };
-    this.opened = {};
   }
 
   // Mount a disk
@@ -14,17 +13,6 @@ class VFS {
   // Unmount a disk by mount point
   unmount(mountPoint) {
     return delete this.mounts[mountPoint];
-  }
-
-  // Unmount a disk by uuid specifically
-  unmountByUUID(uuid) {
-    const mountPoints = Object.keys(box.fs.mounts);
-    for ( let i in mountPoints ) {
-      let mountPoint = mountPoints[i];
-      if ( this.mounts[mountPoint].uuid === uuid ) {
-        return delete this.mounts[mountPoint];
-      }
-    }
   }
 
   // Resolve a path to the mounted that disk it is on

@@ -16,7 +16,7 @@ gulp.task("fs", function(cb) {
       "*"
     ]),
     concat("fs.js"),
-    gulp.dest("build/.kernel/")
+    gulp.dest("build/kernel/")
   ], cb);
 });
 
@@ -29,20 +29,7 @@ gulp.task("proc", function(cb) {
       "*"
     ]),
     concat("proc.js"),
-    gulp.dest("build/.kernel/")
-  ], cb);
-});
-
-gulp.task("kernel", ["fs", "proc"], function(cb) {
-  pump([
-    gulp.src("build/.kernel/*.js"),
-    order([
-      "fs.js",
-      "proc.js",
-      "*"
-    ]),
-    concat("kernel.js"),
-    gulp.dest("build/")
+    gulp.dest("build/kernel/")
   ], cb);
 });
 
@@ -62,16 +49,16 @@ gulp.task("lib", function(cb) {
   ], cb);
 });
 
-gulp.task("default", ["kernel", "lib"], function(cb) {
+gulp.task("default", ["fs", "proc", "lib"], function(cb) {
   pump([
-    gulp.src( ["src/misc/*.js", "build/kernel.js", "src/computer.js"] ),
+    gulp.src( ["src/misc/*.js", "build/kernel/*.js", "src/computer.js"] ),
     order([
       "misc.js",
-      "errors.js",
-      "syscalls.js",
       "kernel.js",
-      "*",
-      "computer.js"
+      "fs.js",
+      "computer.js",
+      "proc.js",
+      "*"
     ]),
     concat("fauxOS.js"),
     babel({

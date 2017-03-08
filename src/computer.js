@@ -1,9 +1,8 @@
-class Computer {
-  constructor(name) {
-    this.name = name;
-    this.fs = new VFS( new Disk );
-  }
-}
-
-// Use this as the computer
-window.box = new Computer("fauxOS");
+// The global kernel object
+window.faux = {
+  name: "faux",
+  fs: new VFS( new Disk ),
+  processTable: {},
+  fileTable: {},
+  sys: {}
+};
