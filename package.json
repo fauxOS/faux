@@ -5,19 +5,27 @@
   "main": "dist/fauxOS.js",
   "devDependencies": {
     "gulp": "^3.9.1",
-    "pump: "^1.0.2",
+    "pump": "^1.0.2",
     "gulp-cli": "^1.2.2",
     "gulp-order": "^1.1.1",
     "gulp-concat": "^2.6.1",
     "gulp-babel": "^6.1.2",
     "gulp-uglify": "^2.0.1",
-    "gulp-inject": "^4.2.0",
-  }
+    "gulp-inject": "^4.2.0"
+  },
   "scripts": {
     "prepublish": "gulp",
     "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer"
   },
-  "keywords": ["faux", "fauxOS", "os", "operating system" "kernel", "browser", "virtual"],
+  "keywords": [
+    "faux",
+    "fauxOS",
+    "os",
+    "operating system",
+    "kernel",
+    "browser",
+    "virtual"
+  ],
   "author": "Daniel Ethridge | @wlib",
   "license": "MIT",
   "repository": {
