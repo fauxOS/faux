@@ -1,6 +1,6 @@
 var gulp = require('gulp');
 var pump = require('pump');
-var order = require("gulp-order");
+var order = require('gulp-order');
 var concat = require('gulp-concat');
 var babel = require('gulp-babel')
 var uglify = require('gulp-uglify');

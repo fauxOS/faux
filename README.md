@@ -21,7 +21,7 @@ To build it yourself, you need to get [Gulp](http://gulpjs.com)
 ### Building
 
 + Clone this repository : `git clone https://github.com/fauxOS/fauxOS.git`
-+ Enter and build : `cd fauxOS; gulp`
++ Enter and build : `cd fauxOS; npm install`
 + Add the built file to your server : `cp dist/fauxOS.js ~/webserver/fauxOS.js`
 + Include the script : `<script src="/fauxOS.js"></script>`
 
@@ -29,7 +29,11 @@ To build it yourself, you need to get [Gulp](http://gulpjs.com)
 
 This uses [Intern](https://theintern.github.io) for testing
 
-Start a server - `python -m SimpleHTTPServer 8000`, then go and open up on [localhost](http://localhost:8000)
+Run `npm test` and go to [localhost](http://localhost:8000)
+
+-or-
+
+Start a server - `python -m SimpleHTTPServer 8000`, then go and open up [localhost](http://localhost:8000)
 
 ## System Call Overview
 
