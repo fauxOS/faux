@@ -67,6 +67,7 @@ Within the kernel, the `sys` object holds all the system call functions.
   - `getpid()` - Get the Process ID of the calling process
   - `getcwd()` - Return the current working directory
   - `chdir()` - Change a process's working directory
+  - `exit()` - Process terminates itself
 + Inter-Process Communication
   - `kill()` - Kill a process, do not confuse with linux's `kill` call
   - `signal()` - Send the given signal to a process
