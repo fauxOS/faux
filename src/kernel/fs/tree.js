@@ -117,7 +117,7 @@ faux.fs = new VFS(
       links: 1,
       type: "f",
       id: 10,
-      data: `/* lib */ /* end */`
+      data: `/* lib.js */ /* endinject */`
     })
 
   ])

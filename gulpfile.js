@@ -5,7 +5,9 @@ var concat = require('gulp-concat');
 var inject = require('gulp-inject');
 var babel = require('gulp-babel')
 var uglify = require('gulp-uglify');
+var through = require('through2');
 
+// File System
 gulp.task("fs", function(cb) {
   pump([
     gulp.src("src/kernel/fs/*.js"),
@@ -21,6 +23,7 @@ gulp.task("fs", function(cb) {
   ], cb);
 });
 
+// Processes
 gulp.task("proc", function(cb) {
   pump([
     gulp.src("src/kernel/proc/*.js"),
@@ -34,6 +37,7 @@ gulp.task("proc", function(cb) {
   ], cb);
 });
 
+// Kernel, connects filesystem with processes
 gulp.task("kernel", ["fs", "proc"], function(cb) {
   pump([
     gulp.src( ["src/kernel/obj.js", "build/kernel/*.js"] ),
@@ -48,9 +52,22 @@ gulp.task("kernel", ["fs", "proc"], function(cb) {
   ], cb);
 });
 
+// Injects a file into the default filesystem
+function injectVFS(path, starttag, endtag="/* endinject */") {
+  return gulp.src( ["build/kernel.js"] )
+  .pipe(inject(gulp.src("path"), {
+    starttag: starttag,
+    endtag: endtag,
+    transform: function (filePath, file) {
+      return file.contents.toString("utf8");
+    }
+  }));
+}
+
+// Main userspace library
 gulp.task("lib", function(cb) {
   pump([
-    gulp.src( ["src/programs/lib/*.js"] ),
+    gulp.src( ["src/userspace/lib/*.js"] ),
     order([
       "lib.js",
       "*"
@@ -60,28 +77,17 @@ gulp.task("lib", function(cb) {
       presets: ["es2015"]
     }),
     uglify( {mangle: false} ),
-    gulp.dest("build/programs/")
+    gulp.dest("build/userspace")
   ], cb);
 });
 
-
-gulp.task("inject:lib", ["lib", "kernel"], function(cb) {
-  pump([
-    gulp.src( ["build/kernel.js"] ),
-    inject(gulp.src( ["build/programs/lib.js"] ), {
-      starttag: "/* lib */",
-      endtag: "/* end */",
-      transform: function (filePath, file) {
-        return file.contents.toString("utf8");
-      }
-    }),
-    gulp.dest("build/")
-  ], cb);
+// Userspace programs
+gulp.task("userspace", ["lib"], function(cb) {
+  injectVFS("build/userspace/lib.js", "/* lib.js */")
 });
 
-gulp.task("programs", ["inject:lib"]);
-
-gulp.task("default", ["kernel", "programs"], function(cb) {
+// Default task, entrypoint, compiles kernel
+gulp.task("default", ["kernel", "userspace"], function(cb) {
   pump([
     gulp.src( ["src/misc/*.js", "build/kernel.js"] ),
     order([
