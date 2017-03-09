@@ -26,7 +26,12 @@ function sys(name, args) {
     self.addEventListener("message", msg => {
       // Resolve when we get a message with the same id
       if (msg.data.id === id) {
-        resolve(msg.data);
+        if (msg.data.status === "success") {
+          resolve(msg.data.result);
+        }
+        else {
+          reject(msg.data.reason);
+        }
       }
     });
   });

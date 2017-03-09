@@ -52,18 +52,6 @@ gulp.task("kernel", ["fs", "proc"], function(cb) {
   ], cb);
 });
 
-// Injects a file into the default filesystem
-function injectVFS(path, starttag, endtag="/* endinject */") {
-  return gulp.src( ["build/kernel.js"] )
-  .pipe(inject(gulp.src("path"), {
-    starttag: starttag,
-    endtag: endtag,
-    transform: function (filePath, file) {
-      return file.contents.toString("utf8");
-    }
-  }));
-}
-
 // Main userspace library
 gulp.task("lib", function(cb) {
   pump([
@@ -81,13 +69,29 @@ gulp.task("lib", function(cb) {
   ], cb);
 });
 
+// Injects a file into the default filesystem
+function injectVFS(path, starttag, endtag="/* endinject */") {
+  return gulp.src( ["build/kernel.js"] ).pipe(
+    inject(gulp.src(path), {
+      starttag: starttag,
+      endtag: endtag,
+      transform: function (filePath, file) {
+        return file.contents.toString("utf8");
+      }
+    })
+  );
+}
+
 // Userspace programs
-gulp.task("userspace", ["lib"], function(cb) {
-  injectVFS("build/userspace/lib.js", "/* lib.js */")
+gulp.task("userspace", ["kernel", "lib"], function(cb) {
+  pump([
+    injectVFS("build/userspace/lib.js", "/* lib.js */"),
+    gulp.dest("build/")
+  ], cb);
 });
 
 // Default task, entrypoint, compiles kernel
-gulp.task("default", ["kernel", "userspace"], function(cb) {
+gulp.task("default", ["userspace"], function(cb) {
   pump([
     gulp.src( ["src/misc/*.js", "build/kernel.js"] ),
     order([
