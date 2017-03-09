@@ -14,9 +14,7 @@ FauxOS has no runtime dependencies, just include it in your `<head>`.
 If you don't want to build, simply copy from the pre-built
 [`/dist/fauxOS.js`](https://raw.githubusercontent.com/fauxOS/fauxOS/master/dist/fauxOS.js).
 
-To build it yourself, you need to get [Gulp](http://gulpjs.com)
-
-`sudo npm install -g gulp-cli`
+To build it yourself, you need to get [node.js and npm](https://nodejs.org/en/download/)
 
 ### Building
 
@@ -33,7 +31,7 @@ Run `npm test` and go to [localhost](http://localhost:8000)
 
 -or-
 
-Start a server - `python -m SimpleHTTPServer 8000`, then go and open up [localhost](http://localhost:8000)
+Just navigate to `index.html` in your browser
 
 ## System Call Overview
 
