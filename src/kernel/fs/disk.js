@@ -8,8 +8,8 @@ class Inode {
 
 class Disk {
   constructor() {
-    this.uuid = genUUID();
-    this.inodes = [
+    // Allow override as the first argument if set
+    this.inodes = arguments[0] || [
       new Inode({
         links: 1,
         id: 0,
