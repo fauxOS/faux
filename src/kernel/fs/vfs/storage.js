@@ -77,10 +77,6 @@ class VFS {
     const pathname = new Pathname(path);
     const mountPoint = this.mountPoint(pathname.clean);
     const fs = this.mounts[mountPoint];
-    if ( parentObj < 0 ) {
-      // Parent directory not resolved
-      return -1;
-    }
     // Assume failure until success
     let addedObj = -1;
     if (type === "f") {
