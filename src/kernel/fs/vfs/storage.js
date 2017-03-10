@@ -40,13 +40,15 @@ class VFS {
   // resolveHard decides if following symbolic links and the like
   // should or should not happen, default is to follow
   resolve(path, resolveHard=false) {
-    const mountPoint = this.mountPoint(path);
+    const pathname = new Pathname(path);
+    const mountPoint = this.mountPoint(pathname.clean);
     const fs = this.mounts[mountPoint];
+    const fsLocalPath = pathname.clean.substring( mountPoint.length );
     if (resolveHard) {
-      return fs.resolveHard(path);
+      return fs.resolveHard(fsLocalPath);
     }
     else {
-      return fs.resolve(path);
+      return fs.resolve(fsLocalPath);
     }
   }
   
