@@ -1,3 +1,5 @@
+// Virtual File System Layer
+
 class VFS {
   constructor() {
     this.mounts = {
@@ -15,8 +17,8 @@ class VFS {
     return delete this.mounts[mountPoint];
   }
 
-  // Resolve the path to the mounted a filesystem
-  // This is the first step to trace a path, before inodes are involved
+  // Resolve the path to the mounted filesystem
+  // This is the first step to trace a path, before any data containers (inodes etc) are involved
   mountPoint(path) {
     const pathname = new Pathname(path);
     const segments = pathname.segment;
@@ -36,65 +38,36 @@ class VFS {
     return mountPoint;
   }
 
-  // Resolve path to an inode, don't follow symbolic links
-  resolveHard(path) {
-    let inode = 0;
-    const trace = [inode];
+  // Resolve a path to the fs provided data container
+  // resolveHard decides if following symbolic links and the like
+  // should or should not happen, default is to follow
+  resolve(path, resolveHard=false) {
     const pathname = new Pathname(path);
     const mountPoint = this.mountPoint(pathname.clean);
     const fs = this.mounts[mountPoint];
     const fsLocalPath = pathname.clean.substring( mountPoint.length );
-    if (fsLocalPath === "") {
-      return fs.drive[inode];
+    if (resolveHard) {
+      return fs.resolveHard(fsLocalPath);
     }
-    const pathArray = new Pathname(fsLocalPath).chop;
-    for (let i in pathArray) {
-      const name = pathArray[i];
-      const inodeObj = fs.drive[inode];
-      if (inodeObj.files === undefined) {
-        // Could not resolve path to inodes completely
-        return -1;
-      }
-      inode = inodeObj.files[name];
-      if (inode === undefined) {
-        // Could not find end inode, failed at segment name
-        return -1;
-      }
-      trace.push(inode);
+    else {
+      return fs.resolve(fsLocalPath);
     }
-    return fs.drive[ trace.pop() ];
+  }
+  
+  // Return data type of a file, could be "inode" for example
+  type(path) {
+    const container = this.resolve(path);
+    if (container instanceof OFS_Inode) {
+      return "inode";
+    }
   }
 
-  // Resolve and return the inode, symbolic link resolves to file it points to
-  resolve(path, redirectCount=0) {
-    // Don't follow if we get to 50 symbolic link redirects
-    if (redirectCount >= 50) {
-      // Max symbolic link redirect count reached (50)
-      return -1;
-    }
-    const inode = this.resolveHard(path);
-    if (inode < 0) {
-      // Error on hard resolve
-      return -1;
-    }
-    if (inode.type === "sl") {
-      redirectCount++;
-      return this.resolve(inode.redirect, redirectCount);
-    }
-    return inode;
-  }
-
-  // Remove an inode from its parent directory by path
+  // Remove a path
   rm(path) {
     const pathname = new Pathname(path);
-    const parent = pathname.parent;
-    const parentInode = this.resolve(parent);
-    const name = pathname.name;
-    if ( parentInode < 0 ) {
-      // Parent directory not resolved
-      return -1;
-    }
-    return delete parentInode.files[name];
+    const mountPoint = this.mountPoint(pathname.clean);
+    const fs = this.mounts[mountPoint];
+    return fs.rm(pathname.clean);
   }
 
   // Make a path, and add it as a file or directory
@@ -102,44 +75,32 @@ class VFS {
   // For hard or symbolic links, target should be the path to redirect to
   mkPath(type, path, target=null) {
     const pathname = new Pathname(path);
-    const parent = pathname.parent;
-    const parentInode = this.resolve(parent);
-    const name = pathname.name;
     const mountPoint = this.mountPoint(pathname.clean);
     const fs = this.mounts[mountPoint];
-    if ( parentInode < 0 ) {
-      // Parent directory not resolved
-      return -1;
-    }
     // Assume failure until success
-    let addedInode = -1;
+    let addedObj = -1;
     if (type === "f") {
-      addedInode = fs.mkFile(name, parentInode);
+      addedObj = fs.mkFile(pathname.clean);
     }
     else if (type === "d") {
-      addedInode = fs.mkDir(name, parentInode);
+      addedObj = fs.mkDir(pathname.clean);
     }
     else if (type === "l" && target !== null) {
-      const targetInode = this.resolve(target);
-      if ( targetInode < 0 ) {
-        // Target inode to hard link not resolved
+      const targetObj = this.resolve(target);
+      if ( targetObj < 0 ) {
+        // Target data container to hard link not resolved
         return -1;
       }
-      addedInode = fs.mkLink(name, parentInode, targetInode);
+      addedObj = fs.mkLink(targetObj, pathname.clean);
     }
     else if (type === "sl" && target !== null) {
-      addedInode = fs.mkSymLink(name, parentInode, target);
+      addedObj = fs.mkSymLink(target, pathname.clean);
     }
     else {
       // Unknown type
       return -1;
     }
-    // Check if successful addition
-    if (addedInode < 0) {
-      // Inode addition error
-      return -1;
-    }
-    return addedInode;
+    return addedObj;
   }
 
   // mkPath() wrappers
@@ -155,12 +116,12 @@ class VFS {
   }
 
   // Hard link
-  ln(path, targetPath) {
-    return this.mkPath("l", path, targetPath);
+  ln(refPath, linkPath) {
+    return this.mkPath("l", linkPath, refPath);
   }
 
   // Sybolic link
-  lns(path, targetPath) {
-    return this.mkPath("sl", path, targetPath);
+  lns(refPath, linkPath) {
+    return this.mkPath("sl", linkPath, refPath);
   }
 }
