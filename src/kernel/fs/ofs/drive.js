@@ -140,4 +140,15 @@ class OFS {
     inode.redirect = path;
     return inode;
   }
+  
+  // Remove by unlinking
+  rm(path) {
+    const pathname = new Pathname(path);
+    const parentInode = this.resolve(pathname.parent);
+    const name = pathname.name;
+    if ( parentInode < 0 ) {
+      return -1;
+    }
+    return delete parentInode.files[name];
+  }
 }
