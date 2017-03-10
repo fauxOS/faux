@@ -1,21 +1,21 @@
 class VFS {
-  constructor(rootDisk) {
+  constructor() {
     this.mounts = {
-      "/": rootDisk
+      "/": arguments[0] || new OFS()
     };
   }
 
-  // Mount a disk
-  mount(disk, mountPoint) {
-    return this.mounts[mountPoint] = disk;
+  // Mount a filesystem
+  mount(fs, mountPoint) {
+    return this.mounts[mountPoint] = fs;
   }
 
-  // Unmount a disk by mount point
+  // Unmount a filesystem by mount point
   unmount(mountPoint) {
     return delete this.mounts[mountPoint];
   }
 
-  // Resolve a path to the mounted that disk it is on
+  // Resolve the path to the mounted a filesystem
   // This is the first step to trace a path, before inodes are involved
   mountPoint(path) {
     const pathname = new Pathname(path);
