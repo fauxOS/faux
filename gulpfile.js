@@ -10,7 +10,7 @@ var through = require('through2');
 // Object File System
 gulp.task("ofs", function(cb) {
   pump([
-    gulp.src("src/kernel/fs/ofs/*.js"),
+    gulp.src(["src/kernel/fs/ofs/*.js"]),
     order([
       "drive.js",
       "*"
@@ -23,7 +23,7 @@ gulp.task("ofs", function(cb) {
 // Virtual File System Layer
 gulp.task("vfs", function(cb) {
   pump([
-    gulp.src("src/kernel/fs/vfs/*.js"),
+    gulp.src(["src/kernel/fs/vfs/*.js"]),
     order([
       "storage.js",
       "*"
@@ -36,7 +36,7 @@ gulp.task("vfs", function(cb) {
 // Put the file system together
 gulp.task("fs", ["ofs", "vfs"], function(cb) {
   pump([
-    gulp.src("build/kernel/fs/*.js", "src/kernel/fs/*.js"),
+    gulp.src(["build/kernel/fs/*.js", "src/kernel/fs/*.js"]),
     order([
       "pathname.js",
       "ofs.js",
@@ -52,7 +52,7 @@ gulp.task("fs", ["ofs", "vfs"], function(cb) {
 // Processes
 gulp.task("proc", function(cb) {
   pump([
-    gulp.src("src/kernel/proc/*.js"),
+    gulp.src(["src/kernel/proc/*.js"]),
     order([
       "filedesc.js",
       "process.js",
@@ -66,7 +66,7 @@ gulp.task("proc", function(cb) {
 // Kernel, connects filesystem with processes
 gulp.task("kernel", ["fs", "proc"], function(cb) {
   pump([
-    gulp.src( ["src/kernel/obj.js", "build/kernel/*.js"] ),
+    gulp.src(["src/kernel/obj.js", "build/kernel/*.js"]),
     order([
       "obj.js",
       "fs.js",
@@ -81,7 +81,7 @@ gulp.task("kernel", ["fs", "proc"], function(cb) {
 // Main userspace library
 gulp.task("lib", function(cb) {
   pump([
-    gulp.src( ["src/userspace/lib/*.js"] ),
+    gulp.src(["src/userspace/lib/*.js"]),
     order([
       "lib.js",
       "*"
@@ -119,7 +119,7 @@ gulp.task("userspace", ["kernel", "lib"], function(cb) {
 // Default task, entrypoint, compiles kernel
 gulp.task("default", ["userspace"], function(cb) {
   pump([
-    gulp.src( ["src/misc/*.js", "build/kernel.js"] ),
+    gulp.src(["src/misc/*.js", "build/kernel.js"]),
     order([
       "misc.js",
       "kernel.js",
