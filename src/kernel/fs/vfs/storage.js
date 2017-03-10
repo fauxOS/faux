@@ -80,10 +80,10 @@ class VFS {
     // Assume failure until success
     let addedObj = -1;
     if (type === "f") {
-      addedInode = fs.mkFile(pathname.clean);
+      addedObj = fs.mkFile(pathname.clean);
     }
     else if (type === "d") {
-      addedInode = fs.mkDir(pathname.clean);
+      addedObj = fs.mkDir(pathname.clean);
     }
     else if (type === "l" && target !== null) {
       const targetObj = this.resolve(target);
@@ -91,16 +91,16 @@ class VFS {
         // Target data container to hard link not resolved
         return -1;
       }
-      addedInode = fs.mkLink(targetObj, pathname.clean);
+      addedObj = fs.mkLink(targetObj, pathname.clean);
     }
     else if (type === "sl" && target !== null) {
-      addedInode = fs.mkSymLink(target, pathname.clean);
+      addedObj = fs.mkSymLink(target, pathname.clean);
     }
     else {
       // Unknown type
       return -1;
     }
-    return addedInode;
+    return addedObj;
   }
 
   // mkPath() wrappers
