@@ -7,15 +7,41 @@ var babel = require('gulp-babel')
 var uglify = require('gulp-uglify');
 var through = require('through2');
 
-// File System
-gulp.task("fs", function(cb) {
+// Object File System
+gulp.task("ofs", function(cb) {
   pump([
-    gulp.src("src/kernel/fs/*.js"),
+    gulp.src("src/kernel/fs/ofs/*.js"),
+    order([
+      "drive.js",
+      "*"
+    ]),
+    concat("ofs.js"),
+    gulp.dest("build/kernel/fs")
+  ], cb);
+});
+
+// Virtual File System Layer
+gulp.task("vfs", function(cb) {
+  pump([
+    gulp.src("src/kernel/fs/vfs/*.js"),
+    order([
+      "storage.js",
+      "*"
+    ]),
+    concat("vfs.js"),
+    gulp.dest("build/kernel/fs")
+  ], cb);
+});
+
+// Put the file system together
+gulp.task("fs", ["ofs", "vfs"], function(cb) {
+  pump([
+    gulp.src("build/kernel/fs/*.js", "src/kernel/fs/*.js"),
     order([
       "pathname.js",
-      "disk.js",
+      "ofs.js",
       "vfs.js",
-      "tree.js",
+      "default.js",
       "*"
     ]),
     concat("fs.js"),
