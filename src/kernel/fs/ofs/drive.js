@@ -1,16 +1,14 @@
-class Inode {
+class OFS_Inode {
   constructor(config = {}) {
     this.links = 0;
-    // Merge inode config with `this` to override anything
-    Object.assign( this, config );
+    Object.assign(this, config);
   }
 }
 
-class Disk {
+class OFS {
   constructor() {
-    // Allow override as the first argument if set
-    this.inodes = arguments[0] || [
-      new Inode({
+    this.drive = arguments[0] || [
+      new OFS_Inode({
         links: 1,
         id: 0,
         type: "d",
@@ -30,17 +28,17 @@ class Disk {
     if ( name.match("/") ) {
       return -1;
     }
-    const id = this.inodes.length;
-    this.inodes[id] = new Inode({
+    const id = this.drive.length;
+    this.drive[id] = new OFS_Inode({
       links: 1,
       type: type,
       id: id
     });
     // Check if inode and directory
-    if (parentInode instanceof Inode && parentInode.type === "d") {
+    if (parentInode instanceof OFS_Inode && parentInode.type === "d") {
       parentInode.files[name] = id;
     }
-    return this.inodes[id];
+    return this.drive[id];
   }
 
   // Add a new file to the disk

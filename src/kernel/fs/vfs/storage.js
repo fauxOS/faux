@@ -1,21 +1,21 @@
 class VFS {
-  constructor(rootDisk) {
+  constructor() {
     this.mounts = {
-      "/": rootDisk
+      "/": arguments[0] || new OFS()
     };
   }
 
-  // Mount a disk
-  mount(disk, mountPoint) {
-    return this.mounts[mountPoint] = disk;
+  // Mount a filesystem
+  mount(fs, mountPoint) {
+    return this.mounts[mountPoint] = fs;
   }
 
-  // Unmount a disk by mount point
+  // Unmount a filesystem by mount point
   unmount(mountPoint) {
     return delete this.mounts[mountPoint];
   }
 
-  // Resolve a path to the mounted that disk it is on
+  // Resolve the path to the mounted a filesystem
   // This is the first step to trace a path, before inodes are involved
   mountPoint(path) {
     const pathname = new Pathname(path);
@@ -42,15 +42,15 @@ class VFS {
     const trace = [inode];
     const pathname = new Pathname(path);
     const mountPoint = this.mountPoint(pathname.clean);
-    const disk = this.mounts[mountPoint];
-    const diskLocalPath = pathname.clean.substring( mountPoint.length );
-    if (diskLocalPath === "") {
-      return disk.inodes[inode];
+    const fs = this.mounts[mountPoint];
+    const fsLocalPath = pathname.clean.substring( mountPoint.length );
+    if (fsLocalPath === "") {
+      return fs.drive[inode];
     }
-    const pathArray = new Pathname(diskLocalPath).chop;
+    const pathArray = new Pathname(fsLocalPath).chop;
     for (let i in pathArray) {
       const name = pathArray[i];
-      const inodeObj = disk.inodes[inode];
+      const inodeObj = fs.drive[inode];
       if (inodeObj.files === undefined) {
         // Could not resolve path to inodes completely
         return -1;
@@ -62,7 +62,7 @@ class VFS {
       }
       trace.push(inode);
     }
-    return disk.inodes[ trace.pop() ];
+    return fs.drive[ trace.pop() ];
   }
 
   // Resolve and return the inode, symbolic link resolves to file it points to
@@ -106,7 +106,7 @@ class VFS {
     const parentInode = this.resolve(parent);
     const name = pathname.name;
     const mountPoint = this.mountPoint(pathname.clean);
-    const disk = this.mounts[mountPoint];
+    const fs = this.mounts[mountPoint];
     if ( parentInode < 0 ) {
       // Parent directory not resolved
       return -1;
@@ -114,10 +114,10 @@ class VFS {
     // Assume failure until success
     let addedInode = -1;
     if (type === "f") {
-      addedInode = disk.mkFile(name, parentInode);
+      addedInode = fs.mkFile(name, parentInode);
     }
     else if (type === "d") {
-      addedInode = disk.mkDir(name, parentInode);
+      addedInode = fs.mkDir(name, parentInode);
     }
     else if (type === "l" && target !== null) {
       const targetInode = this.resolve(target);
@@ -125,10 +125,10 @@ class VFS {
         // Target inode to hard link not resolved
         return -1;
       }
-      addedInode = disk.mkLink(name, parentInode, targetInode);
+      addedInode = fs.mkLink(name, parentInode, targetInode);
     }
     else if (type === "sl" && target !== null) {
-      addedInode = disk.mkSymLink(name, parentInode, target);
+      addedInode = fs.mkSymLink(name, parentInode, target);
     }
     else {
       // Unknown type
