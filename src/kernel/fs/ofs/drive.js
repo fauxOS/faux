@@ -1,4 +1,3 @@
-
 class OFS_Inode {
   constructor(config = {}) {
     this.links = 0;
