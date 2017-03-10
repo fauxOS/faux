@@ -24,10 +24,10 @@ class OFS {
   resolveHard(path) {
     let inode = 0;
     const trace = [inode];
-    if (fsLocalPath === "") {
+    if (path === "") {
       return this.drive[inode];
     }
-    const pathArray = new Pathname(fsLocalPath).chop;
+    const pathArray = new Pathname(path).chop;
     for (let i in pathArray) {
       const name = pathArray[i];
       const inodeObj = this.drive[inode];
