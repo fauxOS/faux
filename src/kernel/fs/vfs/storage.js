@@ -36,52 +36,26 @@ class VFS {
     return mountPoint;
   }
 
-  // Resolve path to an inode, don't follow symbolic links
-  resolveHard(path) {
-    let inode = 0;
-    const trace = [inode];
-    const pathname = new Pathname(path);
-    const mountPoint = this.mountPoint(pathname.clean);
+  // Resolve a path to the fs provided data container
+  // resolveHard decides if following symbolic links and the like
+  // should or should not happen, default is to follow
+  resolve(path, resolveHard=false) {
+    const mountPoint = this.mountPoint(path);
     const fs = this.mounts[mountPoint];
-    const fsLocalPath = pathname.clean.substring( mountPoint.length );
-    if (fsLocalPath === "") {
-      return fs.drive[inode];
+    if (resolveHard) {
+      return fs.resolveHard(path);
     }
-    const pathArray = new Pathname(fsLocalPath).chop;
-    for (let i in pathArray) {
-      const name = pathArray[i];
-      const inodeObj = fs.drive[inode];
-      if (inodeObj.files === undefined) {
-        // Could not resolve path to inodes completely
-        return -1;
-      }
-      inode = inodeObj.files[name];
-      if (inode === undefined) {
-        // Could not find end inode, failed at segment name
-        return -1;
-      }
-      trace.push(inode);
+    else {
+      return fs.resolve(path);
     }
-    return fs.drive[ trace.pop() ];
   }
-
-  // Resolve and return the inode, symbolic link resolves to file it points to
-  resolve(path, redirectCount=0) {
-    // Don't follow if we get to 50 symbolic link redirects
-    if (redirectCount >= 50) {
-      // Max symbolic link redirect count reached (50)
-      return -1;
+  
+  // Return data type of a file, could be "inode" for example
+  type(path) {
+    const container = this.resolve(path);
+    if (container instanceof OFS_Inode) {
+      return "inode";
     }
-    const inode = this.resolveHard(path);
-    if (inode < 0) {
-      // Error on hard resolve
-      return -1;
-    }
-    if (inode.type === "sl") {
-      redirectCount++;
-      return this.resolve(inode.redirect, redirectCount);
-    }
-    return inode;
   }
 
   // Remove an inode from its parent directory by path
