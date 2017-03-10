@@ -1,9 +1,9 @@
-// Define default filesystem
+// Define the default filesystem structure
 
 faux.fs = new VFS(
-  new Disk([
+  new OFS([
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       id: 0,
       type: "d",
@@ -22,7 +22,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "d",
       id: 1,
@@ -32,7 +32,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "d",
       id: 2,
@@ -42,7 +42,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "d",
       id: 3,
@@ -52,7 +52,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "d",
       id: 4,
@@ -62,7 +62,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "d",
       id: 5,
@@ -73,7 +73,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "d",
       id: 6,
@@ -83,7 +83,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "d",
       id: 7,
@@ -93,7 +93,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "d",
       id: 8,
@@ -103,7 +103,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "d",
       id: 9,
@@ -113,7 +113,7 @@ faux.fs = new VFS(
       }
     }),
 
-    new Inode({
+    new OFS_Inode({
       links: 1,
       type: "f",
       id: 10,
