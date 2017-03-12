@@ -56,6 +56,7 @@ gulp.task("proc", function(cb) {
     order([
       "filedesc.js",
       "process.js",
+      "syscalls.js",
       "*"
     ]),
     concat("proc.js"),
@@ -66,9 +67,9 @@ gulp.task("proc", function(cb) {
 // Kernel, connects filesystem with processes
 gulp.task("kernel", ["fs", "proc"], function(cb) {
   pump([
-    gulp.src(["src/kernel/obj.js", "build/kernel/*.js"]),
+    gulp.src(["src/kernel/namespace.js", "build/kernel/*.js"]),
     order([
-      "obj.js",
+      "namespace.js",
       "fs.js",
       "proc.js",
       "*"

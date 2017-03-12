@@ -64,6 +64,7 @@ Within the kernel, the `sys` object holds all the system call functions.
 + Processes
   - `spawn()` - Like windows `CreateProcess()`, except not bloated
   - `rfork()` - Resource fork, similar to linux's `clone()`
+  - `fork()` - Wrapper around `rfork`
   - `exec()` - Replace the executing code of a process
   - `wait()` - Listen to a process and wait for a state change, like termination
   - `getpid()` - Get the Process ID of the calling process
@@ -75,8 +76,7 @@ Within the kernel, the `sys` object holds all the system call functions.
   - `signal()` - Send the given signal to a process
   - `assert()` - Wrapper around `signal()` just for the current process
   - `sighandle()` - Change a process's signal handler, like `sigaction()`
-  - `request()` - Request a process for arbitrary data
-  - `reply()` - Set a reply for handled `request()` calls
+  - `rendezvous()` - Share private resources directly two between processes
 + System
   - `syslog()` - Append the current system state to the log file
   - `uname()` - Get system information

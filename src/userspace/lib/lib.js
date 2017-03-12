@@ -39,7 +39,22 @@ function sys(name, args) {
 
 // System call wrappers
 
+// Spawn a new process from an executable image
+function spawn(image) {
+  return sys("spawn", [image]);
+}
+
 // Open a file by path and promise the return of a file descriptor
 function open(path) {
   return sys("open", [path]);
+}
+
+// Read a file descriptor and return data retrieved
+function read(fd) {
+  return sys("read", [fd]);
+}
+
+// Write data to a file descriptor
+function write(fd, data) {
+  return sys("write", [fd, data]);
 }
