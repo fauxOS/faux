@@ -49,3 +49,20 @@ open("/home/.fshrc").then(console.log);
 
 open(null).catch(console.warn).then(console.log);
 ```
+
+# DOM Traversal through `/dev/dom`
+
+One of the really neat features that UNIX introduced was the concept of "everything is a file".
+This concept was borrowed by faux and applied to many of the I/O layers. The DOM being no exception,
+you are free to traverse it with common utilities, view and edit element values, add and remove elements, etc.
+
+Here is an example, you can quickly see the ease of use.
+
+```javascript
+// Each directory/file in the path is a css selector
+// But, you can also use a number to get an element by its number
+// The index begins at 1, so the path could be /dev/dom/1/title
+open("/dev/dom/head/title").then(fd => {
+  write(fd, "Everything is a file");
+});
+```
