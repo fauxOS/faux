@@ -53,12 +53,18 @@ class VFS {
       return fs.resolve(fsLocalPath);
     }
   }
-  
+
   // Return data type of a file, could be "inode" for example
   type(path) {
     const container = this.resolve(path);
     if (container instanceof OFS_Inode) {
       return "inode";
+    }
+    else if (container instanceof HTMLElement) {
+      return "element"
+    }
+    else {
+      return "unknown";
     }
   }
 

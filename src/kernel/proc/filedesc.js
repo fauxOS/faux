@@ -21,12 +21,58 @@ class FileDescriptor {
       }
       return data;
     }
+    else if (this.type === "element") {
+      return this.container.innerText;
+    }
+    else {
+      return -1;
+    }
   }
 
   // Write data out
   write(data) {
     if (this.type === "inode") {
       return this.container.data = data;
+    }
+    else if (this.type === "element") {
+      return this.container.innerText = data;
+    }
+    else {
+      return -1;
+    }
+  }
+
+  // View "directory" contents or return null
+  dir() {
+    if (this.type === "inode") {
+      if ( this.container.type === "f" ) {
+        return Object.keys( this.container.files );
+      }
+      else {
+        return null;
+      }
+    }
+    else if (this.type === "element") {
+      if ( this.container.hasChildNodes() ) {
+        const children = this.container.children;
+        const elements = [];
+        for (let i = 0; i < children.length; i++) {
+          let el = children[i].localName;
+          let id = children[i].id;
+          let classes = children[i].className.split(" ").join(".");
+          elements.push( el + id + classes );
+          // Child by index
+          elements.push(i + 1);
+        }
+        return elements;
+      }
+      else {
+        return null;
+      }
+      return this.container.innerText = data;
+    }
+    else {
+      return -1;
     }
   }
 }

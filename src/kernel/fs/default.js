@@ -122,3 +122,5 @@ faux.fs = new VFS(
 
   ])
 );
+
+faux.fs.mount( new DOMFS(), "/dev/dom" );

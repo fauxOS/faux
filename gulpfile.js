@@ -20,6 +20,19 @@ gulp.task("ofs", function(cb) {
   ], cb);
 });
 
+// DOM File System Layer
+gulp.task("domfs", function(cb) {
+  pump([
+    gulp.src(["src/kernel/fs/domfs/*.js"]),
+    order([
+      "selector.js",
+      "*"
+    ]),
+    concat("domfs.js"),
+    gulp.dest("build/kernel/fs")
+  ], cb);
+});
+
 // Virtual File System Layer
 gulp.task("vfs", function(cb) {
   pump([
@@ -34,12 +47,13 @@ gulp.task("vfs", function(cb) {
 });
 
 // Put the file system together
-gulp.task("fs", ["ofs", "vfs"], function(cb) {
+gulp.task("fs", ["ofs", "domfs", "vfs"], function(cb) {
   pump([
     gulp.src(["build/kernel/fs/*.js", "src/kernel/fs/*.js"]),
     order([
       "pathname.js",
       "ofs.js",
+      "domfs.js",
       "vfs.js",
       "default.js",
       "*"
