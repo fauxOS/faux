@@ -2,7 +2,7 @@ class Process {
   constructor(execImage) {
     this.fds = [];
     // The worker is where the process is actually executed
-    this.worker = mkWorker(execImage);
+    this.worker = faux.utils.mkWorker(execImage);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     this.worker.addEventListener( "message", msg => { this.messageHandler(msg) });
