@@ -6,6 +6,7 @@ var inject = require('gulp-inject');
 var babel = require('gulp-babel')
 var uglify = require('gulp-uglify');
 var through = require('through2');
+var argv = require("yargs").argv;
 
 // Object File System
 gulp.task("ofs", function(cb) {
@@ -81,9 +82,8 @@ gulp.task("proc", function(cb) {
 // Kernel, connects filesystem with processes
 gulp.task("kernel", ["fs", "proc"], function(cb) {
   pump([
-    gulp.src(["src/kernel/namespace.js", "build/kernel/*.js"]),
+    gulp.src(["build/kernel/*.js"]),
     order([
-      "namespace.js",
       "fs.js",
       "proc.js",
       "*"
@@ -131,20 +131,31 @@ gulp.task("userspace", ["kernel", "lib"], function(cb) {
   ], cb);
 });
 
+// Uglify or nah?
+function finalCompile() {
+
+}
+
 // Default task, entrypoint, compiles kernel
-gulp.task("default", ["userspace"], function(cb) {
-  pump([
-    gulp.src(["src/misc/*.js", "build/kernel.js"]),
-    order([
-      "misc.js",
-      "kernel.js",
-      "*"
-    ]),
-    concat("fauxOS.js"),
-    babel({
+gulp.task("default", ["userspace"], function() {
+  const built = gulp.src(["src/misc/*.js", "build/kernel.js"])
+  .pipe(order([
+    "namespace.js",
+    "misc.js",
+    "compat.js",
+    "kernel.js",
+    "*"
+  ]))
+  .pipe( concat("fauxOS.js") )
+
+  if (! argv.uglify) {
+    built.pipe( gulp.dest("dist/") );
+  }
+  else {
+    built.pipe(babel({
       presets: ["es2015"]
-    }),
-    uglify( {mangle: false} ),
-    gulp.dest("dist/")
-  ], cb);
+    }))
+    .pipe( uglify( {mangle: false} ) )
+    .pipe( gulp.dest("dist/") );
+  }
 });
