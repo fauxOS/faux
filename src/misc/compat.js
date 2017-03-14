@@ -2,6 +2,28 @@
 // then set the appropriate flags
 // TODO: better dynamic require("pkg")-ing
 
+// Example output: ["Browser", "xx.xx.xx"]
+function browserInfo() {
+  const ua = navigator.userAgent;
+  const matches = ua.match( /(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d.]+)/i ) || [];
+  if ( (/trident/i).test(matches[1]) ) {
+    const tem = ua.match( /\brv[ :]+([\d.]+)/g ) || "";
+    return [ "IE", tem[1] ];
+  }
+  if ( matches[1] === "Chrome" ) {
+    const tem = ua.match( /\b(OPR|Edge)\/([\d.]+)/ );
+    if (tem != null) {
+      return [ "Opera", tem[1] ];
+    }
+  }
+  if ( matches[2] ) {
+    return [ matches[1], matches[2] ];
+  }
+  else {
+    return [navigator.appName, navigator.appVersion];
+  }
+}
+
 // Check if var is defined
 function loaded(obj) {
   return eval("typeof " + obj + " !== 'undefined'");
@@ -11,7 +33,7 @@ faux.flags.env = {};
 
 if ( loaded("navigator") ) {
   faux.flags.isBrowser = true;
-  const info = faux.utils.browserInfo();
+  const info = browserInfo();
   faux.flags.env.name = info[0];
   faux.flags.env.version = info[1];
 }
@@ -35,58 +57,4 @@ else {
     faux.flags.Worker = false;
     console.warn("FauxOS : Worker not supported");
   }
-}
-
-// Simple HTTP and HTTPS with promises
-// Both browser and node
-// https://www.tomas-dvorak.cz/posts/nodejs-request-without-dependencies/
-if (faux.flags.isNode) {
-  faux.utils.http = function(uri, method="GET") {
-    return new Promise((resolve, reject) => {
-      const lib = uri.startsWith("https") ? require("https") : require("http");
-      const parsed = (require("url")).parse(uri);
-      const options = {
-        host: parsed.hostname,
-        port: parsed.port,
-        path: parsed.path,
-        method: method,
-        headers: {
-          "User-Agent": "FauxOS | git.io/faux"
-        }
-      };
-      const request = lib.request(options, (response) => {
-        if (response.statusCode < 200 || response.statusCode > 299) {
-          reject(new Error("Failed with response code : " + response.statusCode));
-        }
-        const body = [];
-        response.on("data", (chunk) => body.push(chunk));
-        response.on("end", () => resolve(body.join("")));
-      });
-      request.on("error", (err) => reject(err))
-    });
-  };
-}
-else if (faux.flags.isBrowser) {
-  faux.utils.http = function (uri, method = "GET") {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open(method, uri, true);
-      xhr.onload = function() {
-        if (xhr.status < 300 && xhr.status >= 200) {
-          resolve(xhr.response);
-        }
-        else {
-          reject(xhr.status + " " + xhr.statusText);
-        }
-      };
-      xhr.onerror = function(err) {
-        reject(err);
-      }
-      xhr.send();
-    });
-  };
-}
-else {
-  faux.flags.http = false;
-  console.warn("FauxOS : HTTP not supported");
 }

@@ -141,8 +141,8 @@ gulp.task("default", ["userspace"], function() {
   const built = gulp.src(["src/misc/*.js", "build/kernel.js"])
   .pipe(order([
     "namespace.js",
-    "misc.js",
     "compat.js",
+    "utils.js",
     "kernel.js",
     "*"
   ]))
