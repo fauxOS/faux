@@ -22,7 +22,7 @@
     "yargs": "^7.0.2"
   },
   "scripts": {
-    "prepublish": "gulp",
+    "prepublish": "gulp --uglify",
     "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer"
   },
   "keywords": [
