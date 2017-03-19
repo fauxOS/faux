@@ -1,4 +1,6 @@
-class DOMFS {
+import Pathname from "../pathname.js";
+
+export default class DOMFS {
   constructor(selectorBase="") {
     this.base = selectorBase;
     this.resolveHard = this.resolve;
@@ -18,4 +20,4 @@ class DOMFS {
       return document.querySelector(selector);
     }
   }
-}
+};

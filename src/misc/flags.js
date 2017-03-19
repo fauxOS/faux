@@ -1,6 +1,5 @@
-// Check environment for feature compatability,
-// then set the appropriate flags
-// TODO: better dynamic require("pkg")-ing
+const flags = {};
+flags.env = {};
 
 // Example output: ["Browser", "xx.xx.xx"]
 function browserInfo() {
@@ -24,37 +23,32 @@ function browserInfo() {
   }
 }
 
-// Check if var is defined
-function loaded(obj) {
-  return eval("typeof " + obj + " !== 'undefined'");
-}
-
-faux.flags.env = {};
-
-if ( loaded("navigator") ) {
-  faux.flags.isBrowser = true;
+if ( typeof navigator !== "undefined" ) {
+  flags.isBrowser = true;
   const info = browserInfo();
-  faux.flags.env.name = info[0];
-  faux.flags.env.version = info[1];
+  flags.env.name = info[0];
+  flags.env.version = info[1];
 }
-else if ( loaded("process") && loaded("module") && loaded("require") ) {
-  faux.flags.isNode = true;
-  faux.flags.env.name = "Node.JS";
-  faux.flags.env.version = process.version;
+else if ( typeof process !== "undefined" ) {
+  flags.isNode = true;
+  flags.env.name = "Node.JS";
+  flags.env.version = process.version;
 }
 else {
   console.warn("FauxOS : environment not detected and/or not supported");
 }
 
-if ( loaded("Worker") ) {
-  faux.flags.Worker = true;
+if ( typeof Worker !== "undefined" ) {
+  flags.Worker = true;
 }
 else {
-  if (faux.flags.isNode) {
-    global.Worker = require("webworker-threads").Worker;
+  if (flags.isNode) {
+    console.warn("FauxOS : Processes not yet implemented on Node");
   }
   else {
-    faux.flags.Worker = false;
+    flags.Worker = false;
     console.warn("FauxOS : Worker not supported");
   }
 }
+
+export default flags;

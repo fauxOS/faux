@@ -1,6 +1,9 @@
-// Virtual File System Layer
+import Pathname from "../pathname.js";
+import OFS_Inode from "../ofs/inode.js";
+import OFS from "../ofs/main.js";
+import DOMFS from "../domfs/main.js";
 
-class VFS {
+export default class VFS {
   constructor() {
     this.mounts = {
       "/": arguments[0] || new OFS()
@@ -130,4 +133,4 @@ class VFS {
   lns(refPath, linkPath) {
     return this.mkPath("sl", linkPath, refPath);
   }
-}
+};

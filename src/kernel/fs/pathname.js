@@ -3,7 +3,7 @@
  * p = new Pathname("/some///./../some/strange/././path")
  * p.clean() => "/some/strange/path"
  */
-class Pathname {
+export default class Pathname {
   constructor(input) {
     this.input = input;
     // Make all the functions run right on construction

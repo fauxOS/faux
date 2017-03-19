@@ -1,6 +1,9 @@
-// Define the default filesystem structure
+import OFS_Inode from "./ofs/inode.js";
+import OFS from "./ofs/main.js";
+import DOMFS from "./domfs/main.js";
+import VFS from "./vfs/main.js";
 
-faux.fs = new VFS(
+const fs = new VFS(
   new OFS([
 
     new OFS_Inode({
@@ -117,10 +120,12 @@ faux.fs = new VFS(
       links: 1,
       type: "f",
       id: 10,
-      data: `/* lib.js */ /* endinject */`
+/* lib.js */data: ``
     })
 
   ])
 );
 
-faux.fs.mount( new DOMFS(), "/dev/dom" );
+fs.mount( new DOMFS(), "/dev/dom" );
+
+export default fs;

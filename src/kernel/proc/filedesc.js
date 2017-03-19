@@ -1,11 +1,11 @@
-// "Everything is a file"
-// This is the layer that makes that idea possible
+import fs from "../fs/main.js";
+import Pathname from "../fs/pathname.js";
 
-class FileDescriptor {
+export default class FileDescriptor {
   constructor(path) {
     this.path = new Pathname(path).clean;
-    this.type = faux.fs.type(this.path);
-    this.container = faux.fs.resolve(this.path);
+    this.type = fs.type(this.path);
+    this.container = fs.resolve(this.path);
     if (this.container < 0) {
       throw new Error("Path Unresolved");
     }

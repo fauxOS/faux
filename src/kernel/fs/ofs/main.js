@@ -1,11 +1,7 @@
-class OFS_Inode {
-  constructor(config = {}) {
-    this.links = 0;
-    Object.assign(this, config);
-  }
-}
+import Pathname from "../pathname.js";
+import OFS_Inode from "./inode.js";
 
-class OFS {
+export default class OFS {
   constructor() {
     this.drive = arguments[0] || [
       new OFS_Inode({
@@ -19,7 +15,7 @@ class OFS {
       })
     ];
   }
-  
+
   // Resolve path to an inode, don't follow symbolic links
   resolveHard(path) {
     let inode = 0;
@@ -140,7 +136,7 @@ class OFS {
     inode.redirect = path;
     return inode;
   }
-  
+
   // Remove by unlinking
   rm(path) {
     const pathname = new Pathname(path);
@@ -151,4 +147,4 @@ class OFS {
     }
     return delete parentInode.files[name];
   }
-}
+};
