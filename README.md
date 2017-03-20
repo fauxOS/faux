@@ -13,8 +13,7 @@ load into AMD and CommonJS environments too.
 ### Dependencies
 
 FauxOS has no runtime dependencies in the browser, just include it (preferably) in your `<head>`.
-If you don't want to build, simply copy from the pre-built [`/dist/fauxOS.js`]
-(https://raw.githubusercontent.com/fauxOS/fauxOS/master/dist/fauxOS.js).
+If you don't want to build, simply copy from the pre-built [`/dist/fauxOS.js`](https://raw.githubusercontent.com/fauxOS/fauxOS/master/dist/fauxOS.js).
 
 To build it yourself, you need to get [node.js and npm](https://nodejs.org/en/download/)
 
