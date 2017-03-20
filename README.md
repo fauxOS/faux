@@ -3,6 +3,8 @@
 ## Installation
 
 Installing is very straight-forward, it's one script in your web page.
+The browser is the main target for this project, but you can freely
+load into AMD and CommonJS environments too.
 
 [raw git](https://rawgit.com/) provides a free cdn to you can use:
 
@@ -10,16 +12,17 @@ Installing is very straight-forward, it's one script in your web page.
 
 ### Dependencies
 
-FauxOS has no runtime dependencies, just include it in your `<head>`.
-If you don't want to build, simply copy from the pre-built
-[`/dist/fauxOS.js`](https://raw.githubusercontent.com/fauxOS/fauxOS/master/dist/fauxOS.js).
+FauxOS has no runtime dependencies in the browser, just include it (preferably) in your `<head>`.
+If you don't want to build, simply copy from the pre-built [`/dist/fauxOS.js`]
+(https://raw.githubusercontent.com/fauxOS/fauxOS/master/dist/fauxOS.js).
 
 To build it yourself, you need to get [node.js and npm](https://nodejs.org/en/download/)
 
 ### Building
 
 + Clone this repository : `git clone https://github.com/fauxOS/fauxOS.git`
-+ Enter and build : `cd fauxOS; npm install`
++ Enter and get build dependencies : `cd fauxOS npm install`
++ Build it `npm run build`
 + Add the built file to your server : `cp dist/fauxOS.js ~/webserver/fauxOS.js`
 + Include the script : `<script src="/fauxOS.js"></script>`
 
@@ -33,9 +36,16 @@ Run `npm test` and go to [localhost](http://localhost:8000)
 
 Just navigate to `index.html` in your browser
 
-## System Call Overview
+Note: the API is not set in stone right now, so there aren't many tests at the moment.
 
-Within the kernel, the `sys` object holds all the system call functions.
+## System Call Reference
+
+This is not yet implemented, but all surrounding functionality is
+
+Within the kernel, the `sys` object holds all the system call functions. Userspace
+can make kernel requests via a [message]
+(https://developer.mozilla.org/en-US/docs/Web/API/DedicatedWorkerGlobalScope/postMessage), or
+by loading in the included `/lib` files.
 
 + File System
   - `mount()` - Mount a disk to the virtual file system
