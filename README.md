@@ -43,8 +43,7 @@ Note: the API is not set in stone right now, so there aren't many tests at the m
 This is not yet implemented, but all surrounding functionality is
 
 Within the kernel, the `sys` object holds all the system call functions. Userspace
-can make kernel requests via a [message]
-(https://developer.mozilla.org/en-US/docs/Web/API/DedicatedWorkerGlobalScope/postMessage), or
+can make kernel requests via a [message](https://developer.mozilla.org/en-US/docs/Web/API/DedicatedWorkerGlobalScope/postMessage), or
 by loading in the included `/lib` files.
 
 + File System
