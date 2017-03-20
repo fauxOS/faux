@@ -15,9 +15,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^2.0.1",
     "intern": "^3.4.2",
-    "pump": "^1.0.2",
     "rollup": "^0.41.5",
-    "rollup-plugin-json": "^2.1.0",
     "rollup-watch": "^3.2.2",
     "yargs": "^7.0.2"
   },
