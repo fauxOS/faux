@@ -1,10 +1,8 @@
 # FauxOS - A virtual, completely in-browser, operating system
 
-<img
-  src="https://raw.githubusercontent.com/fauxOS/fauxOS/master/faux.png"
-  style="display:block; margin:auto;"
-  title="Faux"
-  alt="Faux OS Logo">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/fauxOS/fauxOS/master/faux.png" title="Faux" alt="Faux OS Logo">
+</p>
 
 ## Installation
 
