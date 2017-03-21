@@ -1,5 +1,7 @@
 # FauxOS - A virtual, completely in-browser, operating system
 
+![Faux](https://raw.githubusercontent.com/fauxOS/fauxOS/master/faux.png "Faux OS Logo")
+
 ## Installation
 
 Installing is very straight-forward, it's one script in your web page.
