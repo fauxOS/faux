@@ -10,7 +10,7 @@ Installing is very straight-forward, it's one script in your web page.
 The browser is the main target for this project, but you can freely
 load into AMD and CommonJS environments too.
 
-[raw git](https://rawgit.com/) provides a free cdn to you can use:
+[raw git](https://rawgit.com/) provides a free cdn that you can use:
 
 `<script src="https://cdn.rawgit.com/fauxOS/fauxOS/master/dist/fauxOS.js"></script>`
 
