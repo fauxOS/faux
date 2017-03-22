@@ -1,7 +1,7 @@
 {
   "name": "faux",
   "description": "A virtual, completely in-browser, operating system (pre-alpha)",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "main": "dist/fauxOS.js",
   "dependencies": {
     "request": "^2.81.0"
