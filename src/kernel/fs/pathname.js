@@ -6,19 +6,11 @@
 export default class Pathname {
   constructor(input) {
     this.input = input;
-    // Make all the functions run right on construction
-    this.clean = this.cleanf();
-    this.chop = this.chopf();
-    this.name = this.namef();
-    this.basename = this.basenamef();
-    this.parent = this.parentf();
-    this.extentions = this.extentionsf();
-    this.segment = this.segmentf();
   }
 
   // clean up a crazy path
   // e.g. "/some///./../some/strange/././path" => "/some/strange/path"
-  cleanf() {
+  get clean() {
     let clean = [];
     // Split the path by "/", match() because it doesn't add empty strings
     const pathArray = this.input.match( /[^/]+/g );
@@ -38,7 +30,7 @@ export default class Pathname {
 
   // Chop a path into an array of names
   // "/paths/are/like/arrays" => ["paths", "are", "like", "arrays"]
-  chopf() {
+  get chop() {
     const segments = this.clean.match( /[^/]+/g );
     if (segments === null) {
       return ["/"];
@@ -49,13 +41,13 @@ export default class Pathname {
   }
 
   // Just the name of the file/directory the path leads to
-  namef() {
+  get name() {
     return this.chop[ this.chop.length - 1 ];
   }
 
   // Basename from the normal name
   // "filename.txt" => "filename"
-  basenamef() {
+  get basename() {
     const name = this.name;
     if ( name === "" ) {
       return name;
@@ -73,7 +65,7 @@ export default class Pathname {
 
   // Parent name, get the directory holding this
   // "/directories/hold/files/like-this-one" => "/directories/hold/files"
-  parentf() {
+  get parent() {
     if ( this.name === "/" ) {
       return null;
     }
@@ -87,12 +79,12 @@ export default class Pathname {
 
   // Extentions array from the name
   // "archive.tar.gz" => [".tar", ".gz"]
-  extentionsf() {
+  get extentions() {
     return this.name.match( /\.[^\.]+/g );
   }
 
   // get the segments of a path like this : ["/", "/path", "/path/example"]
-  segmentf() {
+  get segment() {
     const pathArray = this.chop;
     let segments = [];
     // If its a root path, skip segments
