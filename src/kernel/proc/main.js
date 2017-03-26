@@ -3,15 +3,16 @@ import flags from "../../misc/flags.js";
 
 class ProcessTable {
   constructor(init) {
-    if (init == null) {
+    if (init === undefined) {
       throw new Error("Init process must be defined");
     }
-    this.list = [ init ];
-    this.nextPID = 1;
+    this.list = [ null, init ];
+    this.nextPID = 2;
   }
 
   add(process) {
-    return this.nextPID = this.list.push(process);
+    this.nextPID = this.list.push(process);
+    return this.nextPID - 1;
   }
 }
 

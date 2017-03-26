@@ -12,7 +12,8 @@ export default class VFS {
 
   // Mount a filesystem
   mount(fs, mountPoint) {
-    return this.mounts[mountPoint] = fs;
+    this.mounts[mountPoint] = fs;
+    return mountPoint;
   }
 
   // Unmount a filesystem by mount point
@@ -29,7 +30,7 @@ export default class VFS {
     const mounts = Object.keys(this.mounts);
     // Array of resolved mounted disks
     const resolves = [];
-    for (let i in mounts) {
+    for (let i = 0; i < mounts.length; i++) {
       let mount = new Pathname(mounts[i]).clean;
       for (let i in segments) {
         if (segments[i] === mount) {
@@ -133,4 +134,4 @@ export default class VFS {
   lns(refPath, linkPath) {
     return this.mkPath("sl", linkPath, refPath);
   }
-};
+}

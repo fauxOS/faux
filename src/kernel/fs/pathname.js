@@ -15,7 +15,7 @@ export default class Pathname {
     // Split the path by "/", match() because it doesn't add empty strings
     const pathArray = this.input.match( /[^/]+/g );
     // Iterate each name in the path
-    for (let i in pathArray) {
+    for (let i = 0; i < pathArray.length; i++) {
       const name = pathArray[i];
       // If it's the current directory, don't do anything
       if (name === ".") {}

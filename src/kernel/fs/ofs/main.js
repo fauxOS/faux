@@ -24,7 +24,7 @@ export default class OFS {
       return this.drive[inode];
     }
     const pathArray = new Pathname(path).chop;
-    for (let i in pathArray) {
+    for (let i = 0; i < pathArray.length; i++) {
       const name = pathArray[i];
       const inodeObj = this.drive[inode];
       if (inodeObj.files === undefined) {
@@ -147,4 +147,4 @@ export default class OFS {
     }
     return delete parentInode.files[name];
   }
-};
+}

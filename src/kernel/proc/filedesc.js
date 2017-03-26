@@ -16,13 +16,13 @@ export default class FileDescriptor {
     if (this.type === "inode") {
       const data = this.container.data;
       // Directory or other
-      if (data == null) {
+      if (data === undefined) {
         return -1;
       }
       return data;
     }
     else if (this.type === "element") {
-      return this.container.innerText;
+      return this.container.innerHTML;
     }
     else {
       return -1;
@@ -32,10 +32,12 @@ export default class FileDescriptor {
   // Write data out
   write(data) {
     if (this.type === "inode") {
-      return this.container.data = data;
+      this.container.data = data;
+      return data;
     }
     else if (this.type === "element") {
-      return this.container.innerText = data;
+      this.container.innerHTML = data;
+      return data;
     }
     else {
       return -1;
@@ -69,7 +71,6 @@ export default class FileDescriptor {
       else {
         return null;
       }
-      return this.container.innerText = data;
     }
     else {
       return -1;

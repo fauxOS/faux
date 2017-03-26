@@ -11,7 +11,7 @@ function browserInfo() {
   }
   if ( matches[1] === "Chrome" ) {
     const tem = ua.match( /\b(OPR|Edge)\/([\d.]+)/ );
-    if (tem != null) {
+    if (tem) {
       return [ "Opera", tem[1] ];
     }
   }
