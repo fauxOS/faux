@@ -75,6 +75,7 @@ by loading in the included `/lib` files.
   - `pipe()` - Make an anonymous pipe between two processes
 + Processes
   - `spawn()` - Like windows `CreateProcess()`, except not bloated
+  - `loadLib()` - Load a dynamic library and execute it
   - `exec()` - Replace the executing code of a process
   - `wait()` - Listen to a process and wait for a state change, like termination
   - `getpid()` - Get the Process ID of the calling process

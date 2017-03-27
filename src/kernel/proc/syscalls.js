@@ -1,4 +1,5 @@
 import proc from "./main.js";
+import Process from "./process.js";
 
 const sys = {};
 
@@ -21,6 +22,13 @@ sys.pass = function(process, msgID, args) {
   };
   process.worker.postMessage(result);
 }
+
+// Send a dynamic library straight to the process
+sys.loadLib = function(process, msgID, args) {
+  const data = process.loadLib( args[0] );
+  sys.pass(process, msgID, [data]);
+}
+
 
 // Spawn a new process from an executable image
 sys.spawn = function(process, msgID, args) {

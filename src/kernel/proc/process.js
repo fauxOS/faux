@@ -6,6 +6,7 @@ import flags from "../../misc/flags.js";
 export default class Process {
   constructor(image) {
     this.fds = [];
+    this.libs = [];
     this.cwd = "/";
     this.env = {
       "SHELL": "fsh",
@@ -19,7 +20,9 @@ export default class Process {
     };
     this.image = image;
     // The worker is where the process is actually executed
-    this.worker = utils.mkWorker(image);
+    // We auto-load the /lib/lib.js dynamic library
+    const libjs = this.loadLib("/lib/lib.js");
+    this.worker = utils.mkWorker(libjs + image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     if (flags.isBrowser) {
@@ -57,5 +60,12 @@ export default class Process {
     const fd = new FileDescriptor(path);
     this.fds.push(fd);
     return this.fds.length - 1;
+  }
+
+  // Like opening a file, execept we add it to the library list
+  loadLib(path) {
+    const fd = new FileDescriptor(path);
+    this.libs.push(fd);
+    return fd.read();
   }
 }

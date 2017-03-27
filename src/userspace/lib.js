@@ -39,6 +39,13 @@ function call(name, args) {
 
 // Here are all the system call wrappers
 
+// Load a dynamic library
+function loadLib(path) {
+  const data = call("loadLib", [path]);
+  // Evaluate the library in this worker's context
+  return data.then(eval);
+}
+
 // Spawn a new process from an executable image
 function spawn(image) {
   return call("spawn", [image]);
