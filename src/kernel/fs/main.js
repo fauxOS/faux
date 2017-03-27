@@ -133,6 +133,7 @@ fs.mount( new OFS([
   new OFS_Inode({
     links: 1,
     type: "f",
+    perms: [true, true, true],
     id: 1,
 /* lib.js */data: ``
   })
