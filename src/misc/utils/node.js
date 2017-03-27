@@ -1,7 +1,8 @@
 const node = {};
 
 node.mkWorker = function(scriptStr) {
-  throw new Error("Processes/Web Workers not supported");
+  console.warn("Processes/Web Workers not supported");
+  return -1;
 }
 
 node.openLocalFile = function(readAs="readAsText") {

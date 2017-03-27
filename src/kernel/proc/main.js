@@ -1,5 +1,4 @@
 import Process from "./process.js";
-import flags from "../../misc/flags.js";
 
 class ProcessTable {
   constructor(init) {
@@ -16,11 +15,4 @@ class ProcessTable {
   }
 }
 
-export default new ProcessTable((function() {
-if (flags.isBrowser) {
-  return new Process();
-}
-else {
-  return -1;
-}
-}));
+export default new ProcessTable( new Process() );

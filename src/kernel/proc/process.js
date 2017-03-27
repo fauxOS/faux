@@ -1,6 +1,7 @@
 import FileDescriptor from "./filedesc.js";
 import sys from "./syscalls.js";
 import utils from "../../misc/utils/main.js";
+import flags from "../../misc/flags.js";
 
 export default class Process {
   constructor(image) {
@@ -21,7 +22,9 @@ export default class Process {
     this.worker = utils.mkWorker(image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
-    this.worker.addEventListener( "message", msg => { this.messageHandler(msg) });
+    if (flags.isBrowser) {
+      this.worker.addEventListener( "message", msg => { this.messageHandler(msg) });
+    }
   }
 
   // Handle messages coming from the worker
