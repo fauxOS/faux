@@ -1,4 +1,5 @@
 import proc from "./main.js";
+import Process from "./process.js";
 
 const sys = {};
 
