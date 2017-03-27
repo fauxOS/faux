@@ -19,7 +19,9 @@ export default class Process {
     };
     this.image = image;
     // The worker is where the process is actually executed
-    this.worker = utils.mkWorker(image);
+    // We auto-load the /lib/lib.js dynamic library
+    const libjs = new FileDescriptor("/lib/lib.js").read();
+    this.worker = utils.mkWorker(libjs + image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     if (flags.isBrowser) {
