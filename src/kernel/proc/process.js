@@ -61,7 +61,7 @@ export default class Process {
     this.fds.push(fd);
     return this.fds.length - 1;
   }
-  
+
   // Like opening a file, execept we add it to the library list
   loadLib(path) {
     const fd = new FileDescriptor(path);
