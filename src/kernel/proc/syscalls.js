@@ -49,7 +49,7 @@ sys.open = function(process, msgID, args) {
       path = args[0];
     }
     else {
-      path = process.cwd + args[0];
+      path = process.cwd + "/" + args[0];
     }
     const result = process.open(path);
     sys.pass(process, msgID, [result]);
