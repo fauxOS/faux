@@ -3,10 +3,22 @@ import sys from "./syscalls.js";
 import utils from "../../misc/utils/main.js";
 
 export default class Process {
-  constructor(execImage) {
+  constructor(image) {
     this.fds = [];
+    this.cwd = "/";
+    this.env = {
+      "SHELL": "fsh",
+      "PATH": [
+        "/sbin",
+        "/bin",
+        "/usr/sbin",
+        "/usr/bin"
+      ],
+      "HOME": "/home"
+    };
+    this.image = image;
     // The worker is where the process is actually executed
-    this.worker = utils.mkWorker(execImage);
+    this.worker = utils.mkWorker(image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     this.worker.addEventListener( "message", msg => { this.messageHandler(msg) });

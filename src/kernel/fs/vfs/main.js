@@ -72,6 +72,21 @@ export default class VFS {
     }
   }
 
+  // Get permissions
+  perms(path, type=this.type(path)) {
+    if (type === "inode") {
+      return this.resolve(path).perms;
+    }
+    // Read and write only for HTML elements
+    else if (type === "element") {
+      return [true, true, false];
+    }
+    // RW for anything unset
+    else {
+      return [true, true, false];
+    }
+  }
+
   // Remove a path
   rm(path) {
     const pathname = new Pathname(path);

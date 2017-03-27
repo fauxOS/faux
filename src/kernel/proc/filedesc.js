@@ -9,10 +9,19 @@ export default class FileDescriptor {
     if (this.container < 0) {
       throw new Error("Path Unresolved");
     }
+    this.perms = fs.perms(this.path);
+    // No permissions
+    if (this.perms === [false, false, false]) {
+      throw new Error("All permissions set to false");
+    }
   }
 
   // Return read data
   read() {
+    // Check read permission
+    if (! this.perms[0]) {
+      return -1;
+    }
     if (this.type === "inode") {
       const data = this.container.data;
       // Directory or other
@@ -31,6 +40,10 @@ export default class FileDescriptor {
 
   // Write data out
   write(data) {
+    // Check write permission
+    if (! this.perms[1]) {
+      return -1;
+    }
     if (this.type === "inode") {
       this.container.data = data;
       return data;
@@ -46,6 +59,10 @@ export default class FileDescriptor {
 
   // View "directory" contents or return null
   dir() {
+    // Check read permission
+    if (! this.perms[0]) {
+      return -1;
+    }
     if (this.type === "inode") {
       if ( this.container.type === "f" ) {
         return Object.keys( this.container.files );

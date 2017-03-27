@@ -29,8 +29,7 @@ sys.spawn = function(process, msgID, args) {
   }
   else {
     const newProcess = new Process(args[0]);
-    const pid = proc.nextPID;
-    proc.add( newProcess );
+    const pid = proc.add( newProcess );
     sys.pass(process, msgID, [pid]);
   }
 }
@@ -44,7 +43,15 @@ sys.open = function(process, msgID, args) {
     sys.fail(process, msgID, ["Argument should be a string"]);
   }
   else {
-    const result = process.open(args[0]);
+    let path = "";
+    // If the first character is a "/", then working dir does not matter
+    if (args[0][0] === "/") {
+      path = args[0];
+    }
+    else {
+      path = process.cwd + args[0];
+    }
+    const result = process.open(path);
     sys.pass(process, msgID, [result]);
   }
 }
@@ -74,6 +81,17 @@ sys.write = function(process, msgID, args) {
   else {
     const result = process.fds[ args[0] ].write( args[1] );
     sys.pass(process, msgID, [result]);
+  }
+}
+
+// Change the current working directory
+sys.chdir = function(process, msgID, args) {
+  if (! args[0] instanceof String) {
+    sys.fail(process, msgID, ["Argument should be a string"]);
+  }
+  else {
+    process.cwd = args[0];
+    sys.pass(process, msgID, [ process.cwd ]);
   }
 }
 
