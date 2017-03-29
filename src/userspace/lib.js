@@ -40,8 +40,8 @@ function call(name, args) {
 // Here are all the system call wrappers
 
 // Load a dynamic library
-function loadLib(path) {
-  const data = call("loadLib", [path]);
+function load(path) {
+  const data = call("load", [path]);
   // Evaluate the library in this worker's context
   return data.then(eval);
 }

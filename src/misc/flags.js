@@ -1,5 +1,4 @@
 const flags = {};
-flags.env = {};
 
 // Example output: ["Browser", "xx.xx.xx"]
 function browserInfo() {
@@ -23,32 +22,9 @@ function browserInfo() {
   }
 }
 
-if ( typeof navigator !== "undefined" ) {
-  flags.isBrowser = true;
-  const info = browserInfo();
-  flags.env.name = info[0];
-  flags.env.version = info[1];
-}
-else if ( typeof process !== "undefined" ) {
-  flags.isNode = true;
-  flags.env.name = "Node.JS";
-  flags.env.version = process.version;
-}
-else {
-  console.warn("FauxOS : environment not detected and/or not supported");
-}
+const info = browserInfo();
 
-if ( typeof Worker !== "undefined" ) {
-  flags.Worker = true;
-}
-else {
-  if (flags.isNode) {
-    console.warn("FauxOS : Processes not yet implemented on Node");
-  }
-  else {
-    flags.Worker = false;
-    console.warn("FauxOS : Worker not supported");
-  }
-}
+flags.browser = info[0];
+flags.version = info[1];
 
 export default flags;

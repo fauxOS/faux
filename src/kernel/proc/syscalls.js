@@ -24,8 +24,8 @@ sys.pass = function(process, msgID, args) {
 }
 
 // Send a dynamic library straight to the process
-sys.loadLib = function(process, msgID, args) {
-  const data = process.loadLib( args[0] );
+sys.load = function(process, msgID, args) {
+  const data = process.load( args[0] );
   sys.pass(process, msgID, [data]);
 }
 

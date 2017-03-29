@@ -6,18 +6,20 @@
 
 ## Installation
 
-Installing is very straight-forward, it's one script in your web page.
-The browser is the main target for this project, but you can freely
-load into AMD and CommonJS environments too.
+Installing is very straight-forward, there's just one script to load.
+The browser is the target for this project, and you can freely
+load faux into AMD and CommonJS environments too, try it out.
 
 [raw git](https://rawgit.com/) provides a free cdn that you can use:
 
 `<script src="https://cdn.rawgit.com/fauxOS/fauxOS/master/dist/fauxOS.js"></script>`
 
+You can include this in any web project with `npm install --save faux`
+
 ### Dependencies
 
-FauxOS has no runtime dependencies in the browser, just include it (preferably) in your `<head>`.
-If you don't want to build, simply copy from the pre-built [`/dist/fauxOS.js`](https://raw.githubusercontent.com/fauxOS/fauxOS/master/dist/fauxOS.js).
+FauxOS has no runtime dependencies, just include it (preferably) in your `<head>`.
+If you don't want to build, copy from the pre-built [`/dist/fauxOS.js`](https://raw.githubusercontent.com/fauxOS/fauxOS/master/dist/fauxOS.js).
 
 To build it yourself, you need to get [node.js and npm](https://nodejs.org/en/download/)
 
@@ -25,25 +27,13 @@ To build it yourself, you need to get [node.js and npm](https://nodejs.org/en/do
 
 + Clone this repository : `git clone https://github.com/fauxOS/fauxOS.git`
 + Enter and get build dependencies : `cd fauxOS npm install`
-+ Build it `npm run build`
++ Build it : `npm run build`
 + Add the built file to your server : `cp dist/fauxOS.js ~/webserver/fauxOS.js`
 + Include the script : `<script src="/fauxOS.js"></script>`
 
-## Testing (If you feel like it)
-
-This uses [Intern](https://theintern.github.io) for testing
-
-Run `npm test` and go to [localhost](http://localhost:8000)
-
--or-
-
-Just navigate to `index.html` in your browser
-
-Note: the API is not set in stone right now, so there aren't many tests at the moment.
-
 ## System Call Reference
 
-This is not yet implemented, but all surrounding functionality is
+This is not completely implemented, yet. Most surrounding functionality is available.
 
 Within the kernel, the `sys` object holds all the system call functions. Userspace
 can make kernel requests via a [message](https://developer.mozilla.org/en-US/docs/Web/API/DedicatedWorkerGlobalScope/postMessage), or
@@ -75,7 +65,7 @@ by loading in the included `/lib` files.
   - `pipe()` - Make an anonymous pipe between two processes
 + Processes
   - `spawn()` - Like windows `CreateProcess()`, except not bloated
-  - `loadLib()` - Load a dynamic library and execute it
+  - `load()` - Load a dynamic library and execute it
   - `exec()` - Replace the executing code of a process
   - `wait()` - Listen to a process and wait for a state change, like termination
   - `getpid()` - Get the Process ID of the calling process

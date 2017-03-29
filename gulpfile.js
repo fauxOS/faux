@@ -54,7 +54,12 @@ gulp.task("lib", ["builds"], function() {
     .pipe( gulp.dest("build/") );
 });
 
-gulp.task("default", ["lib"], function() {
+gulp.task("sourceMap", ["kernel"], function() {
+  return gulp.src("build/kernel.js.map")
+    .pipe( gulp.dest("dist/") );
+});
+
+gulp.task("default", ["lib", "sourceMap"], function() {
   return gulp.src("build/kernel.js")
     .pipe(inject(gulp.src(["package.json"]), {
       starttag: 'version: "',
@@ -64,14 +69,23 @@ gulp.task("default", ["lib"], function() {
         return JSON.parse( file.contents.toString("utf8") ).version;
       }
     }))
+    // ES6 non-transpiled version
+    .pipe( rename("fauxOS.es6.js") )
+    .pipe( gulp.dest("dist/") )
+
+    // Babel transpiled version
     .pipe(babel({
       presets: [
         ["es2015", {"modules": false}]
       ]
     }))
+    .pipe( rename("fauxOS.js") )
+    .pipe( gulp.dest("dist/") )
+
+    // Minified version
     .pipe(uglify({
       mangle: false
     }))
-    .pipe( rename("fauxOS.js") )
+    .pipe( rename("fauxOS.min.js") )
     .pipe( gulp.dest("dist/") );
 });

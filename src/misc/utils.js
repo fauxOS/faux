@@ -1,6 +1,13 @@
-const browser = {};
+const utils = {};
 
-browser.mkWorker = function(scriptStr) {
+utils.genUUID = function() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(char) {
+    let r = Math.random() * 16|0, v = char === "x" ? r : (r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
+utils.mkWorker = function(scriptStr) {
   const blob = new Blob(
     [scriptStr],
     {type: "application/javascript"}
@@ -9,7 +16,7 @@ browser.mkWorker = function(scriptStr) {
   return new Worker(uri);
 }
 
-browser.openLocalFile = function(readAs="readAsText") {
+utils.openLocalFile = function(readAs="readAsText") {
   const input = document.createElement("input");
   input.type = "file";
   input.click();
@@ -25,7 +32,7 @@ browser.openLocalFile = function(readAs="readAsText") {
   });
 }
 
-browser.http = function(uri, method = "GET") {
+utils.http = function(uri, method = "GET") {
   return new Promise((resolve, reject) => {
     if (! uri instanceof String) {
       reject("URI invalid");
@@ -47,4 +54,4 @@ browser.http = function(uri, method = "GET") {
   });
 }
 
-export default browser;
+export default utils;

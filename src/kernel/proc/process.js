@@ -1,6 +1,6 @@
 import FileDescriptor from "./filedesc.js";
 import sys from "./syscalls.js";
-import utils from "../../misc/utils/main.js";
+import utils from "../../misc/utils.js";
 import flags from "../../misc/flags.js";
 
 export default class Process {
@@ -21,13 +21,11 @@ export default class Process {
     this.image = image;
     // The worker is where the process is actually executed
     // We auto-load the /lib/lib.js dynamic library
-    const libjs = this.loadLib("/lib/lib.js");
+    const libjs = this.load("/lib/lib.js");
     this.worker = utils.mkWorker(libjs + image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
-    if (flags.isBrowser) {
-      this.worker.addEventListener( "message", msg => { this.messageHandler(msg) });
-    }
+    this.worker.addEventListener( "message", msg => { this.messageHandler(msg) });
   }
 
   // Handle messages coming from the worker
@@ -63,7 +61,7 @@ export default class Process {
   }
 
   // Like opening a file, execept we add it to the library list
-  loadLib(path) {
+  load(path) {
     const fd = new FileDescriptor(path);
     this.libs.push(fd);
     return fd.read();
