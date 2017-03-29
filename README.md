@@ -7,12 +7,27 @@
 ## Installation
 
 Installing is very straight-forward, there's just one script to load.
-The browser is the target for this project, and you can freely
-load faux into AMD and CommonJS environments too, try it out.
+The browser is the default target for this project, but you are free
+to load faux into AMD and CommonJS environments too, try it out.
 
-[raw git](https://rawgit.com/) provides a free cdn that you can use:
+All distributed files are in the `/dist` directory.
 
-`<script src="https://cdn.rawgit.com/fauxOS/fauxOS/master/dist/fauxOS.js"></script>`
+```
+dist
+├── fauxOS.es6.js     => No transpilation done
+├── fauxOS.js         => Transpiled
+├── fauxOS.min.js     => Transpiled and minified
+└── kernel.js.map     => Source map
+```
+
+#### CDN's
+
++ `<script src="https://unpkg.com/faux/dist/fauxOS.js"></script>`
+  - Very fast, recommended
++ `<script src="https://cdn.rawgit.com/fauxOS/fauxOS/master/dist/fauxOS.js"></script>`
+  - Gets the latest from github, use to retrieve an unreleased file
+
+#### Node
 
 You can include this in any web project with `npm install --save faux`
 
@@ -28,8 +43,8 @@ To build it yourself, you need to get [node.js and npm](https://nodejs.org/en/do
 + Clone this repository : `git clone https://github.com/fauxOS/fauxOS.git`
 + Enter and get build dependencies : `cd fauxOS npm install`
 + Build it : `npm run build`
-+ Add the built file to your server : `cp dist/fauxOS.js ~/webserver/fauxOS.js`
-+ Include the script : `<script src="/fauxOS.js"></script>`
++ Add the built file to your server : `cp -R dist/ ~/webserver/faux/`
++ Include the script : `<script src="/faux/fauxOS.js"></script>`
 
 ## System Call Reference
 
@@ -70,6 +85,8 @@ by loading in the included `/lib` files.
   - `wait()` - Listen to a process and wait for a state change, like termination
   - `getpid()` - Get the Process ID of the calling process
   - `getcwd()` - Return the current working directory
+  - `getenv()` - Get an environment variable
+  - `setenv()` - Set an environment variable
   - `chdir()` - Change a process's working directory
   - `exit()` - Process terminates itself
 + Inter-Process Communication
