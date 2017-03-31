@@ -104,6 +104,11 @@ sys.write = function(process, msgID, args) {
   sys.pass(process, msgID, [result]);
 }
 
+// Tell what directory we are in
+sys.pwd = function(process, msgID, args) {
+  sys.pass(process, msgID, [ process.cwd ]);
+}
+
 // Change the current working directory
 sys.chdir = function(process, msgID, args) {
   if (! args[0] instanceof String) {
