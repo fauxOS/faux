@@ -47,8 +47,19 @@ function load(path) {
 }
 
 // Spawn a new process from an executable image
-function spawn(image) {
-  return call("spawn", [image]);
+function spawn(image, argv=[]) {
+  return call("spawn", [image, argv]);
+}
+
+// Execute by path, input commandline arguments
+// UNLIKE UNIX, exec will create a new process
+function exec(path, argv) {
+  return call("exec", [path, argv]);
+}
+
+// Boolean, true if we have access to file / file exists
+function access(path) {
+  return call("access", [path]);
 }
 
 // Open a file by path and promise the return of a file descriptor
@@ -64,4 +75,48 @@ function read(fd) {
 // Write data to a file descriptor
 function write(fd, data) {
   return call("write", [fd, data]);
+}
+
+// Get the currect working directory
+function pwd() {
+  return call("pwd", []);
+}
+
+// cd
+function chdir(path) {
+  return call("chdir", [path]);
+}
+
+// Get environment variable
+function getenv(varName) {
+  return call("getenv", [varName]);
+}
+
+// Set environment variable
+function setenv(varName) {
+  return call("setenv", [varName]);
+}
+
+// Helper functions
+
+function readFile(path="/") {
+  return open(path).then(fd => {
+    return read(fd);
+  });
+}
+
+function writeFile(path="/", data="") {
+  return open(path).then(fd => {
+    return write(fd, data);
+  });
+}
+
+// Read a DOM node's innerHTML
+function domRead(nodePath = "/") {
+  return readFile("/dev/dom" + "/" + nodePath);
+}
+
+// Easily write to DOM nodes
+function domWrite(nodePath = "/", data = "") {
+  return writeFile("/dev/dom" + "/" + nodePath, data);
 }
