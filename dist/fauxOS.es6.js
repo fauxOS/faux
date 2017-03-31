@@ -567,7 +567,7 @@ fs.mount( new OFS([
     type: "f",
     perms: [true, true, true],
     id: 1,
-/* lib.js */data: "\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}"/* end */
+/* lib.js */data: "\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}function readFile(){return open(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\").then(function(fd){return read(fd)})}function writeFile(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\",data=arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\";return open(path).then(function(fd){return write(fd,data)})}function domRead(){return readFile(\"/dev/dom/\"+(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\"))}function domWrite(){return writeFile(\"/dev/dom/\"+(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\"),arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\")}"/* end */
   })
 ]), "/lib" );
 
@@ -968,6 +968,11 @@ sys.write = function(process, msgID, args) {
   }
   const result = process.fds[ args[0] ].write( args[1] );
   sys.pass(process, msgID, [result]);
+};
+
+// Tell what directory we are in
+sys.pwd = function(process, msgID, args) {
+  sys.pass(process, msgID, [ process.cwd ]);
 };
 
 // Change the current working directory
