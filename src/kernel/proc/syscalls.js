@@ -29,26 +29,40 @@ sys.load = function(process, msgID, args) {
   sys.pass(process, msgID, [data]);
 }
 
-
 // Spawn a new process from an executable image
 sys.spawn = function(process, msgID, args) {
-  if (args.length !== 1) {
-    sys.fail(process, msgID, ["Should have only 1 argument"]);
+  if (! args[1] instanceof Array) {
+    sys.fail(process, msgID, ["Second argument should be the array argv"]);
+    return -1;
+  }
+  const newProcess = new Process(args[0], args[1]);
+  const pid = proc.add( newProcess );
+  sys.pass(process, msgID, [pid]);
+}
+
+// Check file access
+sys.access = function(process, msgID, args) {
+  if (typeof args[0] !== "string") {
+    sys.fail(process, msgID, ["Argument should be a string"]);
+    return -1;
+  }
+  let path = "";
+  // If the first character is a "/", then working dir does not matter
+  if (args[0][0] === "/") {
+    path = args[0];
   }
   else {
-    const newProcess = new Process(args[0]);
-    const pid = proc.add( newProcess );
-    sys.pass(process, msgID, [pid]);
+    path = process.cwd + "/" + args[0];
   }
+  const result = process.access(path);
+  sys.pass(process, msgID, [result]);
 }
 
 // Resolve a path into a file descriptor, and add it to the table
 sys.open = function(process, msgID, args) {
-  if (args.length !== 1) {
-    sys.fail(process, msgID, ["Should have only 1 argument"]);
-  }
   if (typeof args[0] !== "string") {
     sys.fail(process, msgID, ["Argument should be a string"]);
+    return -1;
   }
   let path = "";
   // If the first character is a "/", then working dir does not matter
@@ -66,9 +80,11 @@ sys.open = function(process, msgID, args) {
 sys.read = function(process, msgID, args) {
   if (args.length !== 1) {
     sys.fail(process, msgID, ["Should have only 1 argument"]);
+    return -1;
   }
   if (args[0] < 0) {
     sys.fail(process, msgID, ["File Descriptor should be postive"]);
+    return -1;
   }
   const result = process.fds[ args[0] ].read();
   sys.pass(process, msgID, [result]);
@@ -78,9 +94,11 @@ sys.read = function(process, msgID, args) {
 sys.write = function(process, msgID, args) {
   if (args.length !== 2) {
     sys.fail(process, msgID, ["Should have 2 arguments"]);
+    return -1;
   }
   if (args[0] < 0) {
     sys.fail(process, msgID, ["File Descriptor should be postive"]);
+    return -1;
   }
   const result = process.fds[ args[0] ].write( args[1] );
   sys.pass(process, msgID, [result]);
@@ -90,6 +108,7 @@ sys.write = function(process, msgID, args) {
 sys.chdir = function(process, msgID, args) {
   if (! args[0] instanceof String) {
     sys.fail(process, msgID, ["Argument should be a string"]);
+    return -1;
   }
   process.cwd = args[0];
   sys.pass(process, msgID, [ process.cwd ]);
@@ -99,6 +118,7 @@ sys.chdir = function(process, msgID, args) {
 sys.getenv = function(process, msgID, args) {
   if (! args[0] instanceof String) {
     sys.fail(process, msgID, ["Variable name should be a string"]);
+    return -1;
   }
   const value = process.env[ args[0] ];
   sys.pass(process, msgID, [ value ]);
@@ -108,9 +128,11 @@ sys.getenv = function(process, msgID, args) {
 sys.setenv = function(process, msgID, args) {
   if (! args[0] instanceof String) {
     sys.fail(process, msgID, ["Variable name should be a string"]);
+    return -1;
   }
   if (! args[1] instanceof String) {
     sys.fail(process, msgID, ["Variable value should be a string"]);
+    return -1;
   }
   const value = process.env[ args[0] ] = args[1];
   sys.pass(process, msgID, [ value ]);

@@ -549,6 +549,7 @@ const fs = new VFS(
   ])
 );
 
+// Mount /lib
 fs.mount( new OFS([
   new OFS_Inode({
     links: 1,
@@ -566,9 +567,31 @@ fs.mount( new OFS([
     type: "f",
     perms: [true, true, true],
     id: 1,
-/* lib.js */data: `"use strict";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz",id="",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:"syscall",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener("message",function(msg){msg.data.id===id&&("success"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call("load",[path]);return data.then(eval)}function spawn(image){return call("spawn",[image])}function open(path){return call("open",[path])}function read(fd){return call("read",[fd])}function write(fd,data){return call("write",[fd,data])}`
+/* lib.js */data: "\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}"/* end */
   })
 ]), "/lib" );
+
+// Mount /bin
+fs.mount( new OFS([
+  new OFS_Inode({
+    links: 1,
+    id: 0,
+    type: "d",
+    files: {
+      ".": 0,
+      "..": 0,
+      "fsh": 1
+    }
+  }),
+
+  new OFS_Inode({
+    links: 1,
+    type: "f",
+    perms: [true, false, true],
+    id: 1,
+/* fsh */data: "\"use strict\";!function(){function tokenizeLine(){for(var line=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String),i=0;i<tokens.length;i++){var token=tokens[i];tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2])}return tokens}function lex(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",allTokens=[],lines=input.match(/(\\\\;|[^;])+/g),i=0;i<lines.length;i++){var tokens=tokenizeLine(lines[i]);allTokens.push(tokens)}return allTokens}function parseCommand(tokens){var command={type:\"simple\"};return command.argv=tokens,command.argc=tokens.length,command.name=tokens[0],command}!function(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",AST={type:\"script\",commands:[]},commands=lex(input),i=0;i<commands.length;i++){var parsed=parseCommand(commands[i]);AST.commands[i]=parsed}AST}(\"echo hello, world\")}();"/* end */
+  })
+]), "/bin" );
 
 fs.mount( new DOMFS(), "/dev/dom" );
 
@@ -752,18 +775,15 @@ flags.browser = info[0];
 flags.version = info[1];
 
 class Process {
-  constructor(image) {
+  constructor(image, argv) {
+    this.argv = [] || argv;
+    this.argc = this.argv.length;
     this.fds = [];
     this.libs = [];
     this.cwd = "/";
     this.env = {
       "SHELL": "fsh",
-      "PATH": [
-        "/sbin",
-        "/bin",
-        "/usr/sbin",
-        "/usr/bin"
-      ],
+      "PATH": "/sbin:/bin",
       "HOME": "/home"
     };
     this.image = image;
@@ -800,9 +820,23 @@ class Process {
     }
   }
 
+  // Check if we can access/it exists
+  access(path) {
+    const fd = new FileDescriptor(path);
+    if (fd.container) {
+      return true;
+    }
+    else {
+      return false
+    }
+  }
+
   // Where open() actually runs
   // Return a file descriptor
   open(path) {
+    if (! this.access(path)) {
+      return -1;
+    }
     const fd = new FileDescriptor(path);
     this.fds.push(fd);
     return this.fds.length - 1;
@@ -861,26 +895,40 @@ sys.load = function(process, msgID, args) {
   sys.pass(process, msgID, [data]);
 };
 
-
 // Spawn a new process from an executable image
 sys.spawn = function(process, msgID, args) {
-  if (args.length !== 1) {
-    sys.fail(process, msgID, ["Should have only 1 argument"]);
+  if (! args[1] instanceof Array) {
+    sys.fail(process, msgID, ["Second argument should be the array argv"]);
+    return -1;
+  }
+  const newProcess = new Process(args[0], args[1]);
+  const pid = proc.add( newProcess );
+  sys.pass(process, msgID, [pid]);
+};
+
+// Check file access
+sys.access = function(process, msgID, args) {
+  if (typeof args[0] !== "string") {
+    sys.fail(process, msgID, ["Argument should be a string"]);
+    return -1;
+  }
+  let path = "";
+  // If the first character is a "/", then working dir does not matter
+  if (args[0][0] === "/") {
+    path = args[0];
   }
   else {
-    const newProcess = new Process(args[0]);
-    const pid = proc.add( newProcess );
-    sys.pass(process, msgID, [pid]);
+    path = process.cwd + "/" + args[0];
   }
+  const result = process.access(path);
+  sys.pass(process, msgID, [result]);
 };
 
 // Resolve a path into a file descriptor, and add it to the table
 sys.open = function(process, msgID, args) {
-  if (args.length !== 1) {
-    sys.fail(process, msgID, ["Should have only 1 argument"]);
-  }
   if (typeof args[0] !== "string") {
     sys.fail(process, msgID, ["Argument should be a string"]);
+    return -1;
   }
   let path = "";
   // If the first character is a "/", then working dir does not matter
@@ -898,9 +946,11 @@ sys.open = function(process, msgID, args) {
 sys.read = function(process, msgID, args) {
   if (args.length !== 1) {
     sys.fail(process, msgID, ["Should have only 1 argument"]);
+    return -1;
   }
   if (args[0] < 0) {
     sys.fail(process, msgID, ["File Descriptor should be postive"]);
+    return -1;
   }
   const result = process.fds[ args[0] ].read();
   sys.pass(process, msgID, [result]);
@@ -910,9 +960,11 @@ sys.read = function(process, msgID, args) {
 sys.write = function(process, msgID, args) {
   if (args.length !== 2) {
     sys.fail(process, msgID, ["Should have 2 arguments"]);
+    return -1;
   }
   if (args[0] < 0) {
     sys.fail(process, msgID, ["File Descriptor should be postive"]);
+    return -1;
   }
   const result = process.fds[ args[0] ].write( args[1] );
   sys.pass(process, msgID, [result]);
@@ -922,6 +974,7 @@ sys.write = function(process, msgID, args) {
 sys.chdir = function(process, msgID, args) {
   if (! args[0] instanceof String) {
     sys.fail(process, msgID, ["Argument should be a string"]);
+    return -1;
   }
   process.cwd = args[0];
   sys.pass(process, msgID, [ process.cwd ]);
@@ -931,6 +984,7 @@ sys.chdir = function(process, msgID, args) {
 sys.getenv = function(process, msgID, args) {
   if (! args[0] instanceof String) {
     sys.fail(process, msgID, ["Variable name should be a string"]);
+    return -1;
   }
   const value = process.env[ args[0] ];
   sys.pass(process, msgID, [ value ]);
@@ -940,9 +994,11 @@ sys.getenv = function(process, msgID, args) {
 sys.setenv = function(process, msgID, args) {
   if (! args[0] instanceof String) {
     sys.fail(process, msgID, ["Variable name should be a string"]);
+    return -1;
   }
   if (! args[1] instanceof String) {
     sys.fail(process, msgID, ["Variable value should be a string"]);
+    return -1;
   }
   const value = process.env[ args[0] ] = args[1];
   sys.pass(process, msgID, [ value ]);

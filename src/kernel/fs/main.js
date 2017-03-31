@@ -118,6 +118,7 @@ const fs = new VFS(
   ])
 );
 
+// Mount /lib
 fs.mount( new OFS([
   new OFS_Inode({
     links: 1,
@@ -135,9 +136,31 @@ fs.mount( new OFS([
     type: "f",
     perms: [true, true, true],
     id: 1,
-/* lib.js */data: ``
+/* lib.js */data: ""/* end */
   })
 ]), "/lib" );
+
+// Mount /bin
+fs.mount( new OFS([
+  new OFS_Inode({
+    links: 1,
+    id: 0,
+    type: "d",
+    files: {
+      ".": 0,
+      "..": 0,
+      "fsh": 1
+    }
+  }),
+
+  new OFS_Inode({
+    links: 1,
+    type: "f",
+    perms: [true, false, true],
+    id: 1,
+/* fsh */data: ""/* end */
+  })
+]), "/bin" );
 
 fs.mount( new DOMFS(), "/dev/dom" );
 

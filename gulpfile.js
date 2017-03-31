@@ -38,17 +38,51 @@ gulp.task("lib:build", function() {
   .pipe( gulp.dest("build/") );
 });
 
+gulp.task("fsh:build", function() {
+  rollup.rollup({ entry: "src/userspace/fsh/main.js" })
+    .then(function (bundle) {
+      bundle.write({
+        format: "iife",
+        moduleName: "fsh",
+        dest: "build/fsh.js",
+        sourceMap: false
+      });
+    });
+  return gulp.src("build/fsh.js")
+  .pipe(babel({
+    presets: [
+      ["es2015"]
+    ]
+  }))
+  .pipe(uglify({
+    mangle: false
+  }))
+  .pipe( gulp.dest("build/") );
+});
+
 // Get the builds out of the way,
 // before we deal with injecting anything, or compilation
-gulp.task("builds", ["kernel", "lib:build"]);
+gulp.task("builds", ["kernel", "lib:build", "fsh:build"]);
 
 gulp.task("lib", ["builds"], function() {
   return gulp.src("build/kernel.js")
     .pipe(inject(gulp.src(["build/lib.js"]), {
-      starttag: '/* lib.js */data: `',
-      endtag: '`',
+      starttag: '/* lib.js */data: ',
+      endtag: '/* end */',
       transform: function (filePath, file) {
-        return file.contents.toString("utf8");
+        return JSON.stringify( file.contents.toString("utf8") );
+      }
+    }))
+    .pipe( gulp.dest("build/") );
+});
+
+gulp.task("fsh", ["lib"], function() {
+  return gulp.src("build/kernel.js")
+    .pipe(inject(gulp.src(["build/fsh.js"]), {
+      starttag: '/* fsh */data: ',
+      endtag: '/* end */',
+      transform: function (filePath, file) {
+        return JSON.stringify( file.contents.toString("utf8") );
       }
     }))
     .pipe( gulp.dest("build/") );
@@ -59,7 +93,7 @@ gulp.task("sourceMap", ["kernel"], function() {
     .pipe( gulp.dest("dist/") );
 });
 
-gulp.task("default", ["lib", "sourceMap"], function() {
+gulp.task("default", ["sourceMap", "lib", "fsh"], function() {
   return gulp.src("build/kernel.js")
     .pipe(inject(gulp.src(["package.json"]), {
       starttag: 'version: "',

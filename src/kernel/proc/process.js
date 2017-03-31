@@ -4,18 +4,15 @@ import utils from "../../misc/utils.js";
 import flags from "../../misc/flags.js";
 
 export default class Process {
-  constructor(image) {
+  constructor(image, argv) {
+    this.argv = [] || argv;
+    this.argc = this.argv.length;
     this.fds = [];
     this.libs = [];
     this.cwd = "/";
     this.env = {
       "SHELL": "fsh",
-      "PATH": [
-        "/sbin",
-        "/bin",
-        "/usr/sbin",
-        "/usr/bin"
-      ],
+      "PATH": "/sbin:/bin",
       "HOME": "/home"
     };
     this.image = image;
@@ -52,9 +49,23 @@ export default class Process {
     }
   }
 
+  // Check if we can access/it exists
+  access(path) {
+    const fd = new FileDescriptor(path);
+    if (fd.container) {
+      return true;
+    }
+    else {
+      return false
+    }
+  }
+
   // Where open() actually runs
   // Return a file descriptor
   open(path) {
+    if (! this.access(path)) {
+      return -1;
+    }
     const fd = new FileDescriptor(path);
     this.fds.push(fd);
     return this.fds.length - 1;
