@@ -42,7 +42,7 @@ gulp.task("fsh:build", function() {
   rollup.rollup({ entry: "src/userspace/fsh/main.js" })
     .then(function (bundle) {
       bundle.write({
-        format: "iife",
+        format: "es",
         moduleName: "fsh",
         dest: "build/fsh.js",
         sourceMap: false
