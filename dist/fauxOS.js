@@ -47,15 +47,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         for (var i in pathArray) {
           var name = pathArray[i];
           // If it's the current directory, don't do anything
-          if (name === ".") {}
-          // If it's the previous directory, remove the last added entry
-          else if (name === "..") {
-              clean.pop();
-            }
+          if (name === ".") {} else if (name === "..") {
+            // If it's the previous directory, remove the last added entry
+            clean.pop();
+          } else {
             // Anything else, we add to the array plainly
-            else {
-                clean.push(name);
-              }
+            clean.push(name);
+          }
         }
         // Array to path
         return "/" + clean.join("/");
@@ -137,14 +135,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         // If its a root path, skip segments
         if (this.name === "/") {
           segments = ["/"];
-        }
-        // Else, any other path
-        else {
-            for (var i = 0; i <= pathArray.length; i++) {
-              var matchPath = pathArray.slice(0, i);
-              segments.push("/" + matchPath.join("/"));
-            }
+        } else {
+          // Else, any other path
+          for (var i = 0; i <= pathArray.length; i++) {
+            var matchPath = pathArray.slice(0, i);
+            segments.push("/" + matchPath.join("/"));
           }
+        }
         return segments;
       }
     }]);
@@ -458,15 +455,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
         if (type === "inode") {
           return this.resolve(path).perms;
-        }
-        // Read and write only for HTML elements
-        else if (type === "element") {
-            return [true, true, false];
-          }
+        } else if (type === "element") {
+          // Read and write only for HTML elements
+          return [true, true, false];
+        } else {
           // RW for anything unset
-          else {
-              return [true, true, false];
-            }
+          return [true, true, false];
+        }
       }
 
       // Remove a path
@@ -559,15 +554,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     files: {
       ".": 0,
       "..": 0,
-      "bin": 1,
-      "dev": 2,
-      "etc": 3,
-      "home": 4,
-      "lib": 5,
-      "log": 6,
-      "mnt": 7,
-      "tmp": 8,
-      "usr": 9
+      bin: 1,
+      dev: 2,
+      etc: 3,
+      home: 4,
+      lib: 5,
+      log: 6,
+      mnt: 7,
+      tmp: 8,
+      usr: 9
     }
   }), new OFS_Inode({
     links: 1,
@@ -669,7 +664,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     files: {
       ".": 0,
       "..": 0,
-      "fsh": 1
+      fsh: 1
     }
   }), new OFS_Inode({
     links: 1,
@@ -879,9 +874,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       this.libs = [];
       this.cwd = "/";
       this.env = {
-        "SHELL": "fsh",
-        "PATH": "/sbin:/bin",
-        "HOME": "/home"
+        SHELL: "fsh",
+        PATH: "/sbin:/bin",
+        HOME: "/home"
       };
       this.image = image;
       // The worker is where the process is actually executed
@@ -911,16 +906,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           if (obj.id !== undefined && obj.args instanceof Array) {
             sys[obj.name](this, obj.id, obj.args);
           }
+        } else {
+          // The message is not valid because of the type or name
+          var error = {
+            status: "error",
+            reason: "Invalid request type and/or name",
+            id: obj.id
+          };
+          this.worker.postMessage(error);
         }
-        // The message is not valid because of the type or name
-        else {
-            var error = {
-              status: "error",
-              reason: "Invalid request type and/or name",
-              id: obj.id
-            };
-            this.worker.postMessage(error);
-          }
       }
 
       // Check if we can access/it exists
@@ -1140,4 +1134,3 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   return main;
 });
-//# sourceMappingURL=kernel.js.map

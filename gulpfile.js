@@ -81,7 +81,7 @@ gulp.task("lib", ["builds"], function() {
     .src("build/kernel.js")
     .pipe(
       inject(gulp.src(["build/lib.js"]), {
-        starttag: "/* lib.js */data: ",
+        starttag: "/* lib.js */ data: ",
         endtag: "/* end */",
         transform: function(filePath, file) {
           return JSON.stringify(file.contents.toString("utf8"));
@@ -96,7 +96,7 @@ gulp.task("fsh", ["lib"], function() {
     .src("build/kernel.js")
     .pipe(
       inject(gulp.src(["build/fsh.js"]), {
-        starttag: "/* fsh */data: ",
+        starttag: "/* fsh */ data: ",
         endtag: "/* end */",
         transform: function(filePath, file) {
           return JSON.stringify(file.contents.toString("utf8"));

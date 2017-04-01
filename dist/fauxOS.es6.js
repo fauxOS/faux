@@ -7,7 +7,7 @@
 class OFS_Inode {
   constructor(config = {}) {
     this.links = 0;
-    this.perms = [true,true,false];
+    this.perms = [true, true, false];
     Object.assign(this, config);
   }
 }
@@ -27,16 +27,19 @@ class Pathname {
   get clean() {
     let clean = [];
     // Split the path by "/", match() because it doesn't add empty strings
-    const pathArray = this.input.match( /[^/]+/g );
+    const pathArray = this.input.match(/[^/]+/g);
     // Iterate each name in the path
     for (let i in pathArray) {
       const name = pathArray[i];
       // If it's the current directory, don't do anything
-      if (name === ".") {}
-      // If it's the previous directory, remove the last added entry
-      else if (name === "..") { clean.pop(); }
-      // Anything else, we add to the array plainly
-      else { clean.push(name); }
+      if (name === ".") {
+      } else if (name === "..") {
+        // If it's the previous directory, remove the last added entry
+        clean.pop();
+      } else {
+        // Anything else, we add to the array plainly
+        clean.push(name);
+      }
     }
     // Array to path
     return "/" + clean.join("/");
@@ -45,33 +48,30 @@ class Pathname {
   // Chop a path into an array of names
   // "/paths/are/like/arrays" => ["paths", "are", "like", "arrays"]
   get chop() {
-    const segments = this.clean.match( /[^/]+/g );
+    const segments = this.clean.match(/[^/]+/g);
     if (segments === null) {
       return ["/"];
-    }
-    else {
+    } else {
       return segments;
     }
   }
 
   // Just the name of the file/directory the path leads to
   get name() {
-    return this.chop[ this.chop.length - 1 ];
+    return this.chop[this.chop.length - 1];
   }
 
   // Basename from the normal name
   // "filename.txt" => "filename"
   get basename() {
     const name = this.name;
-    if ( name === "" ) {
+    if (name === "") {
       return name;
-    }
-    else {
-      const base = name.match( /^[^\.]+/ );
+    } else {
+      const base = name.match(/^[^\.]+/);
       if (base !== null) {
         return base[0];
-      }
-      else {
+      } else {
         return "";
       }
     }
@@ -80,21 +80,20 @@ class Pathname {
   // Parent name, get the directory holding this
   // "/directories/hold/files/like-this-one" => "/directories/hold/files"
   get parent() {
-    if ( this.name === "/" ) {
+    if (this.name === "/") {
       return null;
-    }
-    else {
+    } else {
       // Get the length of the path without the name in it
       const parentLen = this.clean.length - this.name.length;
       // Slice the name out of the path
-      return this.clean.slice( 0, parentLen );
+      return this.clean.slice(0, parentLen);
     }
   }
 
   // Extentions array from the name
   // "archive.tar.gz" => [".tar", ".gz"]
   get extentions() {
-    return this.name.match( /\.[^\.]+/g );
+    return this.name.match(/\.[^\.]+/g);
   }
 
   // get the segments of a path like this : ["/", "/path", "/path/example"]
@@ -102,14 +101,13 @@ class Pathname {
     const pathArray = this.chop;
     let segments = [];
     // If its a root path, skip segments
-    if ( this.name === "/" ) {
+    if (this.name === "/") {
       segments = ["/"];
-    }
-    // Else, any other path
-    else {
+    } else {
+      // Else, any other path
       for (let i = 0; i <= pathArray.length; i++) {
         let matchPath = pathArray.slice(0, i);
-        segments.push( "/" + matchPath.join("/") );
+        segments.push("/" + matchPath.join("/"));
       }
     }
     return segments;
@@ -153,11 +151,11 @@ class OFS {
       }
       trace.push(inode);
     }
-    return this.drive[ trace.pop() ];
+    return this.drive[trace.pop()];
   }
 
   // Resolve and return the inode, follow symbolic links
-  resolve(path, redirectCount=0) {
+  resolve(path, redirectCount = 0) {
     // Don't follow if we get to 50 symbolic link redirects
     if (redirectCount >= 50) {
       // Max symbolic link redirect count reached (50)
@@ -178,9 +176,9 @@ class OFS {
   // Add a new inode to the disk
   // Defaults to just adding an inode, but if you pass a parent directory inode in,
   // it will add `name` as an entry in `parentInode`
-  addInode(type, name=null, parentInode=null) {
+  addInode(type, name = null, parentInode = null) {
     // Reject if name contains a "/"
-    if ( name.match("/") ) {
+    if (name.match("/")) {
       return -1;
     }
     const id = this.drive.length;
@@ -231,7 +229,7 @@ class OFS {
     const parentInode = this.resolve(pathname.parent);
     const name = pathname.name;
     // Same as in addInode, not very DRY I know...
-    if ( name.match("/") ) {
+    if (name.match("/")) {
       return -1;
     }
     parentInode.files[name] = inode.id;
@@ -257,7 +255,7 @@ class OFS {
     const pathname = new Pathname(path);
     const parentInode = this.resolve(pathname.parent);
     const name = pathname.name;
-    if ( parentInode < 0 ) {
+    if (parentInode < 0) {
       return -1;
     }
     return delete parentInode.files[name];
@@ -265,7 +263,7 @@ class OFS {
 }
 
 class DOMFS {
-  constructor(selectorBase="") {
+  constructor(selectorBase = "") {
     this.base = selectorBase;
     this.resolveHard = this.resolve;
   }
@@ -275,12 +273,11 @@ class DOMFS {
     // If we are at the DOM root, i.e. /dev/dom/
     if (pathname.chop[0] === "/") {
       return document.querySelector("*");
-    }
-    else {
+    } else {
       let selector = " " + pathname.chop.join(" > ");
       // For child selection by index
       // element.children[0] becomes /dev/dom/element/1
-      selector = selector.replace( / (\d)/g, " :nth-child($1)"  );
+      selector = selector.replace(/ (\d)/g, " :nth-child($1)");
       return document.querySelector(selector);
     }
   }
@@ -328,15 +325,14 @@ class VFS {
   // Resolve a path to the fs provided data container
   // resolveHard decides if following symbolic links and the like
   // should or should not happen, default is to follow
-  resolve(path, resolveHard=false) {
+  resolve(path, resolveHard = false) {
     const pathname = new Pathname(path);
     const mountPoint = this.mountPoint(pathname.clean);
     const fs = this.mounts[mountPoint];
-    const fsLocalPath = pathname.clean.substring( mountPoint.length );
+    const fsLocalPath = pathname.clean.substring(mountPoint.length);
     if (resolveHard) {
       return fs.resolveHard(fsLocalPath);
-    }
-    else {
+    } else {
       return fs.resolve(fsLocalPath);
     }
   }
@@ -346,26 +342,22 @@ class VFS {
     const container = this.resolve(path);
     if (container instanceof OFS_Inode) {
       return "inode";
-    }
-    else if (container instanceof HTMLElement) {
-      return "element"
-    }
-    else {
+    } else if (container instanceof HTMLElement) {
+      return "element";
+    } else {
       return "unknown";
     }
   }
 
   // Get permissions
-  perms(path, type=this.type(path)) {
+  perms(path, type = this.type(path)) {
     if (type === "inode") {
       return this.resolve(path).perms;
-    }
-    // Read and write only for HTML elements
-    else if (type === "element") {
+    } else if (type === "element") {
+      // Read and write only for HTML elements
       return [true, true, false];
-    }
-    // RW for anything unset
-    else {
+    } else {
+      // RW for anything unset
       return [true, true, false];
     }
   }
@@ -381,7 +373,7 @@ class VFS {
   // Make a path, and add it as a file or directory
   // We won't check if the path already exists, we don't care
   // For hard or symbolic links, target should be the path to redirect to
-  mkPath(type, path, target=null) {
+  mkPath(type, path, target = null) {
     const pathname = new Pathname(path);
     const mountPoint = this.mountPoint(pathname.clean);
     const fs = this.mounts[mountPoint];
@@ -389,22 +381,18 @@ class VFS {
     let addedObj = -1;
     if (type === "f") {
       addedObj = fs.mkFile(pathname.clean);
-    }
-    else if (type === "d") {
+    } else if (type === "d") {
       addedObj = fs.mkDir(pathname.clean);
-    }
-    else if (type === "l" && target !== null) {
+    } else if (type === "l" && target !== null) {
       const targetObj = this.resolve(target);
-      if ( targetObj < 0 ) {
+      if (targetObj < 0) {
         // Target data container to hard link not resolved
         return -1;
       }
       addedObj = fs.mkLink(targetObj, pathname.clean);
-    }
-    else if (type === "sl" && target !== null) {
+    } else if (type === "sl" && target !== null) {
       addedObj = fs.mkSymLink(target, pathname.clean);
-    }
-    else {
+    } else {
       // Unknown type
       return -1;
     }
@@ -415,12 +403,12 @@ class VFS {
 
   // Create a file
   touch(path) {
-   return this.mkPath("f", path);
+    return this.mkPath("f", path);
   }
 
   // Create a directory
   mkdir(path) {
-   return this.mkPath("d", path);
+    return this.mkPath("d", path);
   }
 
   // Hard link
@@ -436,7 +424,6 @@ class VFS {
 
 const fs = new VFS(
   new OFS([
-
     new OFS_Inode({
       links: 1,
       id: 0,
@@ -444,15 +431,15 @@ const fs = new VFS(
       files: {
         ".": 0,
         "..": 0,
-        "bin": 1,
-        "dev": 2,
-        "etc": 3,
-        "home": 4,
-        "lib": 5,
-        "log": 6,
-        "mnt": 7,
-        "tmp": 8,
-        "usr": 9
+        bin: 1,
+        dev: 2,
+        etc: 3,
+        home: 4,
+        lib: 5,
+        log: 6,
+        mnt: 7,
+        tmp: 8,
+        usr: 9
       }
     }),
 
@@ -545,55 +532,60 @@ const fs = new VFS(
         "..": 0
       }
     })
-
   ])
 );
 
 // Mount /lib
-fs.mount( new OFS([
-  new OFS_Inode({
-    links: 1,
-    id: 0,
-    type: "d",
-    files: {
-      ".": 0,
-      "..": 0,
-      "lib.js": 1
-    }
-  }),
+fs.mount(
+  new OFS([
+    new OFS_Inode({
+      links: 1,
+      id: 0,
+      type: "d",
+      files: {
+        ".": 0,
+        "..": 0,
+        "lib.js": 1
+      }
+    }),
 
-  new OFS_Inode({
-    links: 1,
-    type: "f",
-    perms: [true, true, true],
-    id: 1,
-/* lib.js */data: "\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}function readFile(){return open(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\").then(function(fd){return read(fd)})}function writeFile(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\",data=arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\";return open(path).then(function(fd){return write(fd,data)})}function domRead(){return readFile(\"/dev/dom/\"+(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\"))}function domWrite(){return writeFile(\"/dev/dom/\"+(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\"),arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\")}"/* end */
-  })
-]), "/lib" );
+    new OFS_Inode({
+      links: 1,
+      type: "f",
+      perms: [true, true, true],
+      id: 1,
+      /* lib.js */ data: "\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}function readFile(){return open(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\").then(function(fd){return read(fd)})}function writeFile(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\",data=arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\";return open(path).then(function(fd){return write(fd,data)})}function domRead(){return readFile(\"/dev/dom/\"+(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\"))}function domWrite(){return writeFile(\"/dev/dom/\"+(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\"),arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\")}"/* end */
+    })
+  ]),
+  "/lib"
+);
 
 // Mount /bin
-fs.mount( new OFS([
-  new OFS_Inode({
-    links: 1,
-    id: 0,
-    type: "d",
-    files: {
-      ".": 0,
-      "..": 0,
-      "fsh": 1
-    }
-  }),
+fs.mount(
+  new OFS([
+    new OFS_Inode({
+      links: 1,
+      id: 0,
+      type: "d",
+      files: {
+        ".": 0,
+        "..": 0,
+        fsh: 1
+      }
+    }),
 
-  new OFS_Inode({
-    links: 1,
-    type: "f",
-    perms: [true, false, true],
-    id: 1,
-/* fsh */data: "\"use strict\";function tokenizeLine(){for(var line=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String),i=0;i<tokens.length;i++){var token=tokens[i];tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2])}return tokens}function lex(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",allTokens=[],lines=input.match(/(\\\\;|[^;])+/g),i=0;i<lines.length;i++){var tokens=tokenizeLine(lines[i]);allTokens.push(tokens)}return allTokens}function parseCommand(tokens){var command={type:\"simple\"};return command.argv=tokens,command.argc=tokens.length,command.name=tokens[0],command}function parse(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",AST={type:\"script\",commands:[]},commands=lex(input),i=0;i<commands.length;i++){var parsed=parseCommand(commands[i]);AST.commands[i]=parsed}return AST}parse(\"echo hello, world\");"/* end */
-  })
-]), "/bin" );
+    new OFS_Inode({
+      links: 1,
+      type: "f",
+      perms: [true, false, true],
+      id: 1,
+      /* fsh */ data: "\"use strict\";function tokenizeLine(){for(var line=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String),i=0;i<tokens.length;i++){var token=tokens[i];tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2])}return tokens}function lex(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",allTokens=[],lines=input.match(/(\\\\;|[^;])+/g),i=0;i<lines.length;i++){var tokens=tokenizeLine(lines[i]);allTokens.push(tokens)}return allTokens}function parseCommand(tokens){var command={type:\"simple\"};return command.argv=tokens,command.argc=tokens.length,command.name=tokens[0],command}function parse(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",AST={type:\"script\",commands:[]},commands=lex(input),i=0;i<commands.length;i++){var parsed=parseCommand(commands[i]);AST.commands[i]=parsed}return AST}parse(\"echo hello, world\");"/* end */
+    })
+  ]),
+  "/bin"
+);
 
-fs.mount( new DOMFS(), "/dev/dom" );
+fs.mount(new DOMFS(), "/dev/dom");
 
 class FileDescriptor {
   constructor(path) {
@@ -613,7 +605,7 @@ class FileDescriptor {
   // Return read data
   read() {
     // Check read permission
-    if (! this.perms[0]) {
+    if (!this.perms[0]) {
       return -1;
     }
     if (this.type === "inode") {
@@ -623,11 +615,9 @@ class FileDescriptor {
         return -1;
       }
       return data;
-    }
-    else if (this.type === "element") {
+    } else if (this.type === "element") {
       return this.container.innerHTML;
-    }
-    else {
+    } else {
       return -1;
     }
   }
@@ -635,18 +625,16 @@ class FileDescriptor {
   // Write data out
   write(data) {
     // Check write permission
-    if (! this.perms[1]) {
+    if (!this.perms[1]) {
       return -1;
     }
     if (this.type === "inode") {
       this.container.data = data;
       return data;
-    }
-    else if (this.type === "element") {
+    } else if (this.type === "element") {
       this.container.innerHTML = data;
       return data;
-    }
-    else {
+    } else {
       return -1;
     }
   }
@@ -654,36 +642,32 @@ class FileDescriptor {
   // View "directory" contents or return null
   dir() {
     // Check read permission
-    if (! this.perms[0]) {
+    if (!this.perms[0]) {
       return -1;
     }
     if (this.type === "inode") {
-      if ( this.container.type === "f" ) {
-        return Object.keys( this.container.files );
-      }
-      else {
+      if (this.container.type === "f") {
+        return Object.keys(this.container.files);
+      } else {
         return null;
       }
-    }
-    else if (this.type === "element") {
-      if ( this.container.hasChildNodes() ) {
+    } else if (this.type === "element") {
+      if (this.container.hasChildNodes()) {
         const children = this.container.children;
         const elements = [];
         for (let i = 0; i < children.length; i++) {
           let el = children[i].localName;
           let id = children[i].id;
           let classes = children[i].className.split(" ").join(".");
-          elements.push( el + id + classes );
+          elements.push(el + id + classes);
           // Child by index
           elements.push(i + 1);
         }
         return elements;
-      }
-      else {
+      } else {
         return null;
       }
-    }
-    else {
+    } else {
       return -1;
     }
   }
@@ -692,22 +676,22 @@ class FileDescriptor {
 const utils = {};
 
 utils.genUUID = function() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(char) {
-    let r = Math.random() * 16|0, v = char === "x" ? r : (r&0x3|0x8);
-    return v.toString(16);
-  });
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+    /[xy]/g,
+    function(char) {
+      let r = Math.random() * 16 | 0, v = char === "x" ? r : r & 0x3 | 0x8;
+      return v.toString(16);
+    }
+  );
 };
 
 utils.mkWorker = function(scriptStr) {
-  const blob = new Blob(
-    [scriptStr],
-    {type: "application/javascript"}
-  );
+  const blob = new Blob([scriptStr], { type: "application/javascript" });
   const uri = URL.createObjectURL(blob);
   return new Worker(uri);
 };
 
-utils.openLocalFile = function(readAs="readAsText") {
+utils.openLocalFile = function(readAs = "readAsText") {
   const input = document.createElement("input");
   input.type = "file";
   input.click();
@@ -717,7 +701,7 @@ utils.openLocalFile = function(readAs="readAsText") {
       const reader = new FileReader();
       reader[readAs](file);
       reader.onloadend = function() {
-        resolve( reader.result );
+        resolve(reader.result);
       };
     };
   });
@@ -725,7 +709,7 @@ utils.openLocalFile = function(readAs="readAsText") {
 
 utils.http = function(uri, method = "GET") {
   return new Promise((resolve, reject) => {
-    if (! uri instanceof String) {
+    if (!uri instanceof String) {
       reject("URI invalid");
     }
     const xhr = new XMLHttpRequest();
@@ -733,8 +717,7 @@ utils.http = function(uri, method = "GET") {
     xhr.onload = function() {
       if (xhr.status < 300 && xhr.status >= 200) {
         resolve(xhr.response);
-      }
-      else {
+      } else {
         reject(xhr.status + " " + xhr.statusText);
       }
     };
@@ -750,21 +733,22 @@ const flags = {};
 // Example output: ["Browser", "xx.xx.xx"]
 function browserInfo() {
   const ua = navigator.userAgent;
-  const matches = ua.match( /(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d.]+)/i ) || [];
-  if ( (/trident/i).test(matches[1]) ) {
-    const tem = ua.match( /\brv[ :]+([\d.]+)/g ) || "";
-    return [ "IE", tem[1] ];
+  const matches = ua.match(
+    /(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d.]+)/i
+  ) || [];
+  if (/trident/i.test(matches[1])) {
+    const tem = ua.match(/\brv[ :]+([\d.]+)/g) || "";
+    return ["IE", tem[1]];
   }
-  if ( matches[1] === "Chrome" ) {
-    const tem = ua.match( /\b(OPR|Edge)\/([\d.]+)/ );
+  if (matches[1] === "Chrome") {
+    const tem = ua.match(/\b(OPR|Edge)\/([\d.]+)/);
     if (tem) {
-      return [ "Opera", tem[1] ];
+      return ["Opera", tem[1]];
     }
   }
-  if ( matches[2] ) {
-    return [ matches[1], matches[2] ];
-  }
-  else {
+  if (matches[2]) {
+    return [matches[1], matches[2]];
+  } else {
     return [navigator.appName, navigator.appVersion];
   }
 }
@@ -782,9 +766,9 @@ class Process {
     this.libs = [];
     this.cwd = "/";
     this.env = {
-      "SHELL": "fsh",
-      "PATH": "/sbin:/bin",
-      "HOME": "/home"
+      SHELL: "fsh",
+      PATH: "/sbin:/bin",
+      HOME: "/home"
     };
     this.image = image;
     // The worker is where the process is actually executed
@@ -793,7 +777,9 @@ class Process {
     this.worker = utils.mkWorker(libjs + image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
-    this.worker.addEventListener( "message", msg => { this.messageHandler(msg); });
+    this.worker.addEventListener("message", msg => {
+      this.messageHandler(msg);
+    });
   }
 
   // Handle messages coming from the worker
@@ -808,9 +794,8 @@ class Process {
       if (obj.id !== undefined && obj.args instanceof Array) {
         sys[obj.name](this, obj.id, obj.args);
       }
-    }
-    // The message is not valid because of the type or name
-    else {
+    } else {
+      // The message is not valid because of the type or name
       const error = {
         status: "error",
         reason: "Invalid request type and/or name",
@@ -825,16 +810,15 @@ class Process {
     const fd = new FileDescriptor(path);
     if (fd.container) {
       return true;
-    }
-    else {
-      return false
+    } else {
+      return false;
     }
   }
 
   // Where open() actually runs
   // Return a file descriptor
   open(path) {
-    if (! this.access(path)) {
+    if (!this.access(path)) {
       return -1;
     }
     const fd = new FileDescriptor(path);
@@ -855,7 +839,7 @@ class ProcessTable {
     if (init === undefined) {
       throw new Error("Init process must be defined");
     }
-    this.list = [ null, init ];
+    this.list = [null, init];
     this.nextPID = 2;
   }
 
@@ -865,7 +849,7 @@ class ProcessTable {
   }
 }
 
-var proc = new ProcessTable( new Process() );
+var proc = new ProcessTable(new Process());
 
 const sys = {};
 
@@ -891,18 +875,18 @@ sys.pass = function(process, msgID, args) {
 
 // Send a dynamic library straight to the process
 sys.load = function(process, msgID, args) {
-  const data = process.load( args[0] );
+  const data = process.load(args[0]);
   sys.pass(process, msgID, [data]);
 };
 
 // Spawn a new process from an executable image
 sys.spawn = function(process, msgID, args) {
-  if (! args[1] instanceof Array) {
+  if (!args[1] instanceof Array) {
     sys.fail(process, msgID, ["Second argument should be the array argv"]);
     return -1;
   }
   const newProcess = new Process(args[0], args[1]);
-  const pid = proc.add( newProcess );
+  const pid = proc.add(newProcess);
   sys.pass(process, msgID, [pid]);
 };
 
@@ -916,8 +900,7 @@ sys.access = function(process, msgID, args) {
   // If the first character is a "/", then working dir does not matter
   if (args[0][0] === "/") {
     path = args[0];
-  }
-  else {
+  } else {
     path = process.cwd + "/" + args[0];
   }
   const result = process.access(path);
@@ -934,8 +917,7 @@ sys.open = function(process, msgID, args) {
   // If the first character is a "/", then working dir does not matter
   if (args[0][0] === "/") {
     path = args[0];
-  }
-  else {
+  } else {
     path = process.cwd + "/" + args[0];
   }
   const result = process.open(path);
@@ -952,7 +934,7 @@ sys.read = function(process, msgID, args) {
     sys.fail(process, msgID, ["File Descriptor should be postive"]);
     return -1;
   }
-  const result = process.fds[ args[0] ].read();
+  const result = process.fds[args[0]].read();
   sys.pass(process, msgID, [result]);
 };
 
@@ -966,47 +948,47 @@ sys.write = function(process, msgID, args) {
     sys.fail(process, msgID, ["File Descriptor should be postive"]);
     return -1;
   }
-  const result = process.fds[ args[0] ].write( args[1] );
+  const result = process.fds[args[0]].write(args[1]);
   sys.pass(process, msgID, [result]);
 };
 
 // Tell what directory we are in
 sys.pwd = function(process, msgID, args) {
-  sys.pass(process, msgID, [ process.cwd ]);
+  sys.pass(process, msgID, [process.cwd]);
 };
 
 // Change the current working directory
 sys.chdir = function(process, msgID, args) {
-  if (! args[0] instanceof String) {
+  if (!args[0] instanceof String) {
     sys.fail(process, msgID, ["Argument should be a string"]);
     return -1;
   }
   process.cwd = args[0];
-  sys.pass(process, msgID, [ process.cwd ]);
+  sys.pass(process, msgID, [process.cwd]);
 };
 
 // Get environment variable
 sys.getenv = function(process, msgID, args) {
-  if (! args[0] instanceof String) {
+  if (!args[0] instanceof String) {
     sys.fail(process, msgID, ["Variable name should be a string"]);
     return -1;
   }
-  const value = process.env[ args[0] ];
-  sys.pass(process, msgID, [ value ]);
+  const value = process.env[args[0]];
+  sys.pass(process, msgID, [value]);
 };
 
 // Set environment variable
 sys.setenv = function(process, msgID, args) {
-  if (! args[0] instanceof String) {
+  if (!args[0] instanceof String) {
     sys.fail(process, msgID, ["Variable name should be a string"]);
     return -1;
   }
-  if (! args[1] instanceof String) {
+  if (!args[1] instanceof String) {
     sys.fail(process, msgID, ["Variable value should be a string"]);
     return -1;
   }
-  const value = process.env[ args[0] ] = args[1];
-  sys.pass(process, msgID, [ value ]);
+  const value = (process.env[args[0]] = args[1]);
+  sys.pass(process, msgID, [value]);
 };
 
 var main = {
@@ -1022,4 +1004,3 @@ var main = {
 return main;
 
 })));
-//# sourceMappingURL=kernel.js.map
