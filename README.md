@@ -16,8 +16,7 @@ All distributed files are in the `/dist` directory.
 dist
 ├── fauxOS.es6.js     => No transpilation done
 ├── fauxOS.js         => Transpiled
-├── fauxOS.min.js     => Transpiled and minified
-└── kernel.js.map     => Source map
+└── fauxOS.min.js     => Transpiled and minified
 ```
 
 #### CDN's

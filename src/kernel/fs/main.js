@@ -5,7 +5,6 @@ import VFS from "./vfs/main.js";
 
 const fs = new VFS(
   new OFS([
-
     new OFS_Inode({
       links: 1,
       id: 0,
@@ -13,15 +12,15 @@ const fs = new VFS(
       files: {
         ".": 0,
         "..": 0,
-        "bin": 1,
-        "dev": 2,
-        "etc": 3,
-        "home": 4,
-        "lib": 5,
-        "log": 6,
-        "mnt": 7,
-        "tmp": 8,
-        "usr": 9
+        bin: 1,
+        dev: 2,
+        etc: 3,
+        home: 4,
+        lib: 5,
+        log: 6,
+        mnt: 7,
+        tmp: 8,
+        usr: 9
       }
     }),
 
@@ -114,54 +113,59 @@ const fs = new VFS(
         "..": 0
       }
     })
-
   ])
 );
 
 // Mount /lib
-fs.mount( new OFS([
-  new OFS_Inode({
-    links: 1,
-    id: 0,
-    type: "d",
-    files: {
-      ".": 0,
-      "..": 0,
-      "lib.js": 1
-    }
-  }),
+fs.mount(
+  new OFS([
+    new OFS_Inode({
+      links: 1,
+      id: 0,
+      type: "d",
+      files: {
+        ".": 0,
+        "..": 0,
+        "lib.js": 1
+      }
+    }),
 
-  new OFS_Inode({
-    links: 1,
-    type: "f",
-    perms: [true, true, true],
-    id: 1,
-/* lib.js */data: ""/* end */
-  })
-]), "/lib" );
+    new OFS_Inode({
+      links: 1,
+      type: "f",
+      perms: [true, true, true],
+      id: 1,
+      /* lib.js */ data: "" /* end */
+    })
+  ]),
+  "/lib"
+);
 
 // Mount /bin
-fs.mount( new OFS([
-  new OFS_Inode({
-    links: 1,
-    id: 0,
-    type: "d",
-    files: {
-      ".": 0,
-      "..": 0,
-      "fsh": 1
-    }
-  }),
+fs.mount(
+  new OFS([
+    new OFS_Inode({
+      links: 1,
+      id: 0,
+      type: "d",
+      files: {
+        ".": 0,
+        "..": 0,
+        fsh: 1
+      }
+    }),
 
-  new OFS_Inode({
-    links: 1,
-    type: "f",
-    perms: [true, false, true],
-    id: 1,
-/* fsh */data: ""/* end */
-  })
-]), "/bin" );
+    new OFS_Inode({
+      links: 1,
+      type: "f",
+      perms: [true, false, true],
+      id: 1,
+      /* fsh */ data: "" /* end */
+    })
+  ]),
+  "/bin"
+);
 
-fs.mount( new DOMFS(), "/dev/dom" );
+fs.mount(new DOMFS(), "/dev/dom");
 
 export default fs;

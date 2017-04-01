@@ -45,15 +45,14 @@ export default class VFS {
   // Resolve a path to the fs provided data container
   // resolveHard decides if following symbolic links and the like
   // should or should not happen, default is to follow
-  resolve(path, resolveHard=false) {
+  resolve(path, resolveHard = false) {
     const pathname = new Pathname(path);
     const mountPoint = this.mountPoint(pathname.clean);
     const fs = this.mounts[mountPoint];
-    const fsLocalPath = pathname.clean.substring( mountPoint.length );
+    const fsLocalPath = pathname.clean.substring(mountPoint.length);
     if (resolveHard) {
       return fs.resolveHard(fsLocalPath);
-    }
-    else {
+    } else {
       return fs.resolve(fsLocalPath);
     }
   }
@@ -63,26 +62,22 @@ export default class VFS {
     const container = this.resolve(path);
     if (container instanceof OFS_Inode) {
       return "inode";
-    }
-    else if (container instanceof HTMLElement) {
-      return "element"
-    }
-    else {
+    } else if (container instanceof HTMLElement) {
+      return "element";
+    } else {
       return "unknown";
     }
   }
 
   // Get permissions
-  perms(path, type=this.type(path)) {
+  perms(path, type = this.type(path)) {
     if (type === "inode") {
       return this.resolve(path).perms;
-    }
-    // Read and write only for HTML elements
-    else if (type === "element") {
+    } else if (type === "element") {
+      // Read and write only for HTML elements
       return [true, true, false];
-    }
-    // RW for anything unset
-    else {
+    } else {
+      // RW for anything unset
       return [true, true, false];
     }
   }
@@ -98,7 +93,7 @@ export default class VFS {
   // Make a path, and add it as a file or directory
   // We won't check if the path already exists, we don't care
   // For hard or symbolic links, target should be the path to redirect to
-  mkPath(type, path, target=null) {
+  mkPath(type, path, target = null) {
     const pathname = new Pathname(path);
     const mountPoint = this.mountPoint(pathname.clean);
     const fs = this.mounts[mountPoint];
@@ -106,22 +101,18 @@ export default class VFS {
     let addedObj = -1;
     if (type === "f") {
       addedObj = fs.mkFile(pathname.clean);
-    }
-    else if (type === "d") {
+    } else if (type === "d") {
       addedObj = fs.mkDir(pathname.clean);
-    }
-    else if (type === "l" && target !== null) {
+    } else if (type === "l" && target !== null) {
       const targetObj = this.resolve(target);
-      if ( targetObj < 0 ) {
+      if (targetObj < 0) {
         // Target data container to hard link not resolved
         return -1;
       }
       addedObj = fs.mkLink(targetObj, pathname.clean);
-    }
-    else if (type === "sl" && target !== null) {
+    } else if (type === "sl" && target !== null) {
       addedObj = fs.mkSymLink(target, pathname.clean);
-    }
-    else {
+    } else {
       // Unknown type
       return -1;
     }
@@ -132,12 +123,12 @@ export default class VFS {
 
   // Create a file
   touch(path) {
-   return this.mkPath("f", path);
+    return this.mkPath("f", path);
   }
 
   // Create a directory
   mkdir(path) {
-   return this.mkPath("d", path);
+    return this.mkPath("d", path);
   }
 
   // Hard link

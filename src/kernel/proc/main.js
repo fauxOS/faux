@@ -5,7 +5,7 @@ class ProcessTable {
     if (init === undefined) {
       throw new Error("Init process must be defined");
     }
-    this.list = [ null, init ];
+    this.list = [null, init];
     this.nextPID = 2;
   }
 
@@ -15,4 +15,4 @@ class ProcessTable {
   }
 }
 
-export default new ProcessTable( new Process() );
+export default new ProcessTable(new Process());

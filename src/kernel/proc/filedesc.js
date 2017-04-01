@@ -19,7 +19,7 @@ export default class FileDescriptor {
   // Return read data
   read() {
     // Check read permission
-    if (! this.perms[0]) {
+    if (!this.perms[0]) {
       return -1;
     }
     if (this.type === "inode") {
@@ -29,11 +29,9 @@ export default class FileDescriptor {
         return -1;
       }
       return data;
-    }
-    else if (this.type === "element") {
+    } else if (this.type === "element") {
       return this.container.innerHTML;
-    }
-    else {
+    } else {
       return -1;
     }
   }
@@ -41,18 +39,16 @@ export default class FileDescriptor {
   // Write data out
   write(data) {
     // Check write permission
-    if (! this.perms[1]) {
+    if (!this.perms[1]) {
       return -1;
     }
     if (this.type === "inode") {
       this.container.data = data;
       return data;
-    }
-    else if (this.type === "element") {
+    } else if (this.type === "element") {
       this.container.innerHTML = data;
       return data;
-    }
-    else {
+    } else {
       return -1;
     }
   }
@@ -60,36 +56,32 @@ export default class FileDescriptor {
   // View "directory" contents or return null
   dir() {
     // Check read permission
-    if (! this.perms[0]) {
+    if (!this.perms[0]) {
       return -1;
     }
     if (this.type === "inode") {
-      if ( this.container.type === "f" ) {
-        return Object.keys( this.container.files );
-      }
-      else {
+      if (this.container.type === "f") {
+        return Object.keys(this.container.files);
+      } else {
         return null;
       }
-    }
-    else if (this.type === "element") {
-      if ( this.container.hasChildNodes() ) {
+    } else if (this.type === "element") {
+      if (this.container.hasChildNodes()) {
         const children = this.container.children;
         const elements = [];
         for (let i = 0; i < children.length; i++) {
           let el = children[i].localName;
           let id = children[i].id;
           let classes = children[i].className.split(" ").join(".");
-          elements.push( el + id + classes );
+          elements.push(el + id + classes);
           // Child by index
           elements.push(i + 1);
         }
         return elements;
-      }
-      else {
+      } else {
         return null;
       }
-    }
-    else {
+    } else {
       return -1;
     }
   }

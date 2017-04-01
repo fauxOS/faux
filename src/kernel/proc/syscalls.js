@@ -11,7 +11,7 @@ sys.fail = function(process, msgID, args) {
     id: msgID
   };
   process.worker.postMessage(error);
-}
+};
 
 // Throw a success result
 sys.pass = function(process, msgID, args) {
@@ -21,24 +21,24 @@ sys.pass = function(process, msgID, args) {
     id: msgID
   };
   process.worker.postMessage(result);
-}
+};
 
 // Send a dynamic library straight to the process
 sys.load = function(process, msgID, args) {
-  const data = process.load( args[0] );
+  const data = process.load(args[0]);
   sys.pass(process, msgID, [data]);
-}
+};
 
 // Spawn a new process from an executable image
 sys.spawn = function(process, msgID, args) {
-  if (! args[1] instanceof Array) {
+  if (!args[1] instanceof Array) {
     sys.fail(process, msgID, ["Second argument should be the array argv"]);
     return -1;
   }
   const newProcess = new Process(args[0], args[1]);
-  const pid = proc.add( newProcess );
+  const pid = proc.add(newProcess);
   sys.pass(process, msgID, [pid]);
-}
+};
 
 // Check file access
 sys.access = function(process, msgID, args) {
@@ -50,13 +50,12 @@ sys.access = function(process, msgID, args) {
   // If the first character is a "/", then working dir does not matter
   if (args[0][0] === "/") {
     path = args[0];
-  }
-  else {
+  } else {
     path = process.cwd + "/" + args[0];
   }
   const result = process.access(path);
   sys.pass(process, msgID, [result]);
-}
+};
 
 // Resolve a path into a file descriptor, and add it to the table
 sys.open = function(process, msgID, args) {
@@ -68,13 +67,12 @@ sys.open = function(process, msgID, args) {
   // If the first character is a "/", then working dir does not matter
   if (args[0][0] === "/") {
     path = args[0];
-  }
-  else {
+  } else {
     path = process.cwd + "/" + args[0];
   }
   const result = process.open(path);
   sys.pass(process, msgID, [result]);
-}
+};
 
 // Read data from a file descriptor
 sys.read = function(process, msgID, args) {
@@ -86,9 +84,9 @@ sys.read = function(process, msgID, args) {
     sys.fail(process, msgID, ["File Descriptor should be postive"]);
     return -1;
   }
-  const result = process.fds[ args[0] ].read();
+  const result = process.fds[args[0]].read();
   sys.pass(process, msgID, [result]);
-}
+};
 
 // Write data to a file descriptor
 sys.write = function(process, msgID, args) {
@@ -100,47 +98,47 @@ sys.write = function(process, msgID, args) {
     sys.fail(process, msgID, ["File Descriptor should be postive"]);
     return -1;
   }
-  const result = process.fds[ args[0] ].write( args[1] );
+  const result = process.fds[args[0]].write(args[1]);
   sys.pass(process, msgID, [result]);
-}
+};
 
 // Tell what directory we are in
 sys.pwd = function(process, msgID, args) {
-  sys.pass(process, msgID, [ process.cwd ]);
-}
+  sys.pass(process, msgID, [process.cwd]);
+};
 
 // Change the current working directory
 sys.chdir = function(process, msgID, args) {
-  if (! args[0] instanceof String) {
+  if (!args[0] instanceof String) {
     sys.fail(process, msgID, ["Argument should be a string"]);
     return -1;
   }
   process.cwd = args[0];
-  sys.pass(process, msgID, [ process.cwd ]);
-}
+  sys.pass(process, msgID, [process.cwd]);
+};
 
 // Get environment variable
 sys.getenv = function(process, msgID, args) {
-  if (! args[0] instanceof String) {
+  if (!args[0] instanceof String) {
     sys.fail(process, msgID, ["Variable name should be a string"]);
     return -1;
   }
-  const value = process.env[ args[0] ];
-  sys.pass(process, msgID, [ value ]);
-}
+  const value = process.env[args[0]];
+  sys.pass(process, msgID, [value]);
+};
 
 // Set environment variable
 sys.setenv = function(process, msgID, args) {
-  if (! args[0] instanceof String) {
+  if (!args[0] instanceof String) {
     sys.fail(process, msgID, ["Variable name should be a string"]);
     return -1;
   }
-  if (! args[1] instanceof String) {
+  if (!args[1] instanceof String) {
     sys.fail(process, msgID, ["Variable value should be a string"]);
     return -1;
   }
-  const value = process.env[ args[0] ] = args[1];
-  sys.pass(process, msgID, [ value ]);
-}
+  const value = (process.env[args[0]] = args[1]);
+  sys.pass(process, msgID, [value]);
+};
 
 export default sys;

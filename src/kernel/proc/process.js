@@ -11,9 +11,9 @@ export default class Process {
     this.libs = [];
     this.cwd = "/";
     this.env = {
-      "SHELL": "fsh",
-      "PATH": "/sbin:/bin",
-      "HOME": "/home"
+      SHELL: "fsh",
+      PATH: "/sbin:/bin",
+      HOME: "/home"
     };
     this.image = image;
     // The worker is where the process is actually executed
@@ -22,7 +22,9 @@ export default class Process {
     this.worker = utils.mkWorker(libjs + image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
-    this.worker.addEventListener( "message", msg => { this.messageHandler(msg) });
+    this.worker.addEventListener("message", msg => {
+      this.messageHandler(msg);
+    });
   }
 
   // Handle messages coming from the worker
@@ -37,9 +39,8 @@ export default class Process {
       if (obj.id !== undefined && obj.args instanceof Array) {
         sys[obj.name](this, obj.id, obj.args);
       }
-    }
-    // The message is not valid because of the type or name
-    else {
+    } else {
+      // The message is not valid because of the type or name
       const error = {
         status: "error",
         reason: "Invalid request type and/or name",
@@ -54,16 +55,15 @@ export default class Process {
     const fd = new FileDescriptor(path);
     if (fd.container) {
       return true;
-    }
-    else {
-      return false
+    } else {
+      return false;
     }
   }
 
   // Where open() actually runs
   // Return a file descriptor
   open(path) {
-    if (! this.access(path)) {
+    if (!this.access(path)) {
       return -1;
     }
     const fd = new FileDescriptor(path);

@@ -1,22 +1,22 @@
 const utils = {};
 
 utils.genUUID = function() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(char) {
-    let r = Math.random() * 16|0, v = char === "x" ? r : (r&0x3|0x8);
-    return v.toString(16);
-  });
-}
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+    /[xy]/g,
+    function(char) {
+      let r = Math.random() * 16 | 0, v = char === "x" ? r : r & 0x3 | 0x8;
+      return v.toString(16);
+    }
+  );
+};
 
 utils.mkWorker = function(scriptStr) {
-  const blob = new Blob(
-    [scriptStr],
-    {type: "application/javascript"}
-  );
+  const blob = new Blob([scriptStr], { type: "application/javascript" });
   const uri = URL.createObjectURL(blob);
   return new Worker(uri);
-}
+};
 
-utils.openLocalFile = function(readAs="readAsText") {
+utils.openLocalFile = function(readAs = "readAsText") {
   const input = document.createElement("input");
   input.type = "file";
   input.click();
@@ -26,15 +26,15 @@ utils.openLocalFile = function(readAs="readAsText") {
       const reader = new FileReader();
       reader[readAs](file);
       reader.onloadend = function() {
-        resolve( reader.result );
+        resolve(reader.result);
       };
     };
   });
-}
+};
 
 utils.http = function(uri, method = "GET") {
   return new Promise((resolve, reject) => {
-    if (! uri instanceof String) {
+    if (!uri instanceof String) {
       reject("URI invalid");
     }
     const xhr = new XMLHttpRequest();
@@ -42,16 +42,15 @@ utils.http = function(uri, method = "GET") {
     xhr.onload = function() {
       if (xhr.status < 300 && xhr.status >= 200) {
         resolve(xhr.response);
-      }
-      else {
+      } else {
         reject(xhr.status + " " + xhr.statusText);
       }
     };
     xhr.onerror = function(err) {
       reject(err);
-    }
+    };
     xhr.send();
   });
-}
+};
 
 export default utils;

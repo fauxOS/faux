@@ -1,5 +1,5 @@
 // Generate a new random message id
-function newID(length=8) {
+function newID(length = 8) {
   const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
   let id = "";
   for (let i = 0; i < length; i++) {
@@ -28,8 +28,7 @@ function call(name, args) {
       if (msg.data.id === id) {
         if (msg.data.status === "success") {
           resolve(msg.data.result);
-        }
-        else {
+        } else {
           reject(msg.data.reason);
         }
       }
@@ -47,7 +46,7 @@ function load(path) {
 }
 
 // Spawn a new process from an executable image
-function spawn(image, argv=[]) {
+function spawn(image, argv = []) {
   return call("spawn", [image, argv]);
 }
 
@@ -99,13 +98,13 @@ function setenv(varName) {
 
 // Helper functions
 
-function readFile(path="/") {
+function readFile(path = "/") {
   return open(path).then(fd => {
     return read(fd);
   });
 }
 
-function writeFile(path="/", data="") {
+function writeFile(path = "/", data = "") {
   return open(path).then(fd => {
     return write(fd, data);
   });

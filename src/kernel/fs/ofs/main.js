@@ -38,11 +38,11 @@ export default class OFS {
       }
       trace.push(inode);
     }
-    return this.drive[ trace.pop() ];
+    return this.drive[trace.pop()];
   }
 
   // Resolve and return the inode, follow symbolic links
-  resolve(path, redirectCount=0) {
+  resolve(path, redirectCount = 0) {
     // Don't follow if we get to 50 symbolic link redirects
     if (redirectCount >= 50) {
       // Max symbolic link redirect count reached (50)
@@ -63,9 +63,9 @@ export default class OFS {
   // Add a new inode to the disk
   // Defaults to just adding an inode, but if you pass a parent directory inode in,
   // it will add `name` as an entry in `parentInode`
-  addInode(type, name=null, parentInode=null) {
+  addInode(type, name = null, parentInode = null) {
     // Reject if name contains a "/"
-    if ( name.match("/") ) {
+    if (name.match("/")) {
       return -1;
     }
     const id = this.drive.length;
@@ -106,7 +106,7 @@ export default class OFS {
     inode.files = {
       ".": inode.id,
       "..": parentInode.id
-    }
+    };
     return inode;
   }
 
@@ -116,7 +116,7 @@ export default class OFS {
     const parentInode = this.resolve(pathname.parent);
     const name = pathname.name;
     // Same as in addInode, not very DRY I know...
-    if ( name.match("/") ) {
+    if (name.match("/")) {
       return -1;
     }
     parentInode.files[name] = inode.id;
@@ -142,7 +142,7 @@ export default class OFS {
     const pathname = new Pathname(path);
     const parentInode = this.resolve(pathname.parent);
     const name = pathname.name;
-    if ( parentInode < 0 ) {
+    if (parentInode < 0) {
       return -1;
     }
     return delete parentInode.files[name];
