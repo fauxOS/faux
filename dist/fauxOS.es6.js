@@ -807,10 +807,14 @@ class Process {
 
   // Check if we can access/it exists
   access(path) {
-    const fd = new FileDescriptor(path);
-    if (fd.container) {
-      return true;
-    } else {
+    try {
+      const fd = new FileDescriptor(path);
+      if (fd.container) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (err) {
       return false;
     }
   }
@@ -931,7 +935,7 @@ sys.read = function(process, msgID, args) {
     return -1;
   }
   if (args[0] < 0) {
-    sys.fail(process, msgID, ["File Descriptor should be postive"]);
+    sys.fail(process, msgID, ["File Descriptor should be postive, check file name"]);
     return -1;
   }
   const result = process.fds[args[0]].read();
@@ -945,7 +949,7 @@ sys.write = function(process, msgID, args) {
     return -1;
   }
   if (args[0] < 0) {
-    sys.fail(process, msgID, ["File Descriptor should be postive"]);
+    sys.fail(process, msgID, ["File Descriptor should be postive, check file name"]);
     return -1;
   }
   const result = process.fds[args[0]].write(args[1]);

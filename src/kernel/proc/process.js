@@ -52,10 +52,14 @@ export default class Process {
 
   // Check if we can access/it exists
   access(path) {
-    const fd = new FileDescriptor(path);
-    if (fd.container) {
-      return true;
-    } else {
+    try {
+      const fd = new FileDescriptor(path);
+      if (fd.container) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (err) {
       return false;
     }
   }

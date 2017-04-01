@@ -22,10 +22,10 @@
   },
   "scripts": {
     "format": "prettier --write 'src/**/*.js'",
-    "build": "gulp",
-    "dev": "gulp",
-    "clean": "npm cache clear && rm -rf node_modules/ && rm -rf build/ && rm -rf dist/",
-    "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer"
+    "build": "npm run format && gulp",
+    "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer &",
+    "dev": "npm run test && gulp watch",
+    "clean": "npm cache clear && rm -rf node_modules/ && rm -rf build/ && rm -rf dist/"
   },
   "keywords": [
     "faux",

@@ -139,3 +139,7 @@ gulp.task("default", ["lib", "fsh"], function() {
       .pipe(rename("fauxOS.min.js"))
       .pipe(gulp.dest("dist/")) );
 });
+
+gulp.task("watch", function() {
+  gulp.watch("src/**/*.js", ["default"]);
+});
