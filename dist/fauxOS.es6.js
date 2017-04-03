@@ -318,23 +318,22 @@ class VFS {
         }
       }
     }
-    const mountPoint = resolves.pop();
-    return mountPoint;
+    // The most relevent mount point will be the last one resolved
+    return resolves.pop();
   }
 
   // Resolve a path to the fs provided data container
-  // resolveHard decides if following symbolic links and the like
-  // should or should not happen, default is to follow
-  resolve(path, resolveHard = false) {
-    const pathname = new Pathname(path);
-    const mountPoint = this.mountPoint(pathname.clean);
+  resolve(path) {
+    const mountPoint = this.mountPoint(path);
     const fs = this.mounts[mountPoint];
-    const fsLocalPath = pathname.clean.substring(mountPoint.length);
-    if (resolveHard) {
-      return fs.resolveHard(fsLocalPath);
-    } else {
-      return fs.resolve(fsLocalPath);
-    }
+    // This strips off the mountpoint path from the given path,
+    // so that we can resolve relative to the filesystem's root.
+    // Example: given path is "/dev/dom/head/title"
+    // We find that the mountpoint is "/dev/dom".
+    // "/dev/dom/head/title" - "/dev/dom" = "/head/title"
+    // Pass "/head/title" to the local filesystem for it to resolve
+    const fsLocalPath = new Pathname(path).clean.substring(mountPoint.length);
+    return fs.resolve(fsLocalPath);
   }
 
   // Return data type of a file, could be "inode" for example
@@ -365,7 +364,7 @@ class VFS {
   // Remove a path
   rm(path) {
     const pathname = new Pathname(path);
-    const mountPoint = this.mountPoint(pathname.clean);
+    const mountPoint = this.mountPoint(path);
     const fs = this.mounts[mountPoint];
     return fs.rm(pathname.clean);
   }
@@ -375,7 +374,7 @@ class VFS {
   // For hard or symbolic links, target should be the path to redirect to
   mkPath(type, path, target = null) {
     const pathname = new Pathname(path);
-    const mountPoint = this.mountPoint(pathname.clean);
+    const mountPoint = this.mountPoint(path);
     const fs = this.mounts[mountPoint];
     // Assume failure until success
     let addedObj = -1;
@@ -598,7 +597,7 @@ class FileDescriptor {
     this.perms = fs.perms(this.path);
     // No permissions
     if (this.perms === [false, false, false]) {
-      throw new Error("All permissions set to false");
+      throw new Error("No access permissions");
     }
   }
 
@@ -612,7 +611,7 @@ class FileDescriptor {
       const data = this.container.data;
       // Directory or other
       if (data === undefined) {
-        return -1;
+        return -2;
       }
       return data;
     } else if (this.type === "element") {
@@ -640,7 +639,7 @@ class FileDescriptor {
   }
 
   // View "directory" contents or return null
-  dir() {
+  readdir() {
     // Check read permission
     if (!this.perms[0]) {
       return -1;
@@ -771,10 +770,10 @@ class Process {
       HOME: "/home"
     };
     this.image = image;
-    // The worker is where the process is actually executed
     // We auto-load the /lib/lib.js dynamic library
     const libjs = this.load("/lib/lib.js");
-    this.worker = utils.mkWorker(libjs + image);
+    // The worker is where the process is actually executed
+    this.worker = utils.mkWorker(libjs + "\n\n" + image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     this.worker.addEventListener("message", msg => {
@@ -783,23 +782,21 @@ class Process {
   }
 
   // Handle messages coming from the worker
-  messageHandler(msg) {
-    const obj = msg.data;
-    // This does some quick message format validation, but,
+  messageHandler(message) {
+    const msg = message.data;
+    // This does some quick message format validation, but
     // all value validation must be handled by the system call function itself
-    if (obj.type === "syscall" && obj.name in sys) {
+    if (msg.type === "syscall" && msg.name in sys) {
       // Execute a system call with given arguments
-      // Argument validation is not handled here
-      // But, we do validate the message format
-      if (obj.id !== undefined && obj.args instanceof Array) {
-        sys[obj.name](this, obj.id, obj.args);
+      if (msg.id !== undefined && msg.args instanceof Array) {
+        sys[msg.name](this, msg.id, msg.args);
       }
     } else {
       // The message is not valid because of the type or name
       const error = {
         status: "error",
-        reason: "Invalid request type and/or name",
-        id: obj.id
+        reason: "Invalid request - Rejected by the message handler",
+        id: msg.id
       };
       this.worker.postMessage(error);
     }

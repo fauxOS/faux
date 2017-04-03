@@ -12,7 +12,7 @@ export default class FileDescriptor {
     this.perms = fs.perms(this.path);
     // No permissions
     if (this.perms === [false, false, false]) {
-      throw new Error("All permissions set to false");
+      throw new Error("No access permissions");
     }
   }
 
@@ -26,7 +26,7 @@ export default class FileDescriptor {
       const data = this.container.data;
       // Directory or other
       if (data === undefined) {
-        return -1;
+        return -2;
       }
       return data;
     } else if (this.type === "element") {
@@ -54,7 +54,7 @@ export default class FileDescriptor {
   }
 
   // View "directory" contents or return null
-  dir() {
+  readdir() {
     // Check read permission
     if (!this.perms[0]) {
       return -1;

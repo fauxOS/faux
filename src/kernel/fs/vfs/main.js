@@ -38,23 +38,22 @@ export default class VFS {
         }
       }
     }
-    const mountPoint = resolves.pop();
-    return mountPoint;
+    // The most relevent mount point will be the last one resolved
+    return resolves.pop();
   }
 
   // Resolve a path to the fs provided data container
-  // resolveHard decides if following symbolic links and the like
-  // should or should not happen, default is to follow
-  resolve(path, resolveHard = false) {
-    const pathname = new Pathname(path);
-    const mountPoint = this.mountPoint(pathname.clean);
+  resolve(path) {
+    const mountPoint = this.mountPoint(path);
     const fs = this.mounts[mountPoint];
-    const fsLocalPath = pathname.clean.substring(mountPoint.length);
-    if (resolveHard) {
-      return fs.resolveHard(fsLocalPath);
-    } else {
-      return fs.resolve(fsLocalPath);
-    }
+    // This strips off the mountpoint path from the given path,
+    // so that we can resolve relative to the filesystem's root.
+    // Example: given path is "/dev/dom/head/title"
+    // We find that the mountpoint is "/dev/dom".
+    // "/dev/dom/head/title" - "/dev/dom" = "/head/title"
+    // Pass "/head/title" to the local filesystem for it to resolve
+    const fsLocalPath = new Pathname(path).clean.substring(mountPoint.length);
+    return fs.resolve(fsLocalPath);
   }
 
   // Return data type of a file, could be "inode" for example
@@ -85,7 +84,7 @@ export default class VFS {
   // Remove a path
   rm(path) {
     const pathname = new Pathname(path);
-    const mountPoint = this.mountPoint(pathname.clean);
+    const mountPoint = this.mountPoint(path);
     const fs = this.mounts[mountPoint];
     return fs.rm(pathname.clean);
   }
@@ -95,7 +94,7 @@ export default class VFS {
   // For hard or symbolic links, target should be the path to redirect to
   mkPath(type, path, target = null) {
     const pathname = new Pathname(path);
-    const mountPoint = this.mountPoint(pathname.clean);
+    const mountPoint = this.mountPoint(path);
     const fs = this.mounts[mountPoint];
     // Assume failure until success
     let addedObj = -1;

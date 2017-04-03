@@ -16,10 +16,10 @@ export default class Process {
       HOME: "/home"
     };
     this.image = image;
-    // The worker is where the process is actually executed
     // We auto-load the /lib/lib.js dynamic library
     const libjs = this.load("/lib/lib.js");
-    this.worker = utils.mkWorker(libjs + image);
+    // The worker is where the process is actually executed
+    this.worker = utils.mkWorker(libjs + "\n\n" + image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     this.worker.addEventListener("message", msg => {
@@ -28,23 +28,21 @@ export default class Process {
   }
 
   // Handle messages coming from the worker
-  messageHandler(msg) {
-    const obj = msg.data;
-    // This does some quick message format validation, but,
+  messageHandler(message) {
+    const msg = message.data;
+    // This does some quick message format validation, but
     // all value validation must be handled by the system call function itself
-    if (obj.type === "syscall" && obj.name in sys) {
+    if (msg.type === "syscall" && msg.name in sys) {
       // Execute a system call with given arguments
-      // Argument validation is not handled here
-      // But, we do validate the message format
-      if (obj.id !== undefined && obj.args instanceof Array) {
-        sys[obj.name](this, obj.id, obj.args);
+      if (msg.id !== undefined && msg.args instanceof Array) {
+        sys[msg.name](this, msg.id, msg.args);
       }
     } else {
       // The message is not valid because of the type or name
       const error = {
         status: "error",
-        reason: "Invalid request type and/or name",
-        id: obj.id
+        reason: "Invalid request - Rejected by the message handler",
+        id: msg.id
       };
       this.worker.postMessage(error);
     }
