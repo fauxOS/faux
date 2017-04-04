@@ -36,6 +36,8 @@ self.onmessage = function(msg) {
 var callback = console.log;
 ```
 
+## Promises
+
 Writing any program like this would be outrageous, so the messaging system was abstracted away completely.
 This library prefers promises, so that it is easy to chain operations and system calls. Below
 is the same `open()`, but cleaned up and with error handling.
@@ -47,8 +49,23 @@ open("/home/.fshrc").then(console.log);
 
 // Error handling is easy too, replace `console.warn`
 
-open(null).catch(console.warn).then(console.log);
+open(null).then(console.log).catch(console.warn);
 ```
+
+## Async / Await
+
+Even promises can be a pain to deal with in some cases. Async/await is a new es7 feature that can
+be used in these situations.
+
+```javascript
+async function foo() {
+  const bar = await returnsSomePromise();
+  const baz = thisLooksSynchronous(bar);
+  return baz;
+}
+```
+
+Read more about it [on MDN.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
 
 # DOM Traversal through `/dev/dom`
 
