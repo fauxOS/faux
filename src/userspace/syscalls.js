@@ -36,8 +36,6 @@ function call(name, args) {
   });
 }
 
-// Here are all the system call wrappers
-
 // Load a dynamic library
 function load(path) {
   const data = call("load", [path]);
@@ -62,8 +60,8 @@ function access(path) {
 }
 
 // Open a file by path and promise the return of a file descriptor
-function open(path) {
-  return call("open", [path]);
+function open(path, mode = "r") {
+  return call("open", [path, mode]);
 }
 
 // Read a file descriptor and return data retrieved
@@ -94,28 +92,4 @@ function getenv(varName) {
 // Set environment variable
 function setenv(varName) {
   return call("setenv", [varName]);
-}
-
-// Helper functions
-
-function readFile(path = "/") {
-  return open(path).then(fd => {
-    return read(fd);
-  });
-}
-
-function writeFile(path = "/", data = "") {
-  return open(path).then(fd => {
-    return write(fd, data);
-  });
-}
-
-// Read a DOM node's innerHTML
-function domRead(nodePath = "/") {
-  return readFile("/dev/dom" + "/" + nodePath);
-}
-
-// Easily write to DOM nodes
-function domWrite(nodePath = "/", data = "") {
-  return writeFile("/dev/dom" + "/" + nodePath, data);
 }

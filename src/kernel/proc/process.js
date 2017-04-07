@@ -16,10 +16,10 @@ export default class Process {
       HOME: "/home"
     };
     this.image = image;
-    // We auto-load the /lib/lib.js dynamic library
-    const libjs = this.load("/lib/lib.js");
+    // We auto-load the /lib/lib dynamic library
+    const lib = this.load("/lib/lib");
     // The worker is where the process is actually executed
-    this.worker = utils.mkWorker(libjs + "\n\n" + image);
+    this.worker = utils.mkWorker(/* syscalls */ "" /* end */  + lib + "\n\n" + image);
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     this.worker.addEventListener("message", msg => {
@@ -52,7 +52,7 @@ export default class Process {
   access(path) {
     try {
       const fd = new FileDescriptor(path);
-      if (fd.container) {
+      if (fd.vnode) {
         return true;
       } else {
         return false;
@@ -64,11 +64,11 @@ export default class Process {
 
   // Where open() actually runs
   // Return a file descriptor
-  open(path) {
+  open(path, mode) {
     if (!this.access(path)) {
       return -1;
     }
-    const fd = new FileDescriptor(path);
+    const fd = new FileDescriptor(path, mode);
     this.fds.push(fd);
     return this.fds.length - 1;
   }

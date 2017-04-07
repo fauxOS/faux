@@ -1,4 +1,4 @@
-import Pathname from "../pathname.js";
+import Pathname from "../../../misc/pathname.js";
 import OFS_Inode from "./inode.js";
 
 export default class OFS {

@@ -360,6 +360,108 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     return DOMFS;
   }();
 
+  var VNode = function () {
+    function VNode(container) {
+      _classCallCheck(this, VNode);
+
+      this.container = container;
+      this.type = this.findType();
+      this.perms = this.findPerms();
+    }
+
+    _createClass(VNode, [{
+      key: 'findType',
+      value: function findType() {
+        if (this.container instanceof OFS_Inode) {
+          return "inode";
+        } else if (this.container instanceof HTMLElement) {
+          return "element";
+        } else {
+          return "unknown";
+        }
+      }
+    }, {
+      key: 'findPerms',
+      value: function findPerms() {
+        if (this.type === "inode") {
+          return this.container.perms;
+        } else {
+          return [true, true, false];
+        }
+      }
+    }, {
+      key: 'data',
+      get: function get() {
+        // Check read permission
+        if (!this.perms[0]) {
+          return -1;
+        }
+        if (this.type === "inode") {
+          var data = this.container.data;
+          // Directory or other
+          if (data === undefined) {
+            return -2;
+          }
+          return data;
+        } else if (this.type === "element") {
+          return this.container.innerHTML;
+        } else {
+          return -1;
+        }
+      },
+      set: function set(data) {
+        // Check write permission
+        if (!this.perms[1]) {
+          return -1;
+        }
+        if (this.type === "inode") {
+          this.container.data = data;
+          return data;
+        } else if (this.type === "element") {
+          this.container.innerHTML = data;
+          return data;
+        } else {
+          return -1;
+        }
+      }
+    }, {
+      key: 'files',
+      get: function get() {
+        // Check read permission
+        if (!this.perms[0]) {
+          return -1;
+        }
+        if (this.type === "inode") {
+          if (this.container.type === "d") {
+            return Object.keys(this.container.files);
+          } else {
+            return null;
+          }
+        } else if (this.type === "element") {
+          if (this.container.hasChildNodes()) {
+            var children = this.container.children;
+            var elements = [];
+            for (var i = 0; i < children.length; i++) {
+              var el = children[i].localName;
+              var id = children[i].id;
+              var classes = children[i].className.split(" ").join(".");
+              elements.push(el + id + classes);
+              // Child by index
+              elements.push(i + 1);
+            }
+            return elements;
+          } else {
+            return null;
+          }
+        } else {
+          return -1;
+        }
+      }
+    }]);
+
+    return VNode;
+  }();
+
   var VFS = function () {
     function VFS() {
       _classCallCheck(this, VFS);
@@ -416,7 +518,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'resolve',
       value: function resolve(path) {
-        var mountPoint = this.mountPoint(path);
+        var pathname = new Pathname(path);
+        var cleanName = pathname.clean;
+        var mountPoint = this.mountPoint(cleanName);
         var fs = this.mounts[mountPoint];
         // This strips off the mountpoint path from the given path,
         // so that we can resolve relative to the filesystem's root.
@@ -424,120 +528,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         // We find that the mountpoint is "/dev/dom".
         // "/dev/dom/head/title" - "/dev/dom" = "/head/title"
         // Pass "/head/title" to the local filesystem for it to resolve
-        var fsLocalPath = new Pathname(path).clean.substring(mountPoint.length);
-        return fs.resolve(fsLocalPath);
-      }
-
-      // Return data type of a file, could be "inode" for example
-
-    }, {
-      key: 'type',
-      value: function type(path) {
-        var container = this.resolve(path);
-        if (container instanceof OFS_Inode) {
-          return "inode";
-        } else if (container instanceof HTMLElement) {
-          return "element";
-        } else {
-          return "unknown";
-        }
-      }
-
-      // Get permissions
-
-    }, {
-      key: 'perms',
-      value: function perms(path) {
-        var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.type(path);
-
-        if (type === "inode") {
-          return this.resolve(path).perms;
-        } else if (type === "element") {
-          // Read and write only for HTML elements
-          return [true, true, false];
-        } else {
-          // RW for anything unset
-          return [true, true, false];
-        }
-      }
-
-      // Remove a path
-
-    }, {
-      key: 'rm',
-      value: function rm(path) {
-        var pathname = new Pathname(path);
-        var mountPoint = this.mountPoint(path);
-        var fs = this.mounts[mountPoint];
-        return fs.rm(pathname.clean);
-      }
-
-      // Make a path, and add it as a file or directory
-      // We won't check if the path already exists, we don't care
-      // For hard or symbolic links, target should be the path to redirect to
-
-    }, {
-      key: 'mkPath',
-      value: function mkPath(type, path) {
-        var target = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
-        var pathname = new Pathname(path);
-        var mountPoint = this.mountPoint(path);
-        var fs = this.mounts[mountPoint];
-        // Assume failure until success
-        var addedObj = -1;
-        if (type === "f") {
-          addedObj = fs.mkFile(pathname.clean);
-        } else if (type === "d") {
-          addedObj = fs.mkDir(pathname.clean);
-        } else if (type === "l" && target !== null) {
-          var targetObj = this.resolve(target);
-          if (targetObj < 0) {
-            // Target data container to hard link not resolved
-            return -1;
-          }
-          addedObj = fs.mkLink(targetObj, pathname.clean);
-        } else if (type === "sl" && target !== null) {
-          addedObj = fs.mkSymLink(target, pathname.clean);
-        } else {
-          // Unknown type
+        var fsLocalPath = cleanName.substring(mountPoint.length);
+        var container = fs.resolve(fsLocalPath);
+        if (container < 0) {
           return -1;
         }
-        return addedObj;
+        return new VNode(container);
       }
-
-      // mkPath() wrappers
-
-      // Create a file
-
     }, {
       key: 'touch',
       value: function touch(path) {
-        return this.mkPath("f", path);
-      }
-
-      // Create a directory
-
-    }, {
-      key: 'mkdir',
-      value: function mkdir(path) {
-        return this.mkPath("d", path);
-      }
-
-      // Hard link
-
-    }, {
-      key: 'ln',
-      value: function ln(refPath, linkPath) {
-        return this.mkPath("l", linkPath, refPath);
-      }
-
-      // Sybolic link
-
-    }, {
-      key: 'lns',
-      value: function lns(refPath, linkPath) {
-        return this.mkPath("sl", linkPath, refPath);
+        var pathname = new Pathname(path);
+        var mountPoint = this.mountPoint(path);
+        var fs = this.mounts[mountPoint];
+        var fsLocalPath = cleanName.substring(mountPoint.length);
       }
     }]);
 
@@ -643,14 +647,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     files: {
       ".": 0,
       "..": 0,
-      "lib.js": 1
+      "lib": 1
     }
   }), new OFS_Inode({
     links: 1,
     type: "f",
     perms: [true, true, true],
     id: 1,
-    /* lib.js */data: "\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}function readFile(){return open(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\").then(function(fd){return read(fd)})}function writeFile(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\",data=arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\";return open(path).then(function(fd){return write(fd,data)})}function domRead(){return readFile(\"/dev/dom/\"+(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\"))}function domWrite(){return writeFile(\"/dev/dom/\"+(arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\"),arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\")}" /* end */
+    /* lib */data: "\"use strict\";function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError(\"Cannot call a class as a function\")}var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,\"value\"in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}(),Pathname=function(){function Pathname(input){_classCallCheck(this,Pathname),this.input=input}return _createClass(Pathname,[{key:\"clean\",get:function(){var clean=[],pathArray=this.input.match(/[^\\/]+/g);for(var i in pathArray){var name=pathArray[i];\".\"===name||(\"..\"===name?clean.pop():clean.push(name))}return\"/\"+clean.join(\"/\")}},{key:\"chop\",get:function(){var segments=this.clean.match(/[^\\/]+/g);return null===segments?[\"/\"]:segments}},{key:\"name\",get:function(){return this.chop[this.chop.length-1]}},{key:\"basename\",get:function(){var name=this.name;if(\"\"===name)return name;var base=name.match(/^[^\\.]+/);return null!==base?base[0]:\"\"}},{key:\"parent\",get:function(){if(\"/\"===this.name)return null;var parentLen=this.clean.length-this.name.length;return this.clean.slice(0,parentLen)}},{key:\"extentions\",get:function(){return this.name.match(/\\.[^\\.]+/g)}},{key:\"segment\",get:function(){var pathArray=this.chop,segments=[];if(\"/\"===this.name)segments=[\"/\"];else for(var i=0;i<=pathArray.length;i++){var matchPath=pathArray.slice(0,i);segments.push(\"/\"+matchPath.join(\"/\"))}return segments}}]),Pathname}(),fs={};fs.readFile=function(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\";return open(path,\"r\").then(function(fd){return read(fd)})},fs.writeFile=function(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\",data=arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\";return open(path,\"w\").then(function(fd){return write(fd,data)})},self.path=Pathname,self.fs=fs;" /* end */
   })]), "/lib");
 
   // Mount /bin
@@ -668,50 +672,70 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     type: "f",
     perms: [true, false, true],
     id: 1,
-    /* fsh */data: "\"use strict\";function tokenizeLine(){for(var line=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String),i=0;i<tokens.length;i++){var token=tokens[i];tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2])}return tokens}function lex(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",allTokens=[],lines=input.match(/(\\\\;|[^;])+/g),i=0;i<lines.length;i++){var tokens=tokenizeLine(lines[i]);allTokens.push(tokens)}return allTokens}function parseCommand(tokens){var command={type:\"simple\"};return command.argv=tokens,command.argc=tokens.length,command.name=tokens[0],command}function parse(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",AST={type:\"script\",commands:[]},commands=lex(input),i=0;i<commands.length;i++){var parsed=parseCommand(commands[i]);AST.commands[i]=parsed}return AST}parse(\"echo hello, world\");" /* end */
+    /* fsh */data: "function tokenizeLine(){for(var line=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String),i=0;i<tokens.length;i++){var token=tokens[i];tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2])}return tokens}function lex(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",allTokens=[],lines=input.match(/(\\\\;|[^;])+/g),i=0;i<lines.length;i++){var tokens=tokenizeLine(lines[i]);allTokens.push(tokens)}return allTokens}function parseCommand(tokens){var command={type:\"simple\"};return command.argv=tokens,command.argc=tokens.length,command.name=tokens[0],command}function parse(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",AST={type:\"script\",commands:[]},commands=lex(input),i=0;i<commands.length;i++){var parsed=parseCommand(commands[i]);AST.commands[i]=parsed}return AST}parse(\"echo hello, world\");" /* end */
   })]), "/bin");
 
   fs.mount(new DOMFS(), "/dev/dom");
 
+  function getMode() {
+    var modeStr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "r";
+
+    // prettier-ignore
+    //    read, write, truncate, create, append
+    var map = {
+      "r": [true, false, false, false, false],
+      "r+": [true, true, false, false, false],
+      "w": [false, true, true, true, false],
+      "w+": [true, true, true, true, false],
+      "a": [false, true, false, true, true],
+      "a+": [true, true, false, true, true]
+    };
+    return map[modeStr];
+  }
+
   var FileDescriptor = function () {
-    function FileDescriptor(path) {
+    function FileDescriptor(path, mode) {
       _classCallCheck(this, FileDescriptor);
 
+      this.mode = getMode(mode);
+      // If truncate in mode
+      if (this.mode[2]) {
+        this.truncate();
+      }
       this.path = new Pathname(path).clean;
-      this.type = fs.type(this.path);
-      this.container = fs.resolve(this.path);
-      if (this.container < 0) {
-        throw new Error("Path Unresolved");
+      this.vnode = fs.resolve(this.path);
+      // Create if non-existent?
+      if (this.vnode < 0) {
+        if (!this.mode[3]) {
+          throw new Error("Path Unresolved");
+        } else {
+          fs.touch(this.path);
+          this.vnode = fs.resolve(this.path);
+          // Probably an error creating the file
+          if (this.vnode < 0) {
+            throw new Error("Error on file creation or resolve");
+          }
+        }
       }
-      this.perms = fs.perms(this.path);
-      // No permissions
-      if (this.perms === [false, false, false]) {
-        throw new Error("No access permissions");
-      }
+      this.type = this.vnode.type;
     }
 
-    // Return read data
-
-
     _createClass(FileDescriptor, [{
+      key: 'truncate',
+      value: function truncate() {
+        this.vnode.data = "";
+      }
+
+      // Return read data
+
+    }, {
       key: 'read',
       value: function read() {
-        // Check read permission
-        if (!this.perms[0]) {
+        // Read mode set?
+        if (!this.mode[0]) {
           return -1;
         }
-        if (this.type === "inode") {
-          var data = this.container.data;
-          // Directory or other
-          if (data === undefined) {
-            return -2;
-          }
-          return data;
-        } else if (this.type === "element") {
-          return this.container.innerHTML;
-        } else {
-          return -1;
-        }
+        return this.vnode.data;
       }
 
       // Write data out
@@ -719,19 +743,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'write',
       value: function write(data) {
-        // Check write permission
-        if (!this.perms[1]) {
-          return -1;
-        }
-        if (this.type === "inode") {
-          this.container.data = data;
-          return data;
-        } else if (this.type === "element") {
-          this.container.innerHTML = data;
-          return data;
-        } else {
-          return -1;
-        }
+        return this.vnode.data = data;
       }
 
       // View "directory" contents or return null
@@ -739,35 +751,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'readdir',
       value: function readdir() {
-        // Check read permission
-        if (!this.perms[0]) {
-          return -1;
-        }
-        if (this.type === "inode") {
-          if (this.container.type === "f") {
-            return Object.keys(this.container.files);
-          } else {
-            return null;
-          }
-        } else if (this.type === "element") {
-          if (this.container.hasChildNodes()) {
-            var children = this.container.children;
-            var elements = [];
-            for (var i = 0; i < children.length; i++) {
-              var el = children[i].localName;
-              var id = children[i].id;
-              var classes = children[i].className.split(" ").join(".");
-              elements.push(el + id + classes);
-              // Child by index
-              elements.push(i + 1);
-            }
-            return elements;
-          } else {
-            return null;
-          }
-        } else {
-          return -1;
-        }
+        return this.vnode.files;
       }
     }]);
 
@@ -876,10 +860,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         HOME: "/home"
       };
       this.image = image;
-      // We auto-load the /lib/lib.js dynamic library
-      var libjs = this.load("/lib/lib.js");
+      // We auto-load the /lib/lib dynamic library
+      var lib = this.load("/lib/lib");
       // The worker is where the process is actually executed
-      this.worker = utils.mkWorker(libjs + "\n\n" + image);
+      this.worker = utils.mkWorker( /* syscalls */"\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path,arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"r\"])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}" /* end */ + lib + "\n\n" + image);
       // This event listener intercepts worker messages and then
       // passes to the message handler, which decides what next
       this.worker.addEventListener("message", function (msg) {
@@ -919,7 +903,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function access(path) {
         try {
           var fd = new FileDescriptor(path);
-          if (fd.container) {
+          if (fd.vnode) {
             return true;
           } else {
             return false;
@@ -934,11 +918,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
     }, {
       key: 'open',
-      value: function open(path) {
+      value: function open(path, mode) {
         if (!this.access(path)) {
           return -1;
         }
-        var fd = new FileDescriptor(path);
+        var fd = new FileDescriptor(path, mode);
         this.fds.push(fd);
         return this.fds.length - 1;
       }
@@ -1039,8 +1023,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   // Resolve a path into a file descriptor, and add it to the table
   sys.open = function (process, msgID, args) {
-    if (typeof args[0] !== "string") {
-      sys.fail(process, msgID, ["Argument should be a string"]);
+    if (typeof args[0] !== "string" && typeof args[1] !== "string") {
+      sys.fail(process, msgID, ["Arguments 1 and 2 should be a strings"]);
       return -1;
     }
     var path = "";
@@ -1050,7 +1034,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     } else {
       path = process.cwd + "/" + args[0];
     }
-    var result = process.open(path);
+    var result = process.open(path, args[1]);
     sys.pass(process, msgID, [result]);
   };
 

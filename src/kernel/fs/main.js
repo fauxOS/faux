@@ -126,7 +126,7 @@ fs.mount(
       files: {
         ".": 0,
         "..": 0,
-        "lib.js": 1
+        "lib": 1
       }
     }),
 
@@ -135,7 +135,7 @@ fs.mount(
       type: "f",
       perms: [true, true, true],
       id: 1,
-      /* lib.js */ data: "" /* end */
+      /* lib */ data: "" /* end */
     })
   ]),
   "/lib"

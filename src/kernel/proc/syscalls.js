@@ -59,8 +59,8 @@ sys.access = function(process, msgID, args) {
 
 // Resolve a path into a file descriptor, and add it to the table
 sys.open = function(process, msgID, args) {
-  if (typeof args[0] !== "string") {
-    sys.fail(process, msgID, ["Argument should be a string"]);
+  if (typeof args[0] !== "string" && typeof args[1] !== "string") {
+    sys.fail(process, msgID, ["Arguments 1 and 2 should be a strings"]);
     return -1;
   }
   let path = "";
@@ -70,7 +70,7 @@ sys.open = function(process, msgID, args) {
   } else {
     path = process.cwd + "/" + args[0];
   }
-  const result = process.open(path);
+  const result = process.open(path, args[1]);
   sys.pass(process, msgID, [result]);
 };
 

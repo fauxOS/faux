@@ -1,4 +1,4 @@
-import Pathname from "../pathname.js";
+import Pathname from "../../../misc/pathname.js";
 
 export default class DOMFS {
   constructor(selectorBase = "") {
