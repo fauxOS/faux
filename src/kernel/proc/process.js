@@ -19,7 +19,9 @@ export default class Process {
     // We auto-load the /lib/lib dynamic library
     const lib = this.load("/lib/lib");
     // The worker is where the process is actually executed
-    this.worker = utils.mkWorker(/* syscalls */ "" /* end */  + lib + "\n\n" + image);
+    this.worker = utils.mkWorker(
+      /* syscalls */ "" /* end */ + lib + "\n\n" + image
+    );
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     this.worker.addEventListener("message", msg => {

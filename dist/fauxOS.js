@@ -647,14 +647,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     files: {
       ".": 0,
       "..": 0,
-      "lib": 1
+      lib: 1
     }
   }), new OFS_Inode({
     links: 1,
     type: "f",
     perms: [true, true, true],
     id: 1,
-    /* lib */data: "\"use strict\";function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError(\"Cannot call a class as a function\")}var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,\"value\"in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}(),Pathname=function(){function Pathname(input){_classCallCheck(this,Pathname),this.input=input}return _createClass(Pathname,[{key:\"clean\",get:function(){var clean=[],pathArray=this.input.match(/[^\\/]+/g);for(var i in pathArray){var name=pathArray[i];\".\"===name||(\"..\"===name?clean.pop():clean.push(name))}return\"/\"+clean.join(\"/\")}},{key:\"chop\",get:function(){var segments=this.clean.match(/[^\\/]+/g);return null===segments?[\"/\"]:segments}},{key:\"name\",get:function(){return this.chop[this.chop.length-1]}},{key:\"basename\",get:function(){var name=this.name;if(\"\"===name)return name;var base=name.match(/^[^\\.]+/);return null!==base?base[0]:\"\"}},{key:\"parent\",get:function(){if(\"/\"===this.name)return null;var parentLen=this.clean.length-this.name.length;return this.clean.slice(0,parentLen)}},{key:\"extentions\",get:function(){return this.name.match(/\\.[^\\.]+/g)}},{key:\"segment\",get:function(){var pathArray=this.chop,segments=[];if(\"/\"===this.name)segments=[\"/\"];else for(var i=0;i<=pathArray.length;i++){var matchPath=pathArray.slice(0,i);segments.push(\"/\"+matchPath.join(\"/\"))}return segments}}]),Pathname}(),fs={};fs.readFile=function(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\";return open(path,\"r\").then(function(fd){return read(fd)})},fs.writeFile=function(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\",data=arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\";return open(path,\"w\").then(function(fd){return write(fd,data)})},self.path=Pathname,self.fs=fs;" /* end */
+    /* lib */data: "/*\r\n * Path name manipulations\r\n * p = new Pathname(\"/some///./../some/strange/././path\")\r\n * p.clean() => \"/some/strange/path\"\r\n */\r\nclass Pathname {\r\n  constructor(input) {\r\n    this.input = input;\r\n  }\r\n\r\n  // clean up a crazy path\r\n  // e.g. \"/some///./../some/strange/././path\" => \"/some/strange/path\"\r\n  get clean() {\r\n    let clean = [];\r\n    // Split the path by \"/\", match() because it doesn't add empty strings\r\n    const pathArray = this.input.match(/[^/]+/g);\r\n    // Iterate each name in the path\r\n    for (let i in pathArray) {\r\n      const name = pathArray[i];\r\n      // If it's the current directory, don't do anything\r\n      if (name === \".\") {\r\n      } else if (name === \"..\") {\r\n        // If it's the previous directory, remove the last added entry\r\n        clean.pop();\r\n      } else {\r\n        // Anything else, we add to the array plainly\r\n        clean.push(name);\r\n      }\r\n    }\r\n    // Array to path\r\n    return \"/\" + clean.join(\"/\");\r\n  }\r\n\r\n  // Chop a path into an array of names\r\n  // \"/paths/are/like/arrays\" => [\"paths\", \"are\", \"like\", \"arrays\"]\r\n  get chop() {\r\n    const segments = this.clean.match(/[^/]+/g);\r\n    if (segments === null) {\r\n      return [\"/\"];\r\n    } else {\r\n      return segments;\r\n    }\r\n  }\r\n\r\n  // Just the name of the file/directory the path leads to\r\n  get name() {\r\n    return this.chop[this.chop.length - 1];\r\n  }\r\n\r\n  // Basename from the normal name\r\n  // \"filename.txt\" => \"filename\"\r\n  get basename() {\r\n    const name = this.name;\r\n    if (name === \"\") {\r\n      return name;\r\n    } else {\r\n      const base = name.match(/^[^\\.]+/);\r\n      if (base !== null) {\r\n        return base[0];\r\n      } else {\r\n        return \"\";\r\n      }\r\n    }\r\n  }\r\n\r\n  // Parent name, get the directory holding this\r\n  // \"/directories/hold/files/like-this-one\" => \"/directories/hold/files\"\r\n  get parent() {\r\n    if (this.name === \"/\") {\r\n      return null;\r\n    } else {\r\n      // Get the length of the path without the name in it\r\n      const parentLen = this.clean.length - this.name.length;\r\n      // Slice the name out of the path\r\n      return this.clean.slice(0, parentLen);\r\n    }\r\n  }\r\n\r\n  // Extentions array from the name\r\n  // \"archive.tar.gz\" => [\".tar\", \".gz\"]\r\n  get extentions() {\r\n    return this.name.match(/\\.[^\\.]+/g);\r\n  }\r\n\r\n  // get the segments of a path like this : [\"/\", \"/path\", \"/path/example\"]\r\n  get segment() {\r\n    const pathArray = this.chop;\r\n    let segments = [];\r\n    // If its a root path, skip segments\r\n    if (this.name === \"/\") {\r\n      segments = [\"/\"];\r\n    } else {\r\n      // Else, any other path\r\n      for (let i = 0; i <= pathArray.length; i++) {\r\n        let matchPath = pathArray.slice(0, i);\r\n        segments.push(\"/\" + matchPath.join(\"/\"));\r\n      }\r\n    }\r\n    return segments;\r\n  }\r\n}\n\nconst fs = {};\n\nfs.readFile = function(path = \"/\") {\n  return open(path, \"r\").then(fd => {\n    return read(fd);\n  });\n};\n\nfs.writeFile = function(path = \"/\", data = \"\") {\n  return open(path, \"w\").then(fd => {\n    return write(fd, data);\n  });\n};\n\nself.Pathname = Pathname;\nself.fs = fs;\n" /* end */
   })]), "/lib");
 
   // Mount /bin
@@ -698,10 +698,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       _classCallCheck(this, FileDescriptor);
 
       this.mode = getMode(mode);
-      // If truncate in mode
-      if (this.mode[2]) {
-        this.truncate();
-      }
       this.path = new Pathname(path).clean;
       this.vnode = fs.resolve(this.path);
       // Create if non-existent?
@@ -716,6 +712,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             throw new Error("Error on file creation or resolve");
           }
         }
+      }
+      // If truncate in mode
+      if (this.mode[2]) {
+        this.truncate();
       }
       this.type = this.vnode.type;
     }
@@ -863,7 +863,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       // We auto-load the /lib/lib dynamic library
       var lib = this.load("/lib/lib");
       // The worker is where the process is actually executed
-      this.worker = utils.mkWorker( /* syscalls */"\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path,arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"r\"])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}" /* end */ + lib + "\n\n" + image);
+      this.worker = utils.mkWorker(
+      /* syscalls */"\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path,arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"r\"])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}" /* end */ + lib + "\n\n" + image);
       // This event listener intercepts worker messages and then
       // passes to the message handler, which decides what next
       this.worker.addEventListener("message", function (msg) {
@@ -901,8 +902,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'access',
       value: function access(path) {
+        var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "r";
+
         try {
-          var fd = new FileDescriptor(path);
+          var fd = new FileDescriptor(path, mode);
           if (fd.vnode) {
             return true;
           } else {
@@ -919,7 +922,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'open',
       value: function open(path, mode) {
-        if (!this.access(path)) {
+        if (!this.access(path, mode)) {
           return -1;
         }
         var fd = new FileDescriptor(path, mode);

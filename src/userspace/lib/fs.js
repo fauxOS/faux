@@ -10,6 +10,6 @@ fs.writeFile = function(path = "/", data = "") {
   return open(path, "w").then(fd => {
     return write(fd, data);
   });
-}
+};
 
 export default fs;
