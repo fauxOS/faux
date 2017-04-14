@@ -49,9 +49,9 @@ export default class Process {
   }
 
   // Check if we can access/it exists
-  access(path) {
+  access(path, mode = "r") {
     try {
-      const fd = new FileDescriptor(path);
+      const fd = new FileDescriptor(path, mode);
       if (fd.vnode) {
         return true;
       } else {
@@ -65,7 +65,7 @@ export default class Process {
   // Where open() actually runs
   // Return a file descriptor
   open(path, mode) {
-    if (!this.access(path)) {
+    if (!this.access(path, mode)) {
       return -1;
     }
     const fd = new FileDescriptor(path, mode);
