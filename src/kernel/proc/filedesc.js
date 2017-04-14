@@ -5,10 +5,6 @@ import getMode from "../../misc/mode.js";
 export default class FileDescriptor {
   constructor(path, mode) {
     this.mode = getMode(mode);
-    // If truncate in mode
-    if (this.mode[2]) {
-      this.truncate();
-    }
     this.path = new Pathname(path).clean;
     this.vnode = fs.resolve(this.path);
     // Create if non-existent?
@@ -23,6 +19,10 @@ export default class FileDescriptor {
           throw new Error("Error on file creation or resolve");
         }
       }
+    }
+    // If truncate in mode
+    if (this.mode[2]) {
+      this.truncate();
     }
     this.type = this.vnode.type;
   }
