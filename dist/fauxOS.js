@@ -172,7 +172,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function resolveHard(path) {
         var inode = 0;
         var trace = [inode];
-        if (path === "") {
+        if (path === "/" || path === "") {
           return this.drive[inode];
         }
         var pathArray = new Pathname(path).chop;
@@ -247,12 +247,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       // Add a new file to the disk
 
     }, {
-      key: 'mkFile',
-      value: function mkFile(path) {
+      key: 'touch',
+      value: function touch(path) {
         var pathname = new Pathname(path);
         var parentInode = this.resolve(pathname.parent);
-        var name = pathname.name;
-        var inode = this.addInode("f", name, parentInode);
+        var inode = this.addInode("f", pathname.name, parentInode);
         if (inode < 0) {
           return -1;
         }
@@ -337,7 +336,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       _classCallCheck(this, DOMFS);
 
       this.base = selectorBase;
-      this.resolveHard = this.resolve;
     }
 
     _createClass(DOMFS, [{
@@ -354,6 +352,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           selector = selector.replace(/ (\d)/g, " :nth-child($1)");
           return document.querySelector(selector);
         }
+      }
+    }, {
+      key: 'touch',
+      value: function touch(path) {
+        var pathname = new Pathname(path);
+        var parent = this.resolve(pathname.parent);
+        if (!parent) {
+          return -1;
+        }
+        // When creating an element, you are only allowed to use the element name
+        // e.g. touch("/dev/dom/body/#container/span")
+        // You cannot touch a class, index, or id
+        var el = document.createElement(pathname.name);
+        return parent.appendChild(el);
       }
     }]);
 
@@ -541,7 +553,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         var pathname = new Pathname(path);
         var mountPoint = this.mountPoint(path);
         var fs = this.mounts[mountPoint];
-        var fsLocalPath = cleanName.substring(mountPoint.length);
+        var fsLocalPath = pathname.clean.substring(mountPoint.length);
+        var touched = fs.touch(fsLocalPath);
+        if (touched < 0) {
+          return -1;
+        }
+        return touched;
       }
     }]);
 
@@ -701,7 +718,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       this.path = new Pathname(path).clean;
       this.vnode = fs.resolve(this.path);
       // Create if non-existent?
-      if (this.vnode < 0) {
+      if (!this.vnode.container) {
         if (!this.mode[3]) {
           throw new Error("Path Unresolved");
         } else {

@@ -8,7 +8,7 @@ export default class FileDescriptor {
     this.path = new Pathname(path).clean;
     this.vnode = fs.resolve(this.path);
     // Create if non-existent?
-    if (this.vnode < 0) {
+    if (!this.vnode.container) {
       if (!this.mode[3]) {
         throw new Error("Path Unresolved");
       } else {

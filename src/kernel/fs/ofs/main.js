@@ -20,7 +20,7 @@ export default class OFS {
   resolveHard(path) {
     let inode = 0;
     const trace = [inode];
-    if (path === "") {
+    if (path === "/" || path === "") {
       return this.drive[inode];
     }
     const pathArray = new Pathname(path).chop;
@@ -82,11 +82,10 @@ export default class OFS {
   }
 
   // Add a new file to the disk
-  mkFile(path) {
+  touch(path) {
     const pathname = new Pathname(path);
     const parentInode = this.resolve(pathname.parent);
-    const name = pathname.name;
-    const inode = this.addInode("f", name, parentInode);
+    const inode = this.addInode("f", pathname.name, parentInode);
     if (inode < 0) {
       return -1;
     }

@@ -133,7 +133,7 @@ class OFS {
   resolveHard(path) {
     let inode = 0;
     const trace = [inode];
-    if (path === "") {
+    if (path === "/" || path === "") {
       return this.drive[inode];
     }
     const pathArray = new Pathname(path).chop;
@@ -195,11 +195,10 @@ class OFS {
   }
 
   // Add a new file to the disk
-  mkFile(path) {
+  touch(path) {
     const pathname = new Pathname(path);
     const parentInode = this.resolve(pathname.parent);
-    const name = pathname.name;
-    const inode = this.addInode("f", name, parentInode);
+    const inode = this.addInode("f", pathname.name, parentInode);
     if (inode < 0) {
       return -1;
     }
@@ -265,7 +264,6 @@ class OFS {
 class DOMFS {
   constructor(selectorBase = "") {
     this.base = selectorBase;
-    this.resolveHard = this.resolve;
   }
 
   resolve(path) {
@@ -280,6 +278,19 @@ class DOMFS {
       selector = selector.replace(/ (\d)/g, " :nth-child($1)");
       return document.querySelector(selector);
     }
+  }
+
+  touch(path) {
+    const pathname = new Pathname(path);
+    const parent = this.resolve(pathname.parent);
+    if (!parent) {
+      return -1;
+    }
+    // When creating an element, you are only allowed to use the element name
+    // e.g. touch("/dev/dom/body/#container/span")
+    // You cannot touch a class, index, or id
+    const el = document.createElement(pathname.name);
+    return parent.appendChild(el);
   }
 }
 
@@ -439,7 +450,12 @@ class VFS {
     const pathname = new Pathname(path);
     const mountPoint = this.mountPoint(path);
     const fs = this.mounts[mountPoint];
-    const fsLocalPath = cleanName.substring(mountPoint.length);
+    const fsLocalPath = pathname.clean.substring(mountPoint.length);
+    const touched = fs.touch(fsLocalPath);
+    if (touched < 0) {
+      return -1;
+    }
+    return touched;
   }
 }
 
@@ -628,7 +644,7 @@ class FileDescriptor {
     this.path = new Pathname(path).clean;
     this.vnode = fs.resolve(this.path);
     // Create if non-existent?
-    if (this.vnode < 0) {
+    if (!this.vnode.container) {
       if (!this.mode[3]) {
         throw new Error("Path Unresolved");
       } else {

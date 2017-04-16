@@ -65,6 +65,11 @@ export default class VFS {
     const pathname = new Pathname(path);
     const mountPoint = this.mountPoint(path);
     const fs = this.mounts[mountPoint];
-    const fsLocalPath = cleanName.substring(mountPoint.length);
+    const fsLocalPath = pathname.clean.substring(mountPoint.length);
+    const touched = fs.touch(fsLocalPath);
+    if (touched < 0) {
+      return -1;
+    }
+    return touched;
   }
 }
