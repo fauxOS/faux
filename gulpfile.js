@@ -10,9 +10,6 @@ var rename = require("gulp-rename");
 // Rollup
 var rollup = require("rollup");
 
-// Misc
-var argv = require("yargs").argv;
-
 gulp.task("kernel", function() {
   return rollup
     .rollup({
@@ -28,11 +25,27 @@ gulp.task("kernel", function() {
     });
 });
 
-gulp.task("syscalls:build", function() {
-  return gulp.src("src/userspace/syscalls.js")
+function rollThatUp(name, entry, dest, sourceMap = false) {
+  return rollup
+    .rollup({
+      entry: entry
+    })
+    .then(function(bundle) {
+      bundle.write({
+        format: "es",
+        moduleName: name,
+        dest: dest,
+        sourceMap: sourceMap
+      });
+    });
+}
+
+function gulpThatDown(input, output = "build/", babelPresets = [["es2015"]]) {
+  return gulp
+    .src(input)
     .pipe(
       babel({
-        presets: [["es2015"]]
+        presets: babelPresets
       })
     )
     .pipe(
@@ -40,63 +53,32 @@ gulp.task("syscalls:build", function() {
         mangle: false
       })
     )
-    .pipe(gulp.dest("build/"));
+    .pipe(gulp.dest(output));
+}
+
+function build(name, path, useRollup = false, babelPresets = [["es2015"]]) {
+  if (useRollup) {
+    var dest = "build/" + name + ".js";
+    return rollThatUp(name, path, dest).then(function() {
+      gulpThatDown(dest);
+    });
+  } else {
+    return gulpThatDown(path);
+  }
+}
+
+gulp.task("syscalls:build", function() {
+  return build("syscalls", "src/userspace/syscalls.js");
 });
 
 gulp.task("lib:build", function() {
-  rollup
-    .rollup({
-      entry: "src/userspace/lib/main.js"
-    })
-    .then(function(bundle) {
-      bundle.write({
-        format: "es",
-        moduleName: "lib",
-        dest: "build/lib.js",
-        sourceMap: false
-      });
-    });
-  return gulp
-    .src("build/lib.js")
-    .pipe(
-      babel({
-        presets: [["es2015"]]
-      })
-    )
-    .pipe(
-      uglify({
-        mangle: false
-      })
-    )
-    .pipe(gulp.dest("build/"));
+  return build("lib", "src/userspace/lib/main.js", true);
 });
 
 gulp.task("fsh:build", function() {
-  rollup
-    .rollup({
-      entry: "src/userspace/fsh/main.js"
-    })
-    .then(function(bundle) {
-      bundle.write({
-        format: "es",
-        moduleName: "fsh",
-        dest: "build/fsh.js",
-        sourceMap: false
-      });
-    });
-  return gulp
-    .src("build/fsh.js")
-    .pipe(
-      babel({
-        presets: [["es2015", { modules: false }]]
-      })
-    )
-    .pipe(
-      uglify({
-        mangle: false
-      })
-    )
-    .pipe(gulp.dest("build/"));
+  return build("fsh", "src/userspace/fsh/main.js", true, [
+    ["es2015", { modules: false }]
+  ]);
 });
 
 // Get the builds out of the way,

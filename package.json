@@ -17,15 +17,15 @@
     "intern": "^3.4.2",
     "prettier": "^0.22.0",
     "rollup": "^0.41.5",
-    "rollup-watch": "^3.2.2",
-    "yargs": "^7.0.2"
+    "rollup-watch": "^3.2.2"
   },
   "scripts": {
     "format": "prettier --write 'src/**/*.js'",
     "build": "npm run format && gulp",
     "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer &",
     "dev": "npm run test && gulp watch",
-    "clean": "npm cache clear && rm -rf node_modules/ && rm -rf build/ && rm -rf dist/"
+    "clean": "npm cache clear && rm -rf node_modules/ && rm -rf build/ && rm -rf dist/",
+    "reset": "npm run clean && npm install && npm run build"
   },
   "keywords": [
     "faux",
