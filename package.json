@@ -1,7 +1,7 @@
 {
   "name": "faux",
   "description": "A virtual, completely in-browser, operating system (pre-alpha)",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/fauxOS.js",
   "dependencies": {},
   "devDependencies": {
@@ -40,10 +40,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fauxOS/fauxOS.git"
+    "url": "https://github.com/fauxOS/faux.git"
   },
   "bugs": {
-    "url": "https://github.com/fauxOS/fauxOS/issues"
+    "url": "https://github.com/fauxOS/faux/issues"
   },
-  "homepage": "https://github.com/fauxOS/fauxOS"
+  "homepage": "https://faux.js.org"
 }

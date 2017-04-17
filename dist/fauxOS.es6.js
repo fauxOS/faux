@@ -1020,7 +1020,7 @@ var main = {
   name: "faux",
   flags: flags,
   utils: utils,
-  version: "0.0.1"
+  version: "0.0.2"
 };
 
 return main;
