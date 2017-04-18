@@ -1,0 +1,48 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/data/data/com.termux/files/usr/bin/node',
+1 verbose cli   '/data/data/com.termux/files/usr/bin/npm',
+1 verbose cli   'run',
+1 verbose cli   'build' ]
+2 info using npm@3.10.10
+3 info using node@v6.10.0
+4 verbose run-script [ 'prebuild', 'build', 'postbuild' ]
+5 info lifecycle faux@0.0.2~prebuild: faux@0.0.2
+6 silly lifecycle faux@0.0.2~prebuild: no script for prebuild, continuing
+7 info lifecycle faux@0.0.2~build: faux@0.0.2
+8 verbose lifecycle faux@0.0.2~build: unsafe-perm in lifecycle true
+9 verbose lifecycle faux@0.0.2~build: PATH: /data/data/com.termux/files/usr/lib/node_modules/npm/bin/node-gyp-bin:/data/data/com.termux/files/home/faux/node_modules/.bin:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets
+10 verbose lifecycle faux@0.0.2~build: CWD: /data/data/com.termux/files/home/faux
+11 silly lifecycle faux@0.0.2~build: Args: [ '-c', 'npm run format && gulp' ]
+12 silly lifecycle faux@0.0.2~build: Returned: code: 1  signal: null
+13 info lifecycle faux@0.0.2~build: Failed to exec build script
+14 verbose stack Error: faux@0.0.2 build: `npm run format && gulp`
+14 verbose stack Exit status 1
+14 verbose stack     at EventEmitter.<anonymous> (/data/data/com.termux/files/usr/lib/node_modules/npm/lib/utils/lifecycle.js:255:16)
+14 verbose stack     at emitTwo (events.js:106:13)
+14 verbose stack     at EventEmitter.emit (events.js:191:7)
+14 verbose stack     at ChildProcess.<anonymous> (/data/data/com.termux/files/usr/lib/node_modules/npm/lib/utils/spawn.js:40:14)
+14 verbose stack     at emitTwo (events.js:106:13)
+14 verbose stack     at ChildProcess.emit (events.js:191:7)
+14 verbose stack     at maybeClose (internal/child_process.js:877:16)
+14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:226:5)
+15 verbose pkgid faux@0.0.2
+16 verbose cwd /data/data/com.termux/files/home/faux
+17 error Linux 3.18.31-10280325
+18 error argv "/data/data/com.termux/files/usr/bin/node" "/data/data/com.termux/files/usr/bin/npm" "run" "build"
+19 error node v6.10.0
+20 error npm  v3.10.10
+21 error code ELIFECYCLE
+22 error faux@0.0.2 build: `npm run format && gulp`
+22 error Exit status 1
+23 error Failed at the faux@0.0.2 build script 'npm run format && gulp'.
+23 error Make sure you have the latest version of node.js and npm installed.
+23 error If you do, this is most likely a problem with the faux package,
+23 error not with npm itself.
+23 error Tell the author that this fails on your system:
+23 error     npm run format && gulp
+23 error You can get information on how to open an issue for this project with:
+23 error     npm bugs faux
+23 error Or if that isn't available, you can get their info via:
+23 error     npm owner ls faux
+23 error There is likely additional logging output above.
+24 verbose exit [ 1, true ]

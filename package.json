@@ -15,9 +15,10 @@
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^2.0.1",
     "intern": "^3.4.2",
-    "prettier": "^0.22.0",
+    "prettier": "^1.1.0",
     "rollup": "^0.41.5",
-    "rollup-watch": "^3.2.2"
+    "rollup-watch": "^3.2.2",
+    "yarn": "^0.22.0"
   },
   "scripts": {
     "format": "prettier --write 'src/**/*.js'",
