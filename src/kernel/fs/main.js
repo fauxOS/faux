@@ -133,7 +133,7 @@ fs.mount(
     new OFS_Inode({
       links: 1,
       type: "f",
-      perms: [true, true, true],
+      exec: true,
       id: 1,
       /* lib */ data: "" /* end */
     })
@@ -158,7 +158,7 @@ fs.mount(
     new OFS_Inode({
       links: 1,
       type: "f",
-      perms: [true, false, true],
+      exec: true,
       id: 1,
       /* fsh */ data: "" /* end */
     })
