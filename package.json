@@ -25,7 +25,7 @@
     "build": "yarn run format && gulp",
     "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer &",
     "dev": "yarn run test && gulp watch",
-    "clean": "yarn cache clean && rm -rf node_modules/ && rm -rf build/ && rm -rf dist/",
+    "clean": "yarn cache clean && rm -rf node_modules/&& npm install -D yarn && rm -rf build/ && rm -rf dist/",
     "reset": "yarn run clean && yarn && yarn run build"
   },
   "keywords": [
