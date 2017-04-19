@@ -7,7 +7,7 @@
 class OFS_Inode {
   constructor(config = {}) {
     this.links = 0;
-    this.perms = [true, true, false];
+    this.exec = false;
     Object.assign(this, config);
   }
 }
@@ -298,7 +298,7 @@ class VNode {
   constructor(container) {
     this.container = container;
     this.type = this.findType();
-    this.perms = this.findPerms();
+    this.exec = this.isExecutable();
   }
 
   findType() {
@@ -311,19 +311,15 @@ class VNode {
     }
   }
 
-  findPerms() {
+  isExecutable() {
     if (this.type === "inode") {
-      return this.container.perms;
+      return this.container.exec;
     } else {
-      return [true, true, false];
+      return false;
     }
   }
 
   get data() {
-    // Check read permission
-    if (!this.perms[0]) {
-      return -1;
-    }
     if (this.type === "inode") {
       const data = this.container.data;
       // Directory or other
@@ -339,10 +335,6 @@ class VNode {
   }
 
   set data(data) {
-    // Check write permission
-    if (!this.perms[1]) {
-      return -1;
-    }
     if (this.type === "inode") {
       this.container.data = data;
       return data;
@@ -355,10 +347,6 @@ class VNode {
   }
 
   get files() {
-    // Check read permission
-    if (!this.perms[0]) {
-      return -1;
-    }
     if (this.type === "inode") {
       if (this.container.type === "d") {
         return Object.keys(this.container.files);
@@ -589,7 +577,7 @@ fs.mount(
     new OFS_Inode({
       links: 1,
       type: "f",
-      perms: [true, true, true],
+      exec: true,
       id: 1,
       /* lib */ data: "\"use strict\";function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError(\"Cannot call a class as a function\")}var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,\"value\"in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}(),Pathname=function(){function Pathname(input){_classCallCheck(this,Pathname),this.input=input}return _createClass(Pathname,[{key:\"clean\",get:function(){var clean=[],pathArray=this.input.match(/[^\\/]+/g);for(var i in pathArray){var name=pathArray[i];\".\"===name||(\"..\"===name?clean.pop():clean.push(name))}return\"/\"+clean.join(\"/\")}},{key:\"chop\",get:function(){var segments=this.clean.match(/[^\\/]+/g);return null===segments?[\"/\"]:segments}},{key:\"name\",get:function(){return this.chop[this.chop.length-1]}},{key:\"basename\",get:function(){var name=this.name;if(\"\"===name)return name;var base=name.match(/^[^\\.]+/);return null!==base?base[0]:\"\"}},{key:\"parent\",get:function(){if(\"/\"===this.name)return null;var parentLen=this.clean.length-this.name.length;return this.clean.slice(0,parentLen)}},{key:\"extentions\",get:function(){return this.name.match(/\\.[^\\.]+/g)}},{key:\"segment\",get:function(){var pathArray=this.chop,segments=[];if(\"/\"===this.name)segments=[\"/\"];else for(var i=0;i<=pathArray.length;i++){var matchPath=pathArray.slice(0,i);segments.push(\"/\"+matchPath.join(\"/\"))}return segments}}]),Pathname}(),fs={};fs.readFile=function(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\";return open(path,\"r\").then(function(fd){return read(fd)})},fs.writeFile=function(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\",data=arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\";return open(path,\"w\").then(function(fd){return write(fd,data)})},self.Pathname=Pathname,self.fs=fs;"/* end */
     })
@@ -614,7 +602,7 @@ fs.mount(
     new OFS_Inode({
       links: 1,
       type: "f",
-      perms: [true, false, true],
+      exec: true,
       id: 1,
       /* fsh */ data: "\"use strict\";function tokenizeLine(){for(var line=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String),i=0;i<tokens.length;i++){var token=tokens[i];tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2])}return tokens}function lex(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",allTokens=[],lines=input.match(/(\\\\;|[^;])+/g),i=0;i<lines.length;i++){var tokens=tokenizeLine(lines[i]);allTokens.push(tokens)}return allTokens}function parseCommand(tokens){var command={type:\"simple\"};return command.argv=tokens,command.argc=tokens.length,command.name=tokens[0],command}function parse(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",AST={type:\"script\",commands:[]},commands=lex(input),i=0;i<commands.length;i++){var parsed=parseCommand(commands[i]);AST.commands[i]=parsed}return AST}parse(\"echo hello, world\");"/* end */
     })
@@ -690,13 +678,12 @@ class FileDescriptor {
 const utils = {};
 
 utils.genUUID = function() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-    /[xy]/g,
-    function(char) {
-      let r = Math.random() * 16 | 0, v = char === "x" ? r : r & 0x3 | 0x8;
-      return v.toString(16);
-    }
-  );
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(
+    char
+  ) {
+    let r = (Math.random() * 16) | 0, v = char === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 };
 
 utils.mkWorker = function(scriptStr) {

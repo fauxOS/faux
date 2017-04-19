@@ -15,17 +15,18 @@
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^2.0.1",
     "intern": "^3.4.2",
-    "prettier": "^0.22.0",
+    "prettier": "^1.1.0",
     "rollup": "^0.41.5",
-    "rollup-watch": "^3.2.2"
+    "rollup-watch": "^3.2.2",
+    "yarn": "^0.22.0"
   },
   "scripts": {
     "format": "prettier --write 'src/**/*.js'",
-    "build": "npm run format && gulp",
+    "build": "yarn run format && gulp",
     "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer &",
-    "dev": "npm run test && gulp watch",
-    "clean": "npm cache clear && rm -rf node_modules/ && rm -rf build/ && rm -rf dist/",
-    "reset": "npm run clean && npm install && npm run build"
+    "dev": "yarn run test && gulp watch",
+    "clean": "yarn cache clean && rm -rf node_modules/ && npm install -D yarn && rm -rf build/ && rm -rf dist/",
+    "reset": "yarn run clean && yarn && yarn run build"
   },
   "keywords": [
     "faux",

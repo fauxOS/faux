@@ -4,7 +4,7 @@ export default class VNode {
   constructor(container) {
     this.container = container;
     this.type = this.findType();
-    this.perms = this.findPerms();
+    this.exec = this.isExecutable();
   }
 
   findType() {
@@ -17,19 +17,15 @@ export default class VNode {
     }
   }
 
-  findPerms() {
+  isExecutable() {
     if (this.type === "inode") {
-      return this.container.perms;
+      return this.container.exec;
     } else {
-      return [true, true, false];
+      return false;
     }
   }
 
   get data() {
-    // Check read permission
-    if (!this.perms[0]) {
-      return -1;
-    }
     if (this.type === "inode") {
       const data = this.container.data;
       // Directory or other
@@ -45,10 +41,6 @@ export default class VNode {
   }
 
   set data(data) {
-    // Check write permission
-    if (!this.perms[1]) {
-      return -1;
-    }
     if (this.type === "inode") {
       this.container.data = data;
       return data;
@@ -61,10 +53,6 @@ export default class VNode {
   }
 
   get files() {
-    // Check read permission
-    if (!this.perms[0]) {
-      return -1;
-    }
     if (this.type === "inode") {
       if (this.container.type === "d") {
         return Object.keys(this.container.files);
