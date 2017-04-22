@@ -31,8 +31,8 @@ export default class VFS {
     const resolves = [];
     for (let i = 0; i < mounts.length; i++) {
       let mount = new Pathname(mounts[i]).clean;
-      for (let i in segments) {
-        if (segments[i] === mount) {
+      for (let i2 in segments) {
+        if (segments[i2] === mount) {
           resolves.push(mount);
         }
       }

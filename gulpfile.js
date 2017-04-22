@@ -1,13 +1,9 @@
-// Gulp
 var gulp = require("gulp");
 var order = require("gulp-order");
 var concat = require("gulp-concat");
 var inject = require("gulp-inject");
-var babel = require("gulp-babel");
-var uglify = require("gulp-uglify");
+var babili = require("gulp-babili");
 var rename = require("gulp-rename");
-
-// Rollup
 var rollup = require("rollup");
 
 gulp.task("kernel", function() {
@@ -40,23 +36,14 @@ function rollThatUp(name, entry, dest, sourceMap = false) {
     });
 }
 
-function gulpThatDown(input, output = "build/", babelPresets = [["es2015"]]) {
+function gulpThatDown(input, output = "build/") {
   return gulp
     .src(input)
-    .pipe(
-      babel({
-        presets: babelPresets
-      })
-    )
-    .pipe(
-      uglify({
-        mangle: false
-      })
-    )
+    .pipe(babili({ mangle: false }))
     .pipe(gulp.dest(output));
 }
 
-function build(name, path, useRollup = false, babelPresets = [["es2015"]]) {
+function build(name, path, useRollup = true) {
   if (useRollup) {
     var dest = "build/" + name + ".js";
     return rollThatUp(name, path, dest).then(function() {
@@ -68,17 +55,15 @@ function build(name, path, useRollup = false, babelPresets = [["es2015"]]) {
 }
 
 gulp.task("syscalls:build", function() {
-  return build("syscalls", "src/userspace/syscalls.js");
+  return build("syscalls", "src/userspace/syscalls.js", false);
 });
 
 gulp.task("lib:build", function() {
-  return build("lib", "src/userspace/lib/main.js", true);
+  return build("lib", "src/userspace/lib/main.js");
 });
 
 gulp.task("fsh:build", function() {
-  return build("fsh", "src/userspace/fsh/main.js", true, [
-    ["es2015", { modules: false }]
-  ]);
+  return build("fsh", "src/userspace/fsh/main.js");
 });
 
 // Get the builds out of the way,
@@ -143,23 +128,11 @@ gulp.task("default", ["syscalls", "lib", "fsh"], function() {
           }
         })
       )
-      // ES6 non-transpiled version
-      .pipe(rename("fauxOS.es6.js"))
-      .pipe(gulp.dest("dist/"))
-      // Babel transpiled version
-      .pipe(
-        babel({
-          presets: [["es2015", { modules: false }]]
-        })
-      )
+      // Fully-readable version
       .pipe(rename("fauxOS.js"))
       .pipe(gulp.dest("dist/"))
       // Minified version
-      .pipe(
-        uglify({
-          mangle: false
-        })
-      )
+      .pipe(babili({ mangle: false }))
       .pipe(rename("fauxOS.min.js"))
       .pipe(gulp.dest("dist/")) );
 });
