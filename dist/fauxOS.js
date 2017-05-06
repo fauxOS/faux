@@ -1,159 +1,123 @@
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 (function (global, factory) {
-  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : global.faux = factory();
-})(this, function () {
-  'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.faux = factory());
+}(this, (function () { 'use strict';
 
-  var OFS_Inode = function OFS_Inode() {
-    var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    _classCallCheck(this, OFS_Inode);
-
+class OFS_Inode {
+  constructor(config = {}) {
     this.links = 0;
     this.exec = false;
     Object.assign(this, config);
-  };
+  }
+}
 
-  /*
-   * Path name manipulations
-   * p = new Pathname("/some///./../some/strange/././path")
-   * p.clean() => "/some/strange/path"
-   */
+/*
+ * Path name manipulations
+ * p = new Pathname("/some///./../some/strange/././path")
+ * p.clean() => "/some/strange/path"
+ */
+class Pathname {
+  constructor(input) {
+    this.input = input;
+  }
 
-
-  var Pathname = function () {
-    function Pathname(input) {
-      _classCallCheck(this, Pathname);
-
-      this.input = input;
+  // clean up a crazy path
+  // e.g. "/some///./../some/strange/././path" => "/some/strange/path"
+  get clean() {
+    let clean = [];
+    // Split the path by "/", match() because it doesn't add empty strings
+    const pathArray = this.input.match(/[^/]+/g);
+    // Iterate each name in the path
+    for (let i in pathArray) {
+      const name = pathArray[i];
+      // If it's the current directory, don't do anything
+      if (name === ".") {
+      } else if (name === "..") {
+        // If it's the previous directory, remove the last added entry
+        clean.pop();
+      } else {
+        // Anything else, we add to the array plainly
+        clean.push(name);
+      }
     }
+    // Array to path
+    return "/" + clean.join("/");
+  }
 
-    // clean up a crazy path
-    // e.g. "/some///./../some/strange/././path" => "/some/strange/path"
+  // Chop a path into an array of names
+  // "/paths/are/like/arrays" => ["paths", "are", "like", "arrays"]
+  get chop() {
+    const segments = this.clean.match(/[^/]+/g);
+    if (segments === null) {
+      return ["/"];
+    } else {
+      return segments;
+    }
+  }
 
+  // Just the name of the file/directory the path leads to
+  get name() {
+    return this.chop[this.chop.length - 1];
+  }
 
-    _createClass(Pathname, [{
-      key: 'clean',
-      get: function get() {
-        var clean = [];
-        // Split the path by "/", match() because it doesn't add empty strings
-        var pathArray = this.input.match(/[^/]+/g);
-        // Iterate each name in the path
-        for (var i in pathArray) {
-          var name = pathArray[i];
-          // If it's the current directory, don't do anything
-          if (name === ".") {} else if (name === "..") {
-            // If it's the previous directory, remove the last added entry
-            clean.pop();
-          } else {
-            // Anything else, we add to the array plainly
-            clean.push(name);
-          }
-        }
-        // Array to path
-        return "/" + clean.join("/");
+  // Basename from the normal name
+  // "filename.txt" => "filename"
+  get basename() {
+    const name = this.name;
+    if (name === "") {
+      return name;
+    } else {
+      const base = name.match(/^[^\.]+/);
+      if (base !== null) {
+        return base[0];
+      } else {
+        return "";
       }
+    }
+  }
 
-      // Chop a path into an array of names
-      // "/paths/are/like/arrays" => ["paths", "are", "like", "arrays"]
+  // Parent name, get the directory holding this
+  // "/directories/hold/files/like-this-one" => "/directories/hold/files"
+  get parent() {
+    if (this.name === "/") {
+      return null;
+    } else {
+      // Get the length of the path without the name in it
+      const parentLen = this.clean.length - this.name.length;
+      // Slice the name out of the path
+      return this.clean.slice(0, parentLen);
+    }
+  }
 
-    }, {
-      key: 'chop',
-      get: function get() {
-        var segments = this.clean.match(/[^/]+/g);
-        if (segments === null) {
-          return ["/"];
-        } else {
-          return segments;
-        }
+  // Extentions array from the name
+  // "archive.tar.gz" => [".tar", ".gz"]
+  get extentions() {
+    return this.name.match(/\.[^\.]+/g);
+  }
+
+  // get the segments of a path like this : ["/", "/path", "/path/example"]
+  get segment() {
+    const pathArray = this.chop;
+    let segments = [];
+    // If its a root path, skip segments
+    if (this.name === "/") {
+      segments = ["/"];
+    } else {
+      // Else, any other path
+      for (let i = 0; i <= pathArray.length; i++) {
+        let matchPath = pathArray.slice(0, i);
+        segments.push("/" + matchPath.join("/"));
       }
+    }
+    return segments;
+  }
+}
 
-      // Just the name of the file/directory the path leads to
-
-    }, {
-      key: 'name',
-      get: function get() {
-        return this.chop[this.chop.length - 1];
-      }
-
-      // Basename from the normal name
-      // "filename.txt" => "filename"
-
-    }, {
-      key: 'basename',
-      get: function get() {
-        var name = this.name;
-        if (name === "") {
-          return name;
-        } else {
-          var base = name.match(/^[^\.]+/);
-          if (base !== null) {
-            return base[0];
-          } else {
-            return "";
-          }
-        }
-      }
-
-      // Parent name, get the directory holding this
-      // "/directories/hold/files/like-this-one" => "/directories/hold/files"
-
-    }, {
-      key: 'parent',
-      get: function get() {
-        if (this.name === "/") {
-          return null;
-        } else {
-          // Get the length of the path without the name in it
-          var parentLen = this.clean.length - this.name.length;
-          // Slice the name out of the path
-          return this.clean.slice(0, parentLen);
-        }
-      }
-
-      // Extentions array from the name
-      // "archive.tar.gz" => [".tar", ".gz"]
-
-    }, {
-      key: 'extentions',
-      get: function get() {
-        return this.name.match(/\.[^\.]+/g);
-      }
-
-      // get the segments of a path like this : ["/", "/path", "/path/example"]
-
-    }, {
-      key: 'segment',
-      get: function get() {
-        var pathArray = this.chop;
-        var segments = [];
-        // If its a root path, skip segments
-        if (this.name === "/") {
-          segments = ["/"];
-        } else {
-          // Else, any other path
-          for (var i = 0; i <= pathArray.length; i++) {
-            var matchPath = pathArray.slice(0, i);
-            segments.push("/" + matchPath.join("/"));
-          }
-        }
-        return segments;
-      }
-    }]);
-
-    return Pathname;
-  }();
-
-  var OFS = function () {
-    function OFS() {
-      _classCallCheck(this, OFS);
-
-      this.drive = arguments[0] || [new OFS_Inode({
+class OFS {
+  constructor() {
+    this.drive = arguments[0] || [
+      new OFS_Inode({
         links: 1,
         id: 0,
         type: "d",
@@ -161,967 +125,891 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           ".": 0,
           "..": 0
         }
-      })];
-    }
-
-    // Resolve path to an inode, don't follow symbolic links
-
-
-    _createClass(OFS, [{
-      key: 'resolveHard',
-      value: function resolveHard(path) {
-        var inode = 0;
-        var trace = [inode];
-        if (path === "/" || path === "") {
-          return this.drive[inode];
-        }
-        var pathArray = new Pathname(path).chop;
-        for (var i = 0; i < pathArray.length; i++) {
-          var name = pathArray[i];
-          var inodeObj = this.drive[inode];
-          if (inodeObj.files === undefined) {
-            // Could not resolve path to inodes completely
-            return -1;
-          }
-          inode = inodeObj.files[name];
-          if (inode === undefined) {
-            // Could not find end inode, failed at segment name
-            return -1;
-          }
-          trace.push(inode);
-        }
-        return this.drive[trace.pop()];
-      }
-
-      // Resolve and return the inode, follow symbolic links
-
-    }, {
-      key: 'resolve',
-      value: function resolve(path) {
-        var redirectCount = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-
-        // Don't follow if we get to 50 symbolic link redirects
-        if (redirectCount >= 50) {
-          // Max symbolic link redirect count reached (50)
-          return -1;
-        }
-        var inode = this.resolveHard(path);
-        if (inode < 0) {
-          // Error on hard resolve
-          return -1;
-        }
-        if (inode.type === "sl") {
-          redirectCount++;
-          return this.resolve(inode.redirect, redirectCount);
-        }
-        return inode;
-      }
-
-      // Add a new inode to the disk
-      // Defaults to just adding an inode, but if you pass a parent directory inode in,
-      // it will add `name` as an entry in `parentInode`
-
-    }, {
-      key: 'addInode',
-      value: function addInode(type) {
-        var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-        var parentInode = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-
-        // Reject if name contains a "/"
-        if (name.match("/")) {
-          return -1;
-        }
-        var id = this.drive.length;
-        this.drive[id] = new OFS_Inode({
-          links: 1,
-          type: type,
-          id: id
-        });
-        // Check parent if inode and directory
-        if (parentInode instanceof OFS_Inode && parentInode.type === "d") {
-          parentInode.files[name] = id;
-        }
-        return this.drive[id];
-      }
-
-      // Add a new file to the disk
-
-    }, {
-      key: 'touch',
-      value: function touch(path) {
-        var pathname = new Pathname(path);
-        var parentInode = this.resolve(pathname.parent);
-        var inode = this.addInode("f", pathname.name, parentInode);
-        if (inode < 0) {
-          return -1;
-        }
-        inode.data = "";
-        return inode;
-      }
-
-      // Add a new directory Inode to the disk
-
-    }, {
-      key: 'mkDir',
-      value: function mkDir(path) {
-        var pathname = new Pathname(path);
-        var parentInode = this.resolve(pathname.parent);
-        var name = pathname.name;
-        var inode = this.addInode("d", name, parentInode);
-        if (inode < 0) {
-          return -1;
-        }
-        inode.files = {
-          ".": inode.id,
-          "..": parentInode.id
-        };
-        return inode;
-      }
-
-      // Make a hard link for an inode
-
-    }, {
-      key: 'mkLink',
-      value: function mkLink(inode, path) {
-        var pathname = new Pathname(path);
-        var parentInode = this.resolve(pathname.parent);
-        var name = pathname.name;
-        // Same as in addInode, not very DRY I know...
-        if (name.match("/")) {
-          return -1;
-        }
-        parentInode.files[name] = inode.id;
-        return inode;
-      }
-
-      // Make a symbolic link inode
-
-    }, {
-      key: 'mkSymLink',
-      value: function mkSymLink(refPath, linkPath) {
-        var pathname = new Pathname(linkPath);
-        var parentInode = this.resolve(pathname.parent);
-        var name = pathname.name;
-        var inode = this.addInode("sl", name, parentInode);
-        if (inode < 0) {
-          return -1;
-        }
-        var path = new Pathname(refPath).clean;
-        inode.redirect = path;
-        return inode;
-      }
-
-      // Remove by unlinking
-
-    }, {
-      key: 'rm',
-      value: function rm(path) {
-        var pathname = new Pathname(path);
-        var parentInode = this.resolve(pathname.parent);
-        var name = pathname.name;
-        if (parentInode < 0) {
-          return -1;
-        }
-        return delete parentInode.files[name];
-      }
-    }]);
-
-    return OFS;
-  }();
-
-  var DOMFS = function () {
-    function DOMFS() {
-      var selectorBase = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
-
-      _classCallCheck(this, DOMFS);
-
-      this.base = selectorBase;
-    }
-
-    _createClass(DOMFS, [{
-      key: 'resolve',
-      value: function resolve(path) {
-        var pathname = new Pathname(path);
-        // If we are at the DOM root, i.e. /dev/dom/
-        if (pathname.chop[0] === "/") {
-          return document.querySelector("*");
-        } else {
-          var selector = " " + pathname.chop.join(" > ");
-          // For child selection by index
-          // element.children[0] becomes /dev/dom/element/1
-          selector = selector.replace(/ (\d)/g, " :nth-child($1)");
-          return document.querySelector(selector);
-        }
-      }
-    }, {
-      key: 'touch',
-      value: function touch(path) {
-        var pathname = new Pathname(path);
-        var parent = this.resolve(pathname.parent);
-        if (!parent) {
-          return -1;
-        }
-        // When creating an element, you are only allowed to use the element name
-        // e.g. touch("/dev/dom/body/#container/span")
-        // You cannot touch a class, index, or id
-        var el = document.createElement(pathname.name);
-        return parent.appendChild(el);
-      }
-    }]);
-
-    return DOMFS;
-  }();
-
-  var VNode = function () {
-    function VNode(container) {
-      _classCallCheck(this, VNode);
-
-      this.container = container;
-      this.type = this.findType();
-      this.exec = this.isExecutable();
-    }
-
-    _createClass(VNode, [{
-      key: 'findType',
-      value: function findType() {
-        if (this.container instanceof OFS_Inode) {
-          return "inode";
-        } else if (this.container instanceof HTMLElement) {
-          return "element";
-        } else {
-          return "unknown";
-        }
-      }
-    }, {
-      key: 'isExecutable',
-      value: function isExecutable() {
-        if (this.type === "inode") {
-          return this.container.exec;
-        } else {
-          return false;
-        }
-      }
-    }, {
-      key: 'data',
-      get: function get() {
-        if (this.type === "inode") {
-          var data = this.container.data;
-          // Directory or other
-          if (data === undefined) {
-            return -2;
-          }
-          return data;
-        } else if (this.type === "element") {
-          return this.container.innerHTML;
-        } else {
-          return -1;
-        }
-      },
-      set: function set(data) {
-        if (this.type === "inode") {
-          this.container.data = data;
-          return data;
-        } else if (this.type === "element") {
-          this.container.innerHTML = data;
-          return data;
-        } else {
-          return -1;
-        }
-      }
-    }, {
-      key: 'files',
-      get: function get() {
-        if (this.type === "inode") {
-          if (this.container.type === "d") {
-            return Object.keys(this.container.files);
-          } else {
-            return null;
-          }
-        } else if (this.type === "element") {
-          if (this.container.hasChildNodes()) {
-            var children = this.container.children;
-            var elements = [];
-            for (var i = 0; i < children.length; i++) {
-              var el = children[i].localName;
-              var id = children[i].id;
-              var classes = children[i].className.split(" ").join(".");
-              elements.push(el + id + classes);
-              // Child by index
-              elements.push(i + 1);
-            }
-            return elements;
-          } else {
-            return null;
-          }
-        } else {
-          return -1;
-        }
-      }
-    }]);
-
-    return VNode;
-  }();
-
-  var VFS = function () {
-    function VFS() {
-      _classCallCheck(this, VFS);
-
-      this.mounts = {
-        "/": arguments[0] || new OFS()
-      };
-    }
-
-    // Mount a filesystem
-
-
-    _createClass(VFS, [{
-      key: 'mount',
-      value: function mount(fs, mountPoint) {
-        this.mounts[mountPoint] = fs;
-        return mountPoint;
-      }
-
-      // Unmount a filesystem by mount point
-
-    }, {
-      key: 'unmount',
-      value: function unmount(mountPoint) {
-        return delete this.mounts[mountPoint];
-      }
-
-      // Resolve the path to the mounted filesystem
-      // This is the first step to trace a path, before any data containers (inodes etc) are involved
-
-    }, {
-      key: 'mountPoint',
-      value: function mountPoint(path) {
-        var pathname = new Pathname(path);
-        var segments = pathname.segment;
-        // All the mount points
-        var mounts = Object.keys(this.mounts);
-        // Array of resolved mounted disks
-        var resolves = [];
-        for (var i = 0; i < mounts.length; i++) {
-          var mount = new Pathname(mounts[i]).clean;
-          for (var _i in segments) {
-            if (segments[_i] === mount) {
-              resolves.push(mount);
-            }
-          }
-        }
-        // The most relevent mount point will be the last one resolved
-        return resolves.pop();
-      }
-
-      // Resolve a path to the fs provided data container
-
-    }, {
-      key: 'resolve',
-      value: function resolve(path) {
-        var pathname = new Pathname(path);
-        var cleanName = pathname.clean;
-        var mountPoint = this.mountPoint(cleanName);
-        var fs = this.mounts[mountPoint];
-        // This strips off the mountpoint path from the given path,
-        // so that we can resolve relative to the filesystem's root.
-        // Example: given path is "/dev/dom/head/title"
-        // We find that the mountpoint is "/dev/dom".
-        // "/dev/dom/head/title" - "/dev/dom" = "/head/title"
-        // Pass "/head/title" to the local filesystem for it to resolve
-        var fsLocalPath = cleanName.substring(mountPoint.length);
-        var container = fs.resolve(fsLocalPath);
-        if (container < 0) {
-          return -1;
-        }
-        return new VNode(container);
-      }
-    }, {
-      key: 'touch',
-      value: function touch(path) {
-        var pathname = new Pathname(path);
-        var mountPoint = this.mountPoint(path);
-        var fs = this.mounts[mountPoint];
-        var fsLocalPath = pathname.clean.substring(mountPoint.length);
-        var touched = fs.touch(fsLocalPath);
-        if (touched < 0) {
-          return -1;
-        }
-        return touched;
-      }
-    }]);
-
-    return VFS;
-  }();
-
-  var fs = new VFS(new OFS([new OFS_Inode({
-    links: 1,
-    id: 0,
-    type: "d",
-    files: {
-      ".": 0,
-      "..": 0,
-      bin: 1,
-      dev: 2,
-      etc: 3,
-      home: 4,
-      lib: 5,
-      log: 6,
-      mnt: 7,
-      tmp: 8,
-      usr: 9
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "d",
-    id: 1,
-    files: {
-      ".": 1,
-      "..": 0
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "d",
-    id: 2,
-    files: {
-      ".": 2,
-      "..": 0
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "d",
-    id: 3,
-    files: {
-      ".": 3,
-      "..": 0
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "d",
-    id: 4,
-    files: {
-      ".": 4,
-      "..": 0
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "d",
-    id: 5,
-    files: {
-      ".": 5,
-      "..": 0
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "d",
-    id: 6,
-    files: {
-      ".": 6,
-      "..": 0
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "d",
-    id: 7,
-    files: {
-      ".": 7,
-      "..": 0
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "d",
-    id: 8,
-    files: {
-      ".": 8,
-      "..": 0
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "d",
-    id: 9,
-    files: {
-      ".": 9,
-      "..": 0
-    }
-  })]));
-
-  // Mount /lib
-  fs.mount(new OFS([new OFS_Inode({
-    links: 1,
-    id: 0,
-    type: "d",
-    files: {
-      ".": 0,
-      "..": 0,
-      lib: 1
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "f",
-    exec: true,
-    id: 1,
-    /* lib */data: "\"use strict\";function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError(\"Cannot call a class as a function\")}var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,\"value\"in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}(),Pathname=function(){function Pathname(input){_classCallCheck(this,Pathname),this.input=input}return _createClass(Pathname,[{key:\"clean\",get:function(){var clean=[],pathArray=this.input.match(/[^\\/]+/g);for(var i in pathArray){var name=pathArray[i];\".\"===name||(\"..\"===name?clean.pop():clean.push(name))}return\"/\"+clean.join(\"/\")}},{key:\"chop\",get:function(){var segments=this.clean.match(/[^\\/]+/g);return null===segments?[\"/\"]:segments}},{key:\"name\",get:function(){return this.chop[this.chop.length-1]}},{key:\"basename\",get:function(){var name=this.name;if(\"\"===name)return name;var base=name.match(/^[^\\.]+/);return null!==base?base[0]:\"\"}},{key:\"parent\",get:function(){if(\"/\"===this.name)return null;var parentLen=this.clean.length-this.name.length;return this.clean.slice(0,parentLen)}},{key:\"extentions\",get:function(){return this.name.match(/\\.[^\\.]+/g)}},{key:\"segment\",get:function(){var pathArray=this.chop,segments=[];if(\"/\"===this.name)segments=[\"/\"];else for(var i=0;i<=pathArray.length;i++){var matchPath=pathArray.slice(0,i);segments.push(\"/\"+matchPath.join(\"/\"))}return segments}}]),Pathname}(),fs={};fs.readFile=function(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\";return open(path,\"r\").then(function(fd){return read(fd)})},fs.writeFile=function(){var path=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"/\",data=arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"\";return open(path,\"w\").then(function(fd){return write(fd,data)})},self.Pathname=Pathname,self.fs=fs;" /* end */
-  })]), "/lib");
-
-  // Mount /bin
-  fs.mount(new OFS([new OFS_Inode({
-    links: 1,
-    id: 0,
-    type: "d",
-    files: {
-      ".": 0,
-      "..": 0,
-      fsh: 1
-    }
-  }), new OFS_Inode({
-    links: 1,
-    type: "f",
-    exec: true,
-    id: 1,
-    /* fsh */data: "\"use strict\";function tokenizeLine(){for(var line=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String),i=0;i<tokens.length;i++){var token=tokens[i];tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2])}return tokens}function lex(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",allTokens=[],lines=input.match(/(\\\\;|[^;])+/g),i=0;i<lines.length;i++){var tokens=tokenizeLine(lines[i]);allTokens.push(tokens)}return allTokens}function parseCommand(tokens){var command={type:\"simple\"};return command.argv=tokens,command.argc=tokens.length,command.name=tokens[0],command}function parse(){for(var input=arguments.length>0&&void 0!==arguments[0]?arguments[0]:\"\",AST={type:\"script\",commands:[]},commands=lex(input),i=0;i<commands.length;i++){var parsed=parseCommand(commands[i]);AST.commands[i]=parsed}return AST}parse(\"echo hello, world\");" /* end */
-  })]), "/bin");
-
-  fs.mount(new DOMFS(), "/dev/dom");
-
-  function getMode() {
-    var modeStr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "r";
-
-    // prettier-ignore
-    //             read,    write,  truncate,   create,   append
-    var map = {
-      "r": [true, false, false, false, false],
-      "r+": [true, true, false, false, false],
-      "w": [false, true, true, true, false],
-      "w+": [true, true, true, true, false],
-      "a": [false, true, false, true, true],
-      "a+": [true, true, false, true, true]
-    };
-    return map[modeStr];
+      })
+    ];
   }
 
-  var FileDescriptor = function () {
-    function FileDescriptor(path, mode) {
-      _classCallCheck(this, FileDescriptor);
-
-      this.mode = getMode(mode);
-      this.path = new Pathname(path).clean;
-      this.vnode = fs.resolve(this.path);
-      // Create if non-existent?
-      if (!this.vnode.container) {
-        if (!this.mode[3]) {
-          throw new Error("Path Unresolved");
-        } else {
-          fs.touch(this.path);
-          this.vnode = fs.resolve(this.path);
-          // Probably an error creating the file
-          if (this.vnode < 0) {
-            throw new Error("Error on file creation or resolve");
-          }
-        }
-      }
-      // If truncate in mode
-      if (this.mode[2]) {
-        this.truncate();
-      }
-      this.type = this.vnode.type;
+  // Resolve path to an inode, don't follow symbolic links
+  resolveHard(path) {
+    let inode = 0;
+    const trace = [inode];
+    if (path === "/" || path === "") {
+      return this.drive[inode];
     }
-
-    _createClass(FileDescriptor, [{
-      key: 'truncate',
-      value: function truncate() {
-        this.vnode.data = "";
+    const pathArray = new Pathname(path).chop;
+    for (let i = 0; i < pathArray.length; i++) {
+      const name = pathArray[i];
+      const inodeObj = this.drive[inode];
+      if (inodeObj.files === undefined) {
+        // Could not resolve path to inodes completely
+        return -1;
       }
-
-      // Return read data
-
-    }, {
-      key: 'read',
-      value: function read() {
-        // Read mode set?
-        if (!this.mode[0]) {
-          return -1;
-        }
-        return this.vnode.data;
+      inode = inodeObj.files[name];
+      if (inode === undefined) {
+        // Could not find end inode, failed at segment name
+        return -1;
       }
-
-      // Write data out
-
-    }, {
-      key: 'write',
-      value: function write(data) {
-        return this.vnode.data = data;
-      }
-
-      // View "directory" contents or return null
-
-    }, {
-      key: 'readdir',
-      value: function readdir() {
-        return this.vnode.files;
-      }
-    }]);
-
-    return FileDescriptor;
-  }();
-
-  var utils = {};
-
-  utils.genUUID = function () {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (char) {
-      var r = Math.random() * 16 | 0,
-          v = char === "x" ? r : r & 0x3 | 0x8;
-      return v.toString(16);
-    });
-  };
-
-  utils.mkWorker = function (scriptStr) {
-    var blob = new Blob([scriptStr], { type: "application/javascript" });
-    var uri = URL.createObjectURL(blob);
-    return new Worker(uri);
-  };
-
-  utils.openLocalFile = function () {
-    var readAs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "readAsText";
-
-    var input = document.createElement("input");
-    input.type = "file";
-    input.click();
-    return new Promise(function (resolve, reject) {
-      input.onchange = function () {
-        var file = input.files[0];
-        var reader = new FileReader();
-        reader[readAs](file);
-        reader.onloadend = function () {
-          resolve(reader.result);
-        };
-      };
-    });
-  };
-
-  utils.http = function (uri) {
-    var method = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "GET";
-
-    return new Promise(function (resolve, reject) {
-      if (!uri instanceof String) {
-        reject("URI invalid");
-      }
-      var xhr = new XMLHttpRequest();
-      xhr.open(method, uri, true);
-      xhr.onload = function () {
-        if (xhr.status < 300 && xhr.status >= 200) {
-          resolve(xhr.response);
-        } else {
-          reject(xhr.status + " " + xhr.statusText);
-        }
-      };
-      xhr.onerror = function (err) {
-        reject(err);
-      };
-      xhr.send();
-    });
-  };
-
-  var flags = {};
-
-  // Example output: ["Browser", "xx.xx.xx"]
-  function browserInfo() {
-    var ua = navigator.userAgent;
-    var matches = ua.match(/(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d.]+)/i) || [];
-    if (/trident/i.test(matches[1])) {
-      var tem = ua.match(/\brv[ :]+([\d.]+)/g) || "";
-      return ["IE", tem[1]];
+      trace.push(inode);
     }
-    if (matches[1] === "Chrome") {
-      var _tem = ua.match(/\b(OPR|Edge)\/([\d.]+)/);
-      if (_tem) {
-        return ["Opera", _tem[1]];
-      }
+    return this.drive[trace.pop()];
+  }
+
+  // Resolve and return the inode, follow symbolic links
+  resolve(path, redirectCount = 0) {
+    // Don't follow if we get to 50 symbolic link redirects
+    if (redirectCount >= 50) {
+      // Max symbolic link redirect count reached (50)
+      return -1;
     }
-    if (matches[2]) {
-      return [matches[1], matches[2]];
+    const inode = this.resolveHard(path);
+    if (inode < 0) {
+      // Error on hard resolve
+      return -1;
+    }
+    if (inode.type === "sl") {
+      redirectCount++;
+      return this.resolve(inode.redirect, redirectCount);
+    }
+    return inode;
+  }
+
+  // Add a new inode to the disk
+  // Defaults to just adding an inode, but if you pass a parent directory inode in,
+  // it will add `name` as an entry in `parentInode`
+  addInode(type, name = null, parentInode = null) {
+    // Reject if name contains a "/"
+    if (name.match("/")) {
+      return -1;
+    }
+    const id = this.drive.length;
+    this.drive[id] = new OFS_Inode({
+      links: 1,
+      type: type,
+      id: id
+    });
+    // Check parent if inode and directory
+    if (parentInode instanceof OFS_Inode && parentInode.type === "d") {
+      parentInode.files[name] = id;
+    }
+    return this.drive[id];
+  }
+
+  // Add a new file to the disk
+  touch(path) {
+    const pathname = new Pathname(path);
+    const parentInode = this.resolve(pathname.parent);
+    const inode = this.addInode("f", pathname.name, parentInode);
+    if (inode < 0) {
+      return -1;
+    }
+    inode.data = "";
+    return inode;
+  }
+
+  // Add a new directory Inode to the disk
+  mkDir(path) {
+    const pathname = new Pathname(path);
+    const parentInode = this.resolve(pathname.parent);
+    const name = pathname.name;
+    const inode = this.addInode("d", name, parentInode);
+    if (inode < 0) {
+      return -1;
+    }
+    inode.files = {
+      ".": inode.id,
+      "..": parentInode.id
+    };
+    return inode;
+  }
+
+  // Make a hard link for an inode
+  mkLink(inode, path) {
+    const pathname = new Pathname(path);
+    const parentInode = this.resolve(pathname.parent);
+    const name = pathname.name;
+    // Same as in addInode, not very DRY I know...
+    if (name.match("/")) {
+      return -1;
+    }
+    parentInode.files[name] = inode.id;
+    return inode;
+  }
+
+  // Make a symbolic link inode
+  mkSymLink(refPath, linkPath) {
+    const pathname = new Pathname(linkPath);
+    const parentInode = this.resolve(pathname.parent);
+    const name = pathname.name;
+    const inode = this.addInode("sl", name, parentInode);
+    if (inode < 0) {
+      return -1;
+    }
+    const path = new Pathname(refPath).clean;
+    inode.redirect = path;
+    return inode;
+  }
+
+  // Remove by unlinking
+  rm(path) {
+    const pathname = new Pathname(path);
+    const parentInode = this.resolve(pathname.parent);
+    const name = pathname.name;
+    if (parentInode < 0) {
+      return -1;
+    }
+    return delete parentInode.files[name];
+  }
+}
+
+class DOMFS {
+  constructor(selectorBase = "") {
+    this.base = selectorBase;
+  }
+
+  resolve(path) {
+    const pathname = new Pathname(path);
+    // If we are at the DOM root, i.e. /dev/dom/
+    if (pathname.chop[0] === "/") {
+      return document.querySelector("*");
     } else {
-      return [navigator.appName, navigator.appVersion];
+      let selector = " " + pathname.chop.join(" > ");
+      // For child selection by index
+      // element.children[0] becomes /dev/dom/element/1
+      selector = selector.replace(/ (\d)/g, " :nth-child($1)");
+      return document.querySelector(selector);
     }
   }
 
-  var info = browserInfo();
+  touch(path) {
+    const pathname = new Pathname(path);
+    const parent = this.resolve(pathname.parent);
+    if (!parent) {
+      return -1;
+    }
+    // When creating an element, you are only allowed to use the element name
+    // e.g. touch("/dev/dom/body/#container/span")
+    // You cannot touch a class, index, or id
+    const el = document.createElement(pathname.name);
+    return parent.appendChild(el);
+  }
+}
 
-  flags.browser = info[0];
-  flags.version = info[1];
+class VNode {
+  constructor(container) {
+    this.container = container;
+    this.type = this.findType();
+    this.exec = this.isExecutable();
+  }
 
-  var Process = function () {
-    function Process(image, argv) {
-      var _this = this;
+  findType() {
+    if (this.container instanceof OFS_Inode) {
+      return "inode";
+    } else if (this.container instanceof HTMLElement) {
+      return "element";
+    } else {
+      return "unknown";
+    }
+  }
 
-      _classCallCheck(this, Process);
+  isExecutable() {
+    if (this.type === "inode") {
+      return this.container.exec;
+    } else {
+      return false;
+    }
+  }
 
-      this.argv = [] || argv;
-      this.argc = this.argv.length;
-      this.fds = [];
-      this.libs = [];
-      this.cwd = "/";
-      this.env = {
-        SHELL: "fsh",
-        PATH: "/sbin:/bin",
-        HOME: "/home"
+  get data() {
+    if (this.type === "inode") {
+      const data = this.container.data;
+      // Directory or other
+      if (data === undefined) {
+        return -2;
+      }
+      return data;
+    } else if (this.type === "element") {
+      return this.container.innerHTML;
+    } else {
+      return -1;
+    }
+  }
+
+  set data(data) {
+    if (this.type === "inode") {
+      this.container.data = data;
+      return data;
+    } else if (this.type === "element") {
+      this.container.innerHTML = data;
+      return data;
+    } else {
+      return -1;
+    }
+  }
+
+  get files() {
+    if (this.type === "inode") {
+      if (this.container.type === "d") {
+        return Object.keys(this.container.files);
+      } else {
+        return null;
+      }
+    } else if (this.type === "element") {
+      if (this.container.hasChildNodes()) {
+        const children = this.container.children;
+        const elements = [];
+        for (let i = 0; i < children.length; i++) {
+          let el = children[i].localName;
+          let id = children[i].id;
+          let classes = children[i].className.split(" ").join(".");
+          elements.push(el + id + classes);
+          // Child by index
+          elements.push(i + 1);
+        }
+        return elements;
+      } else {
+        return null;
+      }
+    } else {
+      return -1;
+    }
+  }
+}
+
+class VFS {
+  constructor() {
+    this.mounts = {
+      "/": arguments[0] || new OFS()
+    };
+  }
+
+  // Mount a filesystem
+  mount(fs, mountPoint) {
+    this.mounts[mountPoint] = fs;
+    return mountPoint;
+  }
+
+  // Unmount a filesystem by mount point
+  unmount(mountPoint) {
+    return delete this.mounts[mountPoint];
+  }
+
+  // Resolve the path to the mounted filesystem
+  // This is the first step to trace a path, before any data containers (inodes etc) are involved
+  mountPoint(path) {
+    const pathname = new Pathname(path);
+    const segments = pathname.segment;
+    // All the mount points
+    const mounts = Object.keys(this.mounts);
+    // Array of resolved mounted disks
+    const resolves = [];
+    for (let i = 0; i < mounts.length; i++) {
+      let mount = new Pathname(mounts[i]).clean;
+      for (let i2 in segments) {
+        if (segments[i2] === mount) {
+          resolves.push(mount);
+        }
+      }
+    }
+    // The most relevent mount point will be the last one resolved
+    return resolves.pop();
+  }
+
+  // Resolve a path to the fs provided data container
+  resolve(path) {
+    const pathname = new Pathname(path);
+    const cleanName = pathname.clean;
+    const mountPoint = this.mountPoint(cleanName);
+    const fs = this.mounts[mountPoint];
+    // This strips off the mountpoint path from the given path,
+    // so that we can resolve relative to the filesystem's root.
+    // Example: given path is "/dev/dom/head/title"
+    // We find that the mountpoint is "/dev/dom".
+    // "/dev/dom/head/title" - "/dev/dom" = "/head/title"
+    // Pass "/head/title" to the local filesystem for it to resolve
+    const fsLocalPath = cleanName.substring(mountPoint.length);
+    const container = fs.resolve(fsLocalPath);
+    if (container < 0) {
+      return -1;
+    }
+    return new VNode(container);
+  }
+
+  touch(path) {
+    const pathname = new Pathname(path);
+    const mountPoint = this.mountPoint(path);
+    const fs = this.mounts[mountPoint];
+    const fsLocalPath = pathname.clean.substring(mountPoint.length);
+    const touched = fs.touch(fsLocalPath);
+    if (touched < 0) {
+      return -1;
+    }
+    return touched;
+  }
+}
+
+const fs = new VFS(
+  new OFS([
+    new OFS_Inode({
+      links: 1,
+      id: 0,
+      type: "d",
+      files: {
+        ".": 0,
+        "..": 0,
+        bin: 1,
+        dev: 2,
+        etc: 3,
+        home: 4,
+        lib: 5,
+        log: 6,
+        mnt: 7,
+        tmp: 8,
+        usr: 9
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "d",
+      id: 1,
+      files: {
+        ".": 1,
+        "..": 0
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "d",
+      id: 2,
+      files: {
+        ".": 2,
+        "..": 0
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "d",
+      id: 3,
+      files: {
+        ".": 3,
+        "..": 0
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "d",
+      id: 4,
+      files: {
+        ".": 4,
+        "..": 0
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "d",
+      id: 5,
+      files: {
+        ".": 5,
+        "..": 0
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "d",
+      id: 6,
+      files: {
+        ".": 6,
+        "..": 0
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "d",
+      id: 7,
+      files: {
+        ".": 7,
+        "..": 0
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "d",
+      id: 8,
+      files: {
+        ".": 8,
+        "..": 0
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "d",
+      id: 9,
+      files: {
+        ".": 9,
+        "..": 0
+      }
+    })
+  ])
+);
+
+// Mount /lib
+fs.mount(
+  new OFS([
+    new OFS_Inode({
+      links: 1,
+      id: 0,
+      type: "d",
+      files: {
+        ".": 0,
+        "..": 0,
+        lib: 1
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "f",
+      exec: true,
+      id: 1,
+      /* lib */ data: "class Pathname{constructor(input){this.input=input}get clean(){let clean=[];const pathArray=this.input.match(/[^/]+/g);for(let i in pathArray){const name=pathArray[i];\".\"===name||(\"..\"===name?clean.pop():clean.push(name))}return\"/\"+clean.join(\"/\")}get chop(){const segments=this.clean.match(/[^/]+/g);return null===segments?[\"/\"]:segments}get name(){return this.chop[this.chop.length-1]}get basename(){const name=this.name;if(\"\"===name)return name;const base=name.match(/^[^\\.]+/);return null===base?\"\":base[0]}get parent(){if(\"/\"===this.name)return null;const parentLen=this.clean.length-this.name.length;return this.clean.slice(0,parentLen)}get extentions(){return this.name.match(/\\.[^\\.]+/g)}get segment(){const pathArray=this.chop;let segments=[];if(\"/\"===this.name)segments=[\"/\"];else for(let matchPath,i=0;i<=pathArray.length;i++)matchPath=pathArray.slice(0,i),segments.push(\"/\"+matchPath.join(\"/\"));return segments}}const fs={};fs.readFile=function(path=\"/\"){return open(path,\"r\").then(fd=>{return read(fd)})},fs.writeFile=function(path=\"/\",data=\"\"){return open(path,\"w\").then(fd=>{return write(fd,data)})},self.Pathname=Pathname,self.fs=fs;"/* end */
+    })
+  ]),
+  "/lib"
+);
+
+// Mount /bin
+fs.mount(
+  new OFS([
+    new OFS_Inode({
+      links: 1,
+      id: 0,
+      type: "d",
+      files: {
+        ".": 0,
+        "..": 0,
+        fsh: 1
+      }
+    }),
+
+    new OFS_Inode({
+      links: 1,
+      type: "f",
+      exec: true,
+      id: 1,
+      /* fsh */ data: "function tokenizeLine(line=\"\"){const tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String);for(let token,i=0;i<tokens.length;i++)token=tokens[i],tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2]);return tokens}function lex(input=\"\"){const allTokens=[],lines=input.match(/(\\\\;|[^;])+/g);for(let tokens,i=0;i<lines.length;i++)tokens=tokenizeLine(lines[i]),allTokens.push(tokens);return allTokens}function parseCommand(tokens){const command={type:\"simple\",argv:tokens,argc:tokens.length,name:tokens[0]};return command}function parse(input=\"\"){const AST={type:\"script\",commands:[]},commands=lex(input);for(let parsed,i=0;i<commands.length;i++)parsed=parseCommand(commands[i]),AST.commands[i]=parsed;return AST}parse(\"echo hello, world\");"/* end */
+    })
+  ]),
+  "/bin"
+);
+
+fs.mount(new DOMFS(), "/dev/dom");
+
+function getMode(modeStr = "r") {
+  // prettier-ignore
+  //             read,    write,  truncate,   create,   append
+  const map = {
+    "r":        [true,    false,  false,      false,    false],
+    "r+":       [true,    true,   false,      false,    false],
+    "w":        [false,   true,   true,       true,     false],
+    "w+":       [true,    true,   true,       true,     false],
+    "a":        [false,   true,   false,      true,     true],
+    "a+":       [true,    true,   false,      true,     true]
+  };
+  return map[modeStr];
+}
+
+class FileDescriptor {
+  constructor(path, mode) {
+    this.mode = getMode(mode);
+    this.path = new Pathname(path).clean;
+    this.vnode = fs.resolve(this.path);
+    // Create if non-existent?
+    if (!this.vnode.container) {
+      if (!this.mode[3]) {
+        throw new Error("Path Unresolved");
+      } else {
+        fs.touch(this.path);
+        this.vnode = fs.resolve(this.path);
+        // Probably an error creating the file
+        if (this.vnode < 0) {
+          throw new Error("Error on file creation or resolve");
+        }
+      }
+    }
+    // If truncate in mode
+    if (this.mode[2]) {
+      this.truncate();
+    }
+    this.type = this.vnode.type;
+  }
+
+  truncate() {
+    this.vnode.data = "";
+  }
+
+  // Return read data
+  read() {
+    // Read mode set?
+    if (!this.mode[0]) {
+      return -1;
+    }
+    return this.vnode.data;
+  }
+
+  // Write data out
+  write(data) {
+    return (this.vnode.data = data);
+  }
+
+  // View "directory" contents or return null
+  readdir() {
+    return this.vnode.files;
+  }
+}
+
+const utils = {};
+
+utils.genUUID = function() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(
+    char
+  ) {
+    let r = (Math.random() * 16) | 0, v = char === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
+utils.mkWorker = function(scriptStr) {
+  const blob = new Blob([scriptStr], { type: "application/javascript" });
+  const uri = URL.createObjectURL(blob);
+  return new Worker(uri);
+};
+
+utils.openLocalFile = function(readAs = "readAsText") {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.click();
+  return new Promise(function(resolve, reject) {
+    input.onchange = function() {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader[readAs](file);
+      reader.onloadend = function() {
+        resolve(reader.result);
       };
-      this.image = image;
-      // We auto-load the /lib/lib dynamic library
-      var lib = this.load("/lib/lib");
-      // The worker is where the process is actually executed
-      this.worker = utils.mkWorker(
-      /* syscalls */"\"use strict\";function newID(){for(var length=arguments.length>0&&void 0!==arguments[0]?arguments[0]:8,chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\",id=\"\",i=0;i<length;i++){var randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){var id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",function(msg){msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}function load(path){var data=call(\"load\",[path]);return data.then(eval)}function spawn(image){return call(\"spawn\",[image,arguments.length>1&&void 0!==arguments[1]?arguments[1]:[]])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}function open(path){return call(\"open\",[path,arguments.length>1&&void 0!==arguments[1]?arguments[1]:\"r\"])}function read(fd){return call(\"read\",[fd])}function write(fd,data){return call(\"write\",[fd,data])}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}" /* end */ + lib + "\n\n" + image);
-      // This event listener intercepts worker messages and then
-      // passes to the message handler, which decides what next
-      this.worker.addEventListener("message", function (msg) {
-        _this.messageHandler(msg);
-      });
-    }
-
-    // Handle messages coming from the worker
-
-
-    _createClass(Process, [{
-      key: 'messageHandler',
-      value: function messageHandler(message) {
-        var msg = message.data;
-        // This does some quick message format validation, but
-        // all value validation must be handled by the system call function itself
-        if (msg.type === "syscall" && msg.name in sys) {
-          // Execute a system call with given arguments
-          if (msg.id !== undefined && msg.args instanceof Array) {
-            sys[msg.name](this, msg.id, msg.args);
-          }
-        } else {
-          // The message is not valid because of the type or name
-          var error = {
-            status: "error",
-            reason: "Invalid request - Rejected by the message handler",
-            id: msg.id
-          };
-          this.worker.postMessage(error);
-        }
-      }
-
-      // Check if we can access/it exists
-
-    }, {
-      key: 'access',
-      value: function access(path) {
-        var mode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "r";
-
-        try {
-          var fd = new FileDescriptor(path, mode);
-          if (fd.vnode) {
-            return true;
-          } else {
-            return false;
-          }
-        } catch (err) {
-          return false;
-        }
-      }
-
-      // Where open() actually runs
-      // Return a file descriptor
-
-    }, {
-      key: 'open',
-      value: function open(path, mode) {
-        if (!this.access(path, mode)) {
-          return -1;
-        }
-        var fd = new FileDescriptor(path, mode);
-        this.fds.push(fd);
-        return this.fds.length - 1;
-      }
-
-      // Like opening a file, execept we add it to the library list
-
-    }, {
-      key: 'load',
-      value: function load(path) {
-        var fd = new FileDescriptor(path);
-        this.libs.push(fd);
-        return fd.read();
-      }
-    }]);
-
-    return Process;
-  }();
-
-  var ProcessTable = function () {
-    function ProcessTable(init) {
-      _classCallCheck(this, ProcessTable);
-
-      if (init === undefined) {
-        throw new Error("Init process must be defined");
-      }
-      this.list = [null, init];
-      this.nextPID = 2;
-    }
-
-    _createClass(ProcessTable, [{
-      key: 'add',
-      value: function add(process) {
-        this.nextPID = this.list.push(process);
-        return this.nextPID - 1;
-      }
-    }]);
-
-    return ProcessTable;
-  }();
-
-  var proc = new ProcessTable(new Process());
-
-  var sys = {};
-
-  // Raise an error
-  sys.fail = function (process, msgID, args) {
-    var error = {
-      status: "error",
-      reason: args[0],
-      id: msgID
     };
-    process.worker.postMessage(error);
-  };
+  });
+};
 
-  // Throw a success result
-  sys.pass = function (process, msgID, args) {
-    var result = {
-      status: "success",
-      result: args[0],
-      id: msgID
+utils.http = function(uri, method = "GET") {
+  return new Promise((resolve, reject) => {
+    if (!uri instanceof String) {
+      reject("URI invalid");
+    }
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, uri, true);
+    xhr.onload = function() {
+      if (xhr.status < 300 && xhr.status >= 200) {
+        resolve(xhr.response);
+      } else {
+        reject(xhr.status + " " + xhr.statusText);
+      }
     };
-    process.worker.postMessage(result);
-  };
+    xhr.onerror = function(err) {
+      reject(err);
+    };
+    xhr.send();
+  });
+};
 
-  // Send a dynamic library straight to the process
-  sys.load = function (process, msgID, args) {
-    var data = process.load(args[0]);
-    sys.pass(process, msgID, [data]);
-  };
+const flags = {};
 
-  // Spawn a new process from an executable image
-  sys.spawn = function (process, msgID, args) {
-    if (!args[1] instanceof Array) {
-      sys.fail(process, msgID, ["Second argument should be the array argv"]);
-      return -1;
+// Example output: ["Browser", "xx.xx.xx"]
+function browserInfo() {
+  const ua = navigator.userAgent;
+  const matches = ua.match(
+    /(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d.]+)/i
+  ) || [];
+  if (/trident/i.test(matches[1])) {
+    const tem = ua.match(/\brv[ :]+([\d.]+)/g) || "";
+    return ["IE", tem[1]];
+  }
+  if (matches[1] === "Chrome") {
+    const tem = ua.match(/\b(OPR|Edge)\/([\d.]+)/);
+    if (tem) {
+      return ["Opera", tem[1]];
     }
-    var newProcess = new Process(args[0], args[1]);
-    var pid = proc.add(newProcess);
-    sys.pass(process, msgID, [pid]);
-  };
+  }
+  if (matches[2]) {
+    return [matches[1], matches[2]];
+  } else {
+    return [navigator.appName, navigator.appVersion];
+  }
+}
 
-  // Check file access
-  sys.access = function (process, msgID, args) {
-    if (typeof args[0] !== "string") {
-      sys.fail(process, msgID, ["Argument should be a string"]);
-      return -1;
-    }
-    var path = "";
-    // If the first character is a "/", then working dir does not matter
-    if (args[0][0] === "/") {
-      path = args[0];
+const info = browserInfo();
+
+flags.browser = info[0];
+flags.version = info[1];
+
+class Process {
+  constructor(image, argv) {
+    this.argv = [] || argv;
+    this.argc = this.argv.length;
+    this.fds = [];
+    this.libs = [];
+    this.cwd = "/";
+    this.env = {
+      SHELL: "fsh",
+      PATH: "/sbin:/bin",
+      HOME: "/home"
+    };
+    this.image = image;
+    // We auto-load the /lib/lib dynamic library
+    const lib = this.load("/lib/lib");
+    // The worker is where the process is actually executed
+    this.worker = utils.mkWorker(
+      /* syscalls */ "function newID(length=8){const chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\";let id=\"\";for(let i=0;i<length;i++){const randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){const id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",msg=>{msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}async function load(path){const data=await call(\"load\",[path]);if(-2===data)return new Error(\"No data returned, possibly a directory\");return 0>data?new Error(\"Could not get data\"):eval(data)}function spawn(image,argv=[]){return call(\"spawn\",[image,argv])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}async function open(path,mode=\"r\"){const fd=await call(\"open\",[path,mode]);return 0>fd?new Error(\"Could not open file\"):fd}async function read(fd){const data=await call(\"read\",[fd]);if(-2===data)return new Error(\"No data returned, possibly a directory\");return 0>data?new Error(\"Could not get data\"):data}async function write(fd,data){const ret=await call(\"write\",[fd,data]);return 0>ret?new Error(\"Could not write data\"):data}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}" /* end */ + lib + "\n\n" + image
+    );
+    // This event listener intercepts worker messages and then
+    // passes to the message handler, which decides what next
+    this.worker.addEventListener("message", msg => {
+      this.messageHandler(msg);
+    });
+  }
+
+  // Handle messages coming from the worker
+  messageHandler(message) {
+    const msg = message.data;
+    // This does some quick message format validation, but
+    // all value validation must be handled by the system call function itself
+    if (msg.type === "syscall" && msg.name in sys) {
+      // Execute a system call with given arguments
+      if (msg.id !== undefined && msg.args instanceof Array) {
+        sys[msg.name](this, msg.id, msg.args);
+      }
     } else {
-      path = process.cwd + "/" + args[0];
+      // The message is not valid because of the type or name
+      const error = {
+        status: "error",
+        reason: "Invalid request - Rejected by the message handler",
+        id: msg.id
+      };
+      this.worker.postMessage(error);
     }
-    var result = process.access(path);
-    sys.pass(process, msgID, [result]);
-  };
+  }
 
-  // Resolve a path into a file descriptor, and add it to the table
-  sys.open = function (process, msgID, args) {
-    if (typeof args[0] !== "string" && typeof args[1] !== "string") {
-      sys.fail(process, msgID, ["Arguments 1 and 2 should be a strings"]);
+  // Check if we can access/it exists
+  access(path, mode = "r") {
+    try {
+      const fd = new FileDescriptor(path, mode);
+      if (fd.vnode) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // Where open() actually runs
+  // Return a file descriptor
+  open(path, mode) {
+    if (!this.access(path, mode)) {
       return -1;
     }
-    var path = "";
-    // If the first character is a "/", then working dir does not matter
-    if (args[0][0] === "/") {
-      path = args[0];
-    } else {
-      path = process.cwd + "/" + args[0];
-    }
-    var result = process.open(path, args[1]);
-    sys.pass(process, msgID, [result]);
-  };
+    const fd = new FileDescriptor(path, mode);
+    this.fds.push(fd);
+    return this.fds.length - 1;
+  }
 
-  // Read data from a file descriptor
-  sys.read = function (process, msgID, args) {
-    if (args.length !== 1) {
-      sys.fail(process, msgID, ["Should have only 1 argument"]);
-      return -1;
-    }
-    if (args[0] < 0) {
-      sys.fail(process, msgID, ["File Descriptor should be postive, check file name"]);
-      return -1;
-    }
-    var result = process.fds[args[0]].read();
-    sys.pass(process, msgID, [result]);
-  };
+  // Like opening a file, execept we add it to the library list
+  load(path) {
+    const fd = new FileDescriptor(path);
+    this.libs.push(fd);
+    return fd.read();
+  }
+}
 
-  // Write data to a file descriptor
-  sys.write = function (process, msgID, args) {
-    if (args.length !== 2) {
-      sys.fail(process, msgID, ["Should have 2 arguments"]);
-      return -1;
+class ProcessTable {
+  constructor(init) {
+    if (init === undefined) {
+      throw new Error("Init process must be defined");
     }
-    if (args[0] < 0) {
-      sys.fail(process, msgID, ["File Descriptor should be postive, check file name"]);
-      return -1;
-    }
-    var result = process.fds[args[0]].write(args[1]);
-    sys.pass(process, msgID, [result]);
-  };
+    this.list = [null, init];
+    this.nextPID = 2;
+  }
 
-  // Tell what directory we are in
-  sys.pwd = function (process, msgID, args) {
-    sys.pass(process, msgID, [process.cwd]);
-  };
+  add(process) {
+    this.nextPID = this.list.push(process);
+    return this.nextPID - 1;
+  }
+}
 
-  // Change the current working directory
-  sys.chdir = function (process, msgID, args) {
-    if (!args[0] instanceof String) {
-      sys.fail(process, msgID, ["Argument should be a string"]);
-      return -1;
-    }
-    process.cwd = args[0];
-    sys.pass(process, msgID, [process.cwd]);
-  };
+var proc = new ProcessTable(new Process());
 
-  // Get environment variable
-  sys.getenv = function (process, msgID, args) {
-    if (!args[0] instanceof String) {
-      sys.fail(process, msgID, ["Variable name should be a string"]);
-      return -1;
-    }
-    var value = process.env[args[0]];
-    sys.pass(process, msgID, [value]);
-  };
+const sys = {};
 
-  // Set environment variable
-  sys.setenv = function (process, msgID, args) {
-    if (!args[0] instanceof String) {
-      sys.fail(process, msgID, ["Variable name should be a string"]);
-      return -1;
-    }
-    if (!args[1] instanceof String) {
-      sys.fail(process, msgID, ["Variable value should be a string"]);
-      return -1;
-    }
-    var value = process.env[args[0]] = args[1];
-    sys.pass(process, msgID, [value]);
+// Raise an error
+sys.fail = function(process, msgID, args) {
+  const error = {
+    status: "error",
+    reason: args[0],
+    id: msgID
   };
+  process.worker.postMessage(error);
+};
 
-  var main = {
-    fs: fs,
-    sys: sys,
-    proc: proc,
-    name: "faux",
-    flags: flags,
-    utils: utils,
-    version: "0.0.2"
+// Throw a success result
+sys.pass = function(process, msgID, args) {
+  const result = {
+    status: "success",
+    result: args[0],
+    id: msgID
   };
+  process.worker.postMessage(result);
+};
 
-  return main;
-});
+// Send a dynamic library straight to the process
+sys.load = function(process, msgID, args) {
+  const data = process.load(args[0]);
+  sys.pass(process, msgID, [data]);
+};
+
+// Spawn a new process from an executable image
+sys.spawn = function(process, msgID, args) {
+  if (!args[1] instanceof Array) {
+    sys.fail(process, msgID, ["Second argument should be the array argv"]);
+    return -1;
+  }
+  const newProcess = new Process(args[0], args[1]);
+  const pid = proc.add(newProcess);
+  sys.pass(process, msgID, [pid]);
+};
+
+// Check file access
+sys.access = function(process, msgID, args) {
+  if (typeof args[0] !== "string") {
+    sys.fail(process, msgID, ["Argument should be a string"]);
+    return -1;
+  }
+  let path = "";
+  // If the first character is a "/", then working dir does not matter
+  if (args[0][0] === "/") {
+    path = args[0];
+  } else {
+    path = process.cwd + "/" + args[0];
+  }
+  const result = process.access(path);
+  sys.pass(process, msgID, [result]);
+};
+
+// Resolve a path into a file descriptor, and add it to the table
+sys.open = function(process, msgID, args) {
+  if (typeof args[0] !== "string" && typeof args[1] !== "string") {
+    sys.fail(process, msgID, ["Arguments 1 and 2 should be a strings"]);
+    return -1;
+  }
+  let path = "";
+  // If the first character is a "/", then working dir does not matter
+  if (args[0][0] === "/") {
+    path = args[0];
+  } else {
+    path = process.cwd + "/" + args[0];
+  }
+  const result = process.open(path, args[1]);
+  sys.pass(process, msgID, [result]);
+};
+
+// Read data from a file descriptor
+sys.read = function(process, msgID, args) {
+  if (args.length !== 1) {
+    sys.fail(process, msgID, ["Should have only 1 argument"]);
+    return -1;
+  }
+  if (args[0] < 0) {
+    sys.fail(process, msgID, [
+      "File Descriptor should be postive, check file name"
+    ]);
+    return -1;
+  }
+  const result = process.fds[args[0]].read();
+  sys.pass(process, msgID, [result]);
+};
+
+// Write data to a file descriptor
+sys.write = function(process, msgID, args) {
+  if (args.length !== 2) {
+    sys.fail(process, msgID, ["Should have 2 arguments"]);
+    return -1;
+  }
+  if (args[0] < 0) {
+    sys.fail(process, msgID, [
+      "File Descriptor should be postive, check file name"
+    ]);
+    return -1;
+  }
+  const result = process.fds[args[0]].write(args[1]);
+  sys.pass(process, msgID, [result]);
+};
+
+// Tell what directory we are in
+sys.pwd = function(process, msgID, args) {
+  sys.pass(process, msgID, [process.cwd]);
+};
+
+// Change the current working directory
+sys.chdir = function(process, msgID, args) {
+  if (!args[0] instanceof String) {
+    sys.fail(process, msgID, ["Argument should be a string"]);
+    return -1;
+  }
+  process.cwd = args[0];
+  sys.pass(process, msgID, [process.cwd]);
+};
+
+// Get environment variable
+sys.getenv = function(process, msgID, args) {
+  if (!args[0] instanceof String) {
+    sys.fail(process, msgID, ["Variable name should be a string"]);
+    return -1;
+  }
+  const value = process.env[args[0]];
+  sys.pass(process, msgID, [value]);
+};
+
+// Set environment variable
+sys.setenv = function(process, msgID, args) {
+  if (!args[0] instanceof String) {
+    sys.fail(process, msgID, ["Variable name should be a string"]);
+    return -1;
+  }
+  if (!args[1] instanceof String) {
+    sys.fail(process, msgID, ["Variable value should be a string"]);
+    return -1;
+  }
+  const value = (process.env[args[0]] = args[1]);
+  sys.pass(process, msgID, [value]);
+};
+
+var main = {
+  fs: fs,
+  sys: sys,
+  proc: proc,
+  name: "faux",
+  flags: flags,
+  utils: utils,
+  version: "0.0.3"
+};
+
+return main;
+
+})));

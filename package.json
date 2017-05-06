@@ -1,31 +1,29 @@
 {
   "name": "faux",
-  "description": "A virtual, completely in-browser, operating system (pre-alpha)",
-  "version": "0.0.2",
-  "main": "dist/fauxOS.js",
+  "description": "A virtual, webpage operating system (pre-alpha)",
+  "version": "0.0.3",
+  "main": "dist/fauxOS.min.js",
   "dependencies": {},
   "devDependencies": {
-    "babel-preset-es2015": "^6.24.0",
     "gulp": "^3.9.1",
-    "gulp-babel": "^6.1.2",
-    "gulp-cli": "^1.2.2",
+    "gulp-babili": "0.0.2",
+    "gulp-cli": "^1.3.0",
     "gulp-concat": "^2.6.1",
     "gulp-inject": "^4.2.0",
     "gulp-order": "^1.1.1",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^2.0.1",
     "intern": "^3.4.2",
-    "prettier": "^1.1.0",
+    "prettier": "^1.3.1",
     "rollup": "^0.41.5",
     "rollup-watch": "^3.2.2",
-    "yarn": "^0.22.0"
+    "yarn": "^0.23.4"
   },
   "scripts": {
     "format": "prettier --write 'src/**/*.js'",
     "build": "yarn run format && gulp",
     "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer &",
     "dev": "yarn run test && gulp watch",
-    "clean": "yarn cache clean && rm -rf node_modules/ && npm install -D yarn && rm -rf build/ && rm -rf dist/",
+    "clean": "yarn cache clean && rm -rf node_modules/ && rm -rf build/ && rm -rf dist/",
     "reset": "yarn run clean && yarn && yarn run build"
   },
   "keywords": [

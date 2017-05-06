@@ -10,7 +10,7 @@ function newID(length = 8) {
 }
 
 // Make a request from the kernel with a system call
-// This wrapper makes it easy promises for every call
+// This wrapper returns a promise for every call
 // Usage: call("callName", ["arg1", "arg2"]).then(handleResult);
 function call(name, args) {
   // We use a message ID so we can order the kernel's responses
@@ -37,10 +37,15 @@ function call(name, args) {
 }
 
 // Load a dynamic library
-function load(path) {
-  const data = call("load", [path]);
+async function load(path) {
+  const data = await call("load", [path]);
+  if (data === -2) {
+    return new Error("No data returned, possibly a directory");
+  } else if (data < 0) {
+    return new Error("Could not get data");
+  }
   // Evaluate the library in this worker's context
-  return data.then(eval);
+  return eval(data);
 }
 
 // Spawn a new process from an executable image
@@ -60,18 +65,32 @@ function access(path) {
 }
 
 // Open a file by path and promise the return of a file descriptor
-function open(path, mode = "r") {
-  return call("open", [path, mode]);
+async function open(path, mode = "r") {
+  const fd = await call("open", [path, mode]);
+  if (fd < 0) {
+    return new Error("Could not open file");
+  }
+  return fd;
 }
 
 // Read a file descriptor and return data retrieved
-function read(fd) {
-  return call("read", [fd]);
+async function read(fd) {
+  const data = await call("read", [fd]);
+  if (data === -2) {
+    return new Error("No data returned, possibly a directory");
+  } else if (data < 0) {
+    return new Error("Could not get data");
+  }
+  return data;
 }
 
 // Write data to a file descriptor
-function write(fd, data) {
-  return call("write", [fd, data]);
+async function write(fd, data) {
+  const ret = await call("write", [fd, data]);
+  if (ret < 0) {
+    return new Error("Could not write data");
+  }
+  return data;
 }
 
 // Get the currect working directory
