@@ -45,7 +45,8 @@ async function load(path) {
     return new Error("Could not get data");
   }
   // Evaluate the library in this worker's context
-  return eval(data);
+  self.evalGlobal = eval;
+  return self.evalGlobal(data);
 }
 
 // Spawn a new process from an executable image
