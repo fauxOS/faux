@@ -22,14 +22,17 @@ dist
 
 #### CDN's
 
-+ `<script src="https://unpkg.com/faux@latest/dist/fauxOS.min.js"></script>`
++ `<script src="https://unpkg.com/faux"></script>`
   - Very fast, recommended
 + `<script src="https://cdn.rawgit.com/fauxOS/faux/master/dist/fauxOS.min.js"></script>`
   - Gets the latest from github, use to retrieve an unreleased file
 
 #### Node
 
-You can include this in any web project with `npm install --save faux`
+It is prefered to use yarn over npm as a package manager, due to performace,
+friendliness, and overall ease of use.
+
+You can include this in any web project with `yarn add faux`
 
 ### Dependencies
 
