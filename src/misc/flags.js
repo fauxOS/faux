@@ -3,9 +3,10 @@ const flags = {};
 // Example output: ["Browser", "xx.xx.xx"]
 function browserInfo() {
   const ua = navigator.userAgent;
-  const matches = ua.match(
-    /(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d.]+)/i
-  ) || [];
+  const matches =
+    ua.match(
+      /(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d.]+)/i
+    ) || [];
   if (/trident/i.test(matches[1])) {
     const tem = ua.match(/\brv[ :]+([\d.]+)/g) || "";
     return ["IE", tem[1]];

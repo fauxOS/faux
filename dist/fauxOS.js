@@ -579,7 +579,7 @@ fs.mount(
       type: "f",
       exec: true,
       id: 1,
-      /* lib */ data: "class Pathname{constructor(input){this.input=input}get clean(){let clean=[];const pathArray=this.input.match(/[^/]+/g);for(let i in pathArray){const name=pathArray[i];\".\"===name||(\"..\"===name?clean.pop():clean.push(name))}return\"/\"+clean.join(\"/\")}get chop(){const segments=this.clean.match(/[^/]+/g);return null===segments?[\"/\"]:segments}get name(){return this.chop[this.chop.length-1]}get basename(){const name=this.name;if(\"\"===name)return name;const base=name.match(/^[^\\.]+/);return null===base?\"\":base[0]}get parent(){if(\"/\"===this.name)return null;const parentLen=this.clean.length-this.name.length;return this.clean.slice(0,parentLen)}get extentions(){return this.name.match(/\\.[^\\.]+/g)}get segment(){const pathArray=this.chop;let segments=[];if(\"/\"===this.name)segments=[\"/\"];else for(let matchPath,i=0;i<=pathArray.length;i++)matchPath=pathArray.slice(0,i),segments.push(\"/\"+matchPath.join(\"/\"));return segments}}const fs={};fs.readFile=function(path=\"/\"){return open(path,\"r\").then(fd=>{return read(fd)})},fs.writeFile=function(path=\"/\",data=\"\"){return open(path,\"w\").then(fd=>{return write(fd,data)})},self.Pathname=Pathname,self.fs=fs;"/* end */
+      /* lib */ data: "class Pathname{constructor(input){this.input=input}get clean(){let clean=[];const pathArray=this.input.match(/[^/]+/g);for(let i in pathArray){const name=pathArray[i];\".\"===name||(\"..\"===name?clean.pop():clean.push(name))}return\"/\"+clean.join(\"/\")}get chop(){const segments=this.clean.match(/[^/]+/g);return null===segments?[\"/\"]:segments}get name(){return this.chop[this.chop.length-1]}get basename(){const name=this.name;if(\"\"===name)return name;const base=name.match(/^[^\\.]+/);return null===base?\"\":base[0]}get parent(){if(\"/\"===this.name)return null;const parentLen=this.clean.length-this.name.length;return this.clean.slice(0,parentLen)}get extentions(){return this.name.match(/\\.[^\\.]+/g)}get segment(){const pathArray=this.chop;let segments=[];if(\"/\"===this.name)segments=[\"/\"];else for(let matchPath,i=0;i<=pathArray.length;i++)matchPath=pathArray.slice(0,i),segments.push(\"/\"+matchPath.join(\"/\"));return segments}}const fs={readFile:function(path=\"/\"){return open(path,\"r\").then(fd=>{return read(fd)})},writeFile:function(path=\"/\",data=\"\"){return open(path,\"w\").then(fd=>{return write(fd,data)})}},ansi={reset:[0,0],bold:[1,22],dim:[2,22],italic:[3,23],underline:[4,24],inverse:[7,27],hidden:[8,28],strikethrough:[9,29],black:[30,39],red:[31,39],green:[32,39],yellow:[33,39],blue:[34,39],magenta:[35,39],cyan:[36,39],white:[37,39],gray:[90,39],grey:[90,39],redBright:[91,39],greenBright:[92,39],yellowBright:[93,39],blueBright:[94,39],magentaBright:[95,39],cyanBright:[96,39],whiteBright:[97,39],bgBlack:[40,49],bgRed:[41,49],bgGreen:[42,49],bgYellow:[43,49],bgBlue:[44,49],bgMagenta:[45,49],bgCyan:[46,49],bgWhite:[47,49],bgGray:[100,49],bgGrey:[100,49],bgRedBright:[101,49],bgGreenBright:[102,49],bgYellowBright:[103,49],bgBlueBright:[104,49],bgMagentaBright:[105,49],bgCyanBright:[106,49],bgWhiteBright:[107,49]};function wrap(style,str){return\"\\x1B[\"+ansi[style][0]+\"m\"+str+\"\\x1B[\"+ansi[style][1]+\"m\"}function dye(styles,str){for(let i in styles)str=wrap(styles[i],str);return str}self.Pathname=Pathname,self.fs=fs,self.dye=dye;"/* end */
     })
   ]),
   "/lib"
@@ -681,7 +681,8 @@ utils.genUUID = function() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(
     char
   ) {
-    let r = (Math.random() * 16) | 0, v = char === "x" ? r : (r & 0x3) | 0x8;
+    let r = (Math.random() * 16) | 0,
+      v = char === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 };
@@ -734,9 +735,10 @@ const flags = {};
 // Example output: ["Browser", "xx.xx.xx"]
 function browserInfo() {
   const ua = navigator.userAgent;
-  const matches = ua.match(
-    /(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d.]+)/i
-  ) || [];
+  const matches =
+    ua.match(
+      /(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d.]+)/i
+    ) || [];
   if (/trident/i.test(matches[1])) {
     const tem = ua.match(/\brv[ :]+([\d.]+)/g) || "";
     return ["IE", tem[1]];
@@ -776,7 +778,7 @@ class Process {
     const lib = this.load("/lib/lib");
     // The worker is where the process is actually executed
     this.worker = utils.mkWorker(
-      /* syscalls */ "function newID(length=8){const chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\";let id=\"\";for(let i=0;i<length;i++){const randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){const id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",msg=>{msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}async function load(path){const data=await call(\"load\",[path]);return-2===data?new Error(\"No data returned, possibly a directory\"):0>data?new Error(\"Could not get data\"):(self.evalGlobal=eval,self.evalGlobal(data))}function spawn(image,argv=[]){return call(\"spawn\",[image,argv])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}async function open(path,mode=\"r\"){const fd=await call(\"open\",[path,mode]);return 0>fd?new Error(\"Could not open file\"):fd}async function read(fd){const data=await call(\"read\",[fd]);if(-2===data)return new Error(\"No data returned, possibly a directory\");return 0>data?new Error(\"Could not get data\"):data}async function write(fd,data){const ret=await call(\"write\",[fd,data]);return 0>ret?new Error(\"Could not write data\"):data}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}" /* end */ + lib + "\n\n" + image
+      /* syscalls */ "function newID(length=8){const chars=\"0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz\";let id=\"\";for(let i=0;i<length;i++){const randNum=Math.floor(Math.random()*chars.length);id+=chars.substring(randNum,randNum+1)}return id}function call(name,args){const id=newID();return postMessage({type:\"syscall\",name:name,args:args,id:id}),new Promise(function(resolve,reject){self.addEventListener(\"message\",msg=>{msg.data.id===id&&(\"success\"===msg.data.status?resolve(msg.data.result):reject(msg.data.reason))})})}async function load(path){const data=await call(\"load\",[path]);if(-2===data)return new Error(\"No data returned, possibly a directory\");return 0>data?new Error(\"Could not get data\"):self.eval(data)}function spawn(image,argv=[]){return call(\"spawn\",[image,argv])}function exec(path,argv){return call(\"exec\",[path,argv])}function access(path){return call(\"access\",[path])}async function open(path,mode=\"r\"){const fd=await call(\"open\",[path,mode]);return 0>fd?new Error(\"Could not open file\"):fd}async function read(fd){const data=await call(\"read\",[fd]);if(-2===data)return new Error(\"No data returned, possibly a directory\");return 0>data?new Error(\"Could not get data\"):data}async function write(fd,data){const ret=await call(\"write\",[fd,data]);return 0>ret?new Error(\"Could not write data\"):data}function pwd(){return call(\"pwd\",[])}function chdir(path){return call(\"chdir\",[path])}function getenv(varName){return call(\"getenv\",[varName])}function setenv(varName){return call(\"setenv\",[varName])}" /* end */ + lib + "\n\n" + image
     );
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
