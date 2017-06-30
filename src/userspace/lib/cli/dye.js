@@ -58,7 +58,7 @@ export default function dye(styles, str) {
     for (let i in styles) {
       str = wrap(styles[i], str);
     }
-  } else if (styles instanceof String) {
+  } else if (typeof styles === "string") {
     str = wrap(styles, str);
   }
   return str;
