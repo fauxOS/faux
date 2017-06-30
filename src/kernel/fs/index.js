@@ -1,7 +1,7 @@
+import OFS from "./ofs/index.js";
+import DOMFS from "./domfs/index.js";
+import VFS from "./vfs/index.js";
 import OFS_Inode from "./ofs/inode.js";
-import OFS from "./ofs/main.js";
-import DOMFS from "./domfs/main.js";
-import VFS from "./vfs/main.js";
 
 const fs = new VFS(
   new OFS([

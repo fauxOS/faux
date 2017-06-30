@@ -1,4 +1,4 @@
-import fs from "../fs/main.js";
+import fs from "../fs/index.js";
 import Pathname from "../../misc/pathname.js";
 import getMode from "../../misc/mode.js";
 

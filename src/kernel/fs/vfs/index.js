@@ -1,5 +1,5 @@
+import OFS from "../ofs/index.js";
 import Pathname from "../../../misc/pathname.js";
-import OFS from "../ofs/main.js";
 import VNode from "./vnode.js";
 
 export default class VFS {

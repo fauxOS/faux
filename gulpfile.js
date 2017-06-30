@@ -32,7 +32,7 @@ function build(name, path, minify = true, format = "es") {
 // Even the userspace gets plugged into the kernel via the VFS
 // This is why the kernel is the only module that must be in UMD format
 gulp.task("kernel", function() {
-  return build("faux", "src/kernel/main.js", false, "umd");
+  return build("faux", "src/kernel/index.js", false, "umd");
 });
 
 // The userspace's system call functions
@@ -46,12 +46,12 @@ gulp.task("syscalls:build", function() {
 
 // A standard library
 gulp.task("lib:build", function() {
-  return build("lib", "src/userspace/lib/main.js");
+  return build("lib", "src/userspace/lib/index.js");
 });
 
 // The Faux SHell
 gulp.task("fsh:build", function() {
-  return build("fsh", "src/userspace/fsh/main.js");
+  return build("fsh", "src/userspace/fsh/index.js");
 });
 
 // Get the builds out of the way, before we inject them into the kernel
