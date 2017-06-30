@@ -5,11 +5,11 @@ import flags from "../misc/flags.js";
 import utils from "../misc/utils.js";
 
 export default {
-  fs: fs,
-  sys: sys,
-  proc: proc,
+  fs,
+  sys,
+  proc,
+  flags,
+  utils,
   name: "faux",
-  flags: flags,
-  utils: utils,
   version: ""
 };
