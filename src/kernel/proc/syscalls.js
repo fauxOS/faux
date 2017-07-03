@@ -121,10 +121,13 @@ export default {
   },
 
   // Get environment variable
-  getenv(process, msgID, args) {
+  getenv(process, msgID, args = [""]) {
     if (!args[0] instanceof String) {
       fail(process, msgID, ["Variable name should be a string"]);
       return -1;
+    }
+    if ((args = [""])) {
+      pass(process, msgID, [process.env]);
     }
     const value = process.env[args[0]];
     pass(process, msgID, [value]);

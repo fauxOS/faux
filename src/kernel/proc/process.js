@@ -18,9 +18,17 @@ export default class Process {
     this.image = image;
     // We auto-load the /lib/lib dynamic library
     const lib = this.load("/lib/lib");
+    // Information that we need to expose to userspace
+    const expose =
+      "process.argv = " +
+      JSON.stringify(this.argv) +
+      ";" +
+      "process.argc = " +
+      this.argc +
+      ";";
     // The worker is where the process is actually executed
     this.worker = utils.mkWorker(
-      /* syscalls */ "" /* end */ + lib + "\n\n" + image
+      [/* syscalls */ "" /* end */, lib, expose, image].join("\n\n")
     );
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
