@@ -16,7 +16,7 @@ class ProcessTable {
 
   emit(name, payload, pids = []) {
     // Default empty array means all processes
-    if (pids === []) {
+    if (pids.length === 0) {
       for (let i = 1; i < this.list.length; i++) {
         // Post the message every process' webworker
         this.list[i].worker.postMessage({

@@ -22,7 +22,7 @@ addEventListener("message", message => {
   const msg = message.data;
   if (msg.type === "event" && msg.name && msg.payload) {
     // Fire the event natively
-    const event = new CustomEvent(msg.name, msg.payload);
+    const event = new CustomEvent(msg.name, { detail: msg.payload });
     dispatchEvent(event);
   }
 });

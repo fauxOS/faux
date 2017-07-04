@@ -51,7 +51,7 @@ export default class Process {
       }
     } else if (msg.type === "event" && msg.name && msg.payload) {
       // Fire the event natively
-      const event = new CustomEvent(msg.name, msg.payload);
+      const event = new CustomEvent(msg.name, { detail: msg.payload });
       dispatchEvent(event);
     } else {
       // The message is not valid because of the type or name
