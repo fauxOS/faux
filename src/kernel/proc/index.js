@@ -13,6 +13,29 @@ class ProcessTable {
     this.nextPID = this.list.push(process);
     return this.nextPID - 1;
   }
+
+  emit(name, payload, pids = []) {
+    // Default empty array means all processes
+    if (pids === []) {
+      for (let i = 1; i < this.list.length; i++) {
+        // Post the message every process' webworker
+        this.list[i].worker.postMessage({
+          type: "event",
+          name,
+          payload
+        });
+      }
+    } else {
+      // Post the message to each process as specified by the pids array
+      for (let i in pids) {
+        this.list[pids[i]].worker.postMessage({
+          type: "event",
+          name,
+          payload
+        });
+      }
+    }
+  }
 }
 
 export default new ProcessTable(new Process());

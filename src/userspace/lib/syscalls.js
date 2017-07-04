@@ -23,9 +23,9 @@ function call(name, args) {
   // This is just the system call request format
   postMessage({
     type: "syscall",
-    name: name,
-    args: args,
-    id: id
+    name,
+    args,
+    id
   });
   return new Promise((resolve, reject) => {
     const listener = addEventListener("message", message => {
