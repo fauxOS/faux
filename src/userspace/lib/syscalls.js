@@ -1,10 +1,15 @@
 // Generate a new random message id
-function newID(length = 8) {
-  const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+function newID(length = 10) {
+  // Make an array of alphanumeric characters
+  const chars = ("0123456789" +
+    "abcdefghiklmnopqrstuvwxyz" +
+    "ABCDEFGHIJKLMNOPQRSTUVWXTZ").split("");
   let id = "";
   for (let i = 0; i < length; i++) {
-    const randNum = Math.floor(Math.random() * chars.length);
-    id += chars.substring(randNum, randNum + 1);
+    // Create a random index tht has a maximum possible value of chars.length - 1
+    const randomIndex = Math.floor(Math.random() * chars.length);
+    // Append some random character to the id
+    id += chars[randomIndex];
   }
   return id;
 }
@@ -22,21 +27,26 @@ function call(name, args) {
     args: args,
     id: id
   });
-  return new Promise(function(resolve, reject) {
-    self.addEventListener("message", msg => {
-      // Resolve when we get a message with the same id
-      if (msg.data.id === id) {
-        if (msg.data.status === "success") {
-          resolve(msg.data.result);
+  return new Promise((resolve, reject) => {
+    const listener = addEventListener("message", message => {
+      const msg = message.data;
+      // Ignore messages without the same id
+      if (msg.id === id) {
+        // Resolve when we get a success
+        if (msg.status === "success") {
+          resolve(msg.result);
         } else {
-          reject(msg.data.reason);
+          // Reject with the reason for error
+          reject(msg.reason);
         }
       }
     });
+    // Make sure we remove the used event listener
+    removeEventListener("message", listener);
   });
 }
 
-self.sys = {
+export default {
   // Load a dynamic library
   async load(path) {
     const data = await call("load", [path]);

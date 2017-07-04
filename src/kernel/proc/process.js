@@ -13,7 +13,8 @@ export default class Process {
     this.env = {
       SHELL: "fsh",
       PATH: "/sbin:/bin",
-      HOME: "/home"
+      HOME: "/home",
+      TERM: "xterm-256color"
     };
     this.image = image;
     // We auto-load the /lib/lib dynamic library
@@ -25,15 +26,16 @@ export default class Process {
       ";" +
       "process.argc = " +
       this.argc +
+      ";" +
+      "process.env = " +
+      JSON.stringify(this.env) +
       ";";
     // The worker is where the process is actually executed
-    this.worker = utils.mkWorker(
-      [/* syscalls */ "" /* end */, lib, expose, image].join("\n\n")
-    );
+    this.worker = utils.mkWorker([lib, expose, image].join("\n\n"));
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
-    this.worker.addEventListener("message", msg => {
-      this.messageHandler(msg);
+    this.worker.addEventListener("message", message => {
+      this.messageHandler(message);
     });
   }
 
@@ -47,6 +49,10 @@ export default class Process {
       if (msg.id !== undefined && msg.args instanceof Array) {
         sys[msg.name](this, msg.id, msg.args);
       }
+    } else if (msg.type === "event" && msg.name && msg.payload) {
+      // Fire the event natively
+      const event = new CustomEvent(msg.name, msg.payload);
+      dispatchEvent(event);
     } else {
       // The message is not valid because of the type or name
       const error = {

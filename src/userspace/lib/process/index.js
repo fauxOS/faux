@@ -9,11 +9,6 @@ const stdout = {
 const stderr = {};
 
 export default {
-  argv: [],
-  argc: 0,
-  get env() {
-    return sys.getenv();
-  },
   stdin,
   stdout,
   stderr

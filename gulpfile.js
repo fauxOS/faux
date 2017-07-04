@@ -35,15 +35,6 @@ gulp.task("kernel", function() {
   return build("faux", "src/kernel/index.js", false, "umd");
 });
 
-// The userspace's system call functions
-// Just a single file so we will only have to minify
-gulp.task("syscalls:build", function() {
-  return gulp
-    .src("src/userspace/syscalls.js")
-    .pipe(babili({ mangle: false }))
-    .pipe(gulp.dest("build/"));
-});
-
 // A standard library
 gulp.task("lib:build", function() {
   return build("lib", "src/userspace/lib/index.js");
@@ -55,26 +46,11 @@ gulp.task("fsh:build", function() {
 });
 
 // Get the builds out of the way, before we inject them into the kernel
-gulp.task("builds", ["kernel", "syscalls:build", "lib:build", "fsh:build"]);
+gulp.task("builds", ["kernel", "lib:build", "fsh:build"]);
 
 // Injections
 
-gulp.task("syscalls", ["builds"], function() {
-  return gulp
-    .src("build/faux.js")
-    .pipe(
-      inject(gulp.src(["build/syscalls.js"]), {
-        starttag: "/* syscalls */",
-        endtag: "/* end */",
-        transform: function(filePath, file) {
-          return JSON.stringify(file.contents.toString("utf8"));
-        }
-      })
-    )
-    .pipe(gulp.dest("build/"));
-});
-
-gulp.task("lib", ["syscalls"], function() {
+gulp.task("lib", ["builds"], function() {
   return gulp
     .src("build/faux.js")
     .pipe(
@@ -105,7 +81,7 @@ gulp.task("fsh", ["lib"], function() {
 });
 
 // Final distributed files
-gulp.task("default", ["syscalls", "lib", "fsh"], function() {
+gulp.task("default", ["lib", "fsh"], function() {
   return (gulp
       .src("build/faux.js")
       .pipe(

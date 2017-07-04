@@ -104,7 +104,7 @@ export default class Spinner {
     const spinner = spinners[name];
     this.frames = spinner.frames;
     this.index = 0;
-    this.interval = 1000 / spinner.fps;
+    this.interval = Math.round(1000 / spinner.fps);
     this.setIntervalIndex = null;
   }
 

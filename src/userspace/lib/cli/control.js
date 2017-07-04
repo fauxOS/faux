@@ -14,6 +14,11 @@ export default {
     },
     hide: () => esc + "?25l",
     show: () => esc + "?25h",
+    shape: {
+      block: () => "\u001b]50;CursorShape=0\u0007",
+      bar: () => "\u001b]50;CursorShape=1\u0007",
+      underscore: () => "\u001b]50;CursorShape=2\u0007"
+    },
     savePosition: () => esc + "s",
     restorePosition: () => esc + "u"
   },
@@ -30,5 +35,6 @@ export default {
     scrollUp: (n = 1) => esc + n + "S",
     scrollDown: (n = 1) => esc + n + "T"
   },
-  beep: () => "\u0007"
+  beep: () => "\u0007",
+  setTitle: str => "\u001b]0;" + str + "\u0007"
 };
