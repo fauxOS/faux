@@ -49,9 +49,9 @@ export default class Process {
       if (msg.id !== undefined && msg.args instanceof Array) {
         sys[msg.name](this, msg.id, msg.args);
       }
-    } else if (msg.type === "event" && msg.name && msg.payload) {
+    } else if (msg.type === "event" && msg.name && msg.detail) {
       // Fire the event natively
-      const event = new CustomEvent(msg.name, { detail: msg.payload });
+      const event = new CustomEvent(msg.name, { detail: msg.detail });
       dispatchEvent(event);
     } else {
       // The message is not valid because of the type or name

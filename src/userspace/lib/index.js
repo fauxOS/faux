@@ -20,9 +20,9 @@ Object.assign(self, {
 // This transforms message events into native js events
 addEventListener("message", message => {
   const msg = message.data;
-  if (msg.type === "event" && msg.name && msg.payload) {
+  if (msg.type === "event" && msg.name && msg.detail) {
     // Fire the event natively
-    const event = new CustomEvent(msg.name, { detail: msg.payload });
+    const event = new CustomEvent(msg.name, { detail: msg.detail });
     dispatchEvent(event);
   }
 });

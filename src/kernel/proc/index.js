@@ -14,7 +14,7 @@ class ProcessTable {
     return this.nextPID - 1;
   }
 
-  emit(name, payload, pids = []) {
+  emit(name, detail, pids = []) {
     // Default empty array means all processes
     if (pids.length === 0) {
       for (let i = 1; i < this.list.length; i++) {
@@ -22,7 +22,7 @@ class ProcessTable {
         this.list[i].worker.postMessage({
           type: "event",
           name,
-          payload
+          detail
         });
       }
     } else {
@@ -31,7 +31,7 @@ class ProcessTable {
         this.list[pids[i]].worker.postMessage({
           type: "event",
           name,
-          payload
+          detail
         });
       }
     }
