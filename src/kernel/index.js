@@ -10,6 +10,5 @@ export default {
   proc,
   utils,
   browser,
-  name: "faux",
-  version: ""
+  version: "inject-version"
 };

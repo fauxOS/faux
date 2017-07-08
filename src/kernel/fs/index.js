@@ -75,7 +75,7 @@ const fs = new VFS(
       type: "f",
       exec: true,
       id: 7,
-      /* fsh */ data: "" /* end */
+      data: "inject-fsh"
     })
   ])
 );

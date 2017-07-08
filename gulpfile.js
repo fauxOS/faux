@@ -1,13 +1,14 @@
+const fs = require("fs");
 const gulp = require("gulp");
 const gulpIf = require("gulp-if");
-const inject = require("gulp-inject");
+const inject = require("gulp-inject-string");
 const babili = require("gulp-babili");
 const rename = require("gulp-rename");
 const rollup = require("gulp-better-rollup");
 
 // A versatile compilation function
 // Uses Rollup to resolve dependencies, then minifies the result
-function build(name, path, minify = true, format = "es") {
+function build(name, path, minify = true, format = "iife") {
   return gulp
     .src(path)
     .pipe(
@@ -50,50 +51,41 @@ gulp.task("builds", ["kernel", "lib:build", "fsh:build"]);
 
 // Injections
 
-gulp.task("lib", ["builds"], function() {
-  return gulp
-    .src("build/faux.js")
-    .pipe(
-      inject(gulp.src(["build/lib.js"]), {
-        starttag: "/* lib */ ",
-        endtag: "; /* end */",
-        transform: function(filePath, file) {
-          return JSON.stringify(file.contents.toString("utf8"));
-        }
-      })
-    )
-    .pipe(gulp.dest("build/"));
-});
+function toSingleLineString(file) {
+  return JSON.stringify(require(file));
+}
 
-gulp.task("fsh", ["lib"], function() {
-  return gulp
-    .src("build/faux.js")
-    .pipe(
-      inject(gulp.src(["build/fsh.js"]), {
-        starttag: "/* fsh */ data: ",
-        endtag: "/* end */",
-        transform: function(filePath, file) {
-          return JSON.stringify(file.contents.toString("utf8"));
-        }
-      })
-    )
-    .pipe(gulp.dest("build/"));
+gulp.task("injections", ["builds"], function() {
+  return (gulp
+      .src("build/faux.js")
+      // Inject core library into each process
+      .pipe(
+        inject.replace(
+          /\"inject-lib\"/,
+          JSON.stringify(fs.readFileSync("build/lib.js").toString())
+        )
+      )
+      // Inject fsh into its own file
+      .pipe(
+        inject.replace(
+          /\"inject-fsh\"/,
+          JSON.stringify(fs.readFileSync("build/fsh.js").toString())
+        )
+      )
+      // Inject version from package.json
+      .pipe(
+        inject.replace(
+          /\"inject-version\"/,
+          JSON.stringify(require("./package.json").version)
+        )
+      )
+      .pipe(gulp.dest("build/")) );
 });
 
 // Final distributed files
-gulp.task("default", ["lib", "fsh"], function() {
+gulp.task("default", ["injections"], function() {
   return (gulp
       .src("build/faux.js")
-      .pipe(
-        inject(gulp.src(["package.json"]), {
-          starttag: 'version: "',
-          endtag: '"',
-          transform: function(filePath, file) {
-            // Extract version from the package.json
-            return JSON.parse(file.contents.toString("utf8")).version;
-          }
-        })
-      )
       // Fully-readable version
       .pipe(rename("fauxOS.js"))
       .pipe(gulp.dest("dist/"))

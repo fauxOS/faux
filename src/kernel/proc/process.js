@@ -16,7 +16,7 @@ export default class Process {
       TERM: "xterm-256color"
     };
     this.image = image;
-    const lib = /* lib */ ""; /* end */
+    const lib = "inject-lib";
     // Information that we need to expose to userspace
     const expose =
       "process.argv = " +
