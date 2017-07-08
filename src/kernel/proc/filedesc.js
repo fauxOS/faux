@@ -1,11 +1,11 @@
 import fs from "../fs/index.js";
-import Pathname from "../../misc/pathname.js";
+import { normalize } from "../../misc/path.js";
 import getMode from "../../misc/mode.js";
 
 export default class FileDescriptor {
   constructor(path, mode) {
     this.mode = getMode(mode);
-    this.path = new Pathname(path).clean;
+    this.path = normalize(path);
     this.vnode = fs.resolve(this.path);
     // Create if non-existent?
     if (!this.vnode.container) {

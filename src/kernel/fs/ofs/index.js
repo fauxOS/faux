@@ -1,4 +1,4 @@
-import Pathname from "../../../misc/pathname.js";
+import { chop, dirname, basename, normalize } from "../../../misc/path.js";
 import OFS_Inode from "./inode.js";
 
 export default class OFS {
@@ -8,10 +8,7 @@ export default class OFS {
         links: 1,
         id: 0,
         type: "d",
-        files: {
-          ".": 0,
-          "..": 0
-        }
+        files: {}
       })
     ];
   }
@@ -23,7 +20,7 @@ export default class OFS {
     if (path === "/" || path === "") {
       return this.drive[inode];
     }
-    const pathArray = new Pathname(path).chop;
+    const pathArray = chop(path);
     for (let i = 0; i < pathArray.length; i++) {
       const name = pathArray[i];
       const inodeObj = this.drive[inode];
@@ -83,9 +80,9 @@ export default class OFS {
 
   // Add a new file to the disk
   touch(path) {
-    const pathname = new Pathname(path);
-    const parentInode = this.resolve(pathname.parent);
-    const inode = this.addInode("f", pathname.name, parentInode);
+    const parentInode = this.resolve(dirname(path));
+    const name = basename(path);
+    const inode = this.addInode("f", name, parentInode);
     if (inode < 0) {
       return -1;
     }
@@ -95,25 +92,20 @@ export default class OFS {
 
   // Add a new directory Inode to the disk
   mkDir(path) {
-    const pathname = new Pathname(path);
-    const parentInode = this.resolve(pathname.parent);
-    const name = pathname.name;
+    const parentInode = this.resolve(dirname(path));
+    const name = basename(path);
     const inode = this.addInode("d", name, parentInode);
     if (inode < 0) {
       return -1;
     }
-    inode.files = {
-      ".": inode.id,
-      "..": parentInode.id
-    };
+    inode.files = {};
     return inode;
   }
 
   // Make a hard link for an inode
   mkLink(inode, path) {
-    const pathname = new Pathname(path);
-    const parentInode = this.resolve(pathname.parent);
-    const name = pathname.name;
+    const parentInode = this.resolve(dirname(path));
+    const name = basename(path);
     // Same as in addInode, not very DRY I know...
     if (name.match("/")) {
       return -1;
@@ -124,23 +116,20 @@ export default class OFS {
 
   // Make a symbolic link inode
   mkSymLink(refPath, linkPath) {
-    const pathname = new Pathname(linkPath);
-    const parentInode = this.resolve(pathname.parent);
-    const name = pathname.name;
+    const parentInode = this.resolve(dirname(path));
+    const name = basename(path);
     const inode = this.addInode("sl", name, parentInode);
     if (inode < 0) {
       return -1;
     }
-    const path = new Pathname(refPath).clean;
-    inode.redirect = path;
+    inode.redirect = normalize(refPath);
     return inode;
   }
 
   // Remove by unlinking
   rm(path) {
-    const pathname = new Pathname(path);
-    const parentInode = this.resolve(pathname.parent);
-    const name = pathname.name;
+    const parentInode = this.resolve(dirname(path));
+    const name = basename(path);
     if (parentInode < 0) {
       return -1;
     }

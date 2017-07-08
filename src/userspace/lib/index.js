@@ -1,8 +1,12 @@
-import sys from "./syscalls.js";
+import * as sys from "./syscalls.js";
 
-import Pathname from "../../misc/pathname.js";
-import fs from "./fs/index.js";
-import process from "./process/index.js";
+import browser from "../../misc/browser.js";
+
+import * as path from "../../misc/path.js";
+import { http } from "../../misc/utils.js";
+import * as fs from "./fs/index.js";
+import * as process from "./process/index.js";
+import require from "./require.js";
 
 import cli from "./cli/index.js";
 
@@ -10,9 +14,13 @@ import cli from "./cli/index.js";
 Object.assign(self, {
   sys,
 
-  Pathname,
+  browser,
+
+  path,
+  http,
   fs,
   process,
+  require,
 
   cli
 });

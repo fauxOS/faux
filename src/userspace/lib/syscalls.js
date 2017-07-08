@@ -28,7 +28,7 @@ function call(name, args) {
     id
   });
   return new Promise((resolve, reject) => {
-    const listener = addEventListener("message", message => {
+    function listener(message) {
       const msg = message.data;
       // Ignore messages without the same id
       if (msg.id === id) {
@@ -39,87 +39,74 @@ function call(name, args) {
           // Reject with the reason for error
           reject(msg.reason);
         }
+        // Make sure we remove this event listener
+        removeEventListener("message", listener);
       }
-    });
-    // Make sure we remove the used event listener
-    removeEventListener("message", listener);
+    }
+    addEventListener("message", listener);
   });
 }
 
-export default {
-  // Load a dynamic library
-  async load(path) {
-    const data = await call("load", [path]);
-    if (data === -2) {
-      return new Error("No data returned, possibly a directory");
-    } else if (data < 0) {
-      return new Error("Could not get data");
-    }
-    // Evaluate the library in this worker's context
-    return self.eval(data);
-  },
+// Spawn a new process from an executable image
+export async function spawn(image, argv = []) {
+  return call("spawn", [image, argv]);
+}
 
-  // Spawn a new process from an executable image
-  spawn(image, argv = []) {
-    return call("spawn", [image, argv]);
-  },
+// Execute by path, input commandline arguments
+// UNLIKE UNIX, exec will create a new process
+export async function exec(path, argv) {
+  return call("exec", [path, argv]);
+}
 
-  // Execute by path, input commandline arguments
-  // UNLIKE UNIX, exec will create a new process
-  exec(path, argv) {
-    return call("exec", [path, argv]);
-  },
+// Boolean, true if we have access to file / file exists
+export async function access(path) {
+  return call("access", [path]);
+}
 
-  // Boolean, true if we have access to file / file exists
-  access(path) {
-    return call("access", [path]);
-  },
-
-  // Open a file by path and promise the return of a file descriptor
-  async open(path, mode = "r") {
-    const fd = await call("open", [path, mode]);
-    if (fd < 0) {
-      return new Error("Could not open file");
-    }
-    return fd;
-  },
-  // Read a file descriptor and return data retrieved
-  async read(fd) {
-    const data = await call("read", [fd]);
-    if (data === -2) {
-      return new Error("No data returned, possibly a directory");
-    } else if (data < 0) {
-      return new Error("Could not get data");
-    }
-    return data;
-  },
-
-  // Write data to a file descriptor
-  async write(fd, data) {
-    const ret = await call("write", [fd, data]);
-    if (ret < 0) {
-      return new Error("Could not write data");
-    }
-    return data;
-  },
-
-  // Get the currect working directory
-  pwd() {
-    return call("pwd", []);
-  },
-
-  // cd
-  chdir(path) {
-    return call("chdir", [path]);
-  },
-
-  // Get environment variable
-  getenv(varName) {
-    return call("getenv", [varName]);
-  },
-
-  // Set environment variable
-  setenv(varName) {
-    return call("setenv", [varName]);
+// Open a file by path and promise the return of a file descriptor
+export async function open(path, mode = "r") {
+  const fd = await call("open", [path, mode]);
+  if (fd < 0) {
+    return new Error("Could not open file");
   }
-};
+  return fd;
+}
+// Read a file descriptor and return data retrieved
+export async function read(fd) {
+  const data = await call("read", [fd]);
+  if (data === -2) {
+    return new Error("No data returned, possibly a directory");
+  } else if (data < 0) {
+    return new Error("Could not get data");
+  }
+  return data;
+}
+
+// Write data to a file descriptor
+export async function write(fd, data) {
+  const ret = await call("write", [fd, data]);
+  if (ret < 0) {
+    return new Error("Could not write data");
+  }
+  return data;
+}
+
+// Get the currect working directory
+export async function pwd() {
+  return call("pwd", []);
+}
+
+// cd
+export async function chdir(path) {
+  return call("chdir", [path]);
+}
+
+// Get environment variable
+export async function getenv(varName) {
+  return call("getenv", [varName]);
+}
+
+// Set environment variable
+export async function setenv(varName) {
+  return call("setenv", [varName]);
+}

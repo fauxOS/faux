@@ -1,7 +1,6 @@
 import FileDescriptor from "./filedesc.js";
-import sys from "./syscalls.js";
-import utils from "../../misc/utils.js";
-import flags from "../../misc/flags.js";
+import * as sys from "./syscalls.js";
+import { mkWorker } from "../../misc/utils.js";
 
 export default class Process {
   constructor(image, argv) {
@@ -17,8 +16,7 @@ export default class Process {
       TERM: "xterm-256color"
     };
     this.image = image;
-    // We auto-load the /lib/lib dynamic library
-    const lib = this.load("/lib/lib");
+    const lib = /* lib */ ""; /* end */
     // Information that we need to expose to userspace
     const expose =
       "process.argv = " +
@@ -31,7 +29,7 @@ export default class Process {
       JSON.stringify(this.env) +
       ";";
     // The worker is where the process is actually executed
-    this.worker = utils.mkWorker([lib, expose, image].join("\n\n"));
+    this.worker = mkWorker([lib, expose, image].join("\n\n"));
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     this.worker.addEventListener("message", message => {
@@ -87,12 +85,5 @@ export default class Process {
     const fd = new FileDescriptor(path, mode);
     this.fds.push(fd);
     return this.fds.length - 1;
-  }
-
-  // Like opening a file, execept we add it to the library list
-  load(path) {
-    const fd = new FileDescriptor(path);
-    this.libs.push(fd);
-    return fd.read();
   }
 }

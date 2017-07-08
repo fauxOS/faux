@@ -55,8 +55,8 @@ gulp.task("lib", ["builds"], function() {
     .src("build/faux.js")
     .pipe(
       inject(gulp.src(["build/lib.js"]), {
-        starttag: "/* lib */ data: ",
-        endtag: "/* end */",
+        starttag: "/* lib */ ",
+        endtag: "; /* end */",
         transform: function(filePath, file) {
           return JSON.stringify(file.contents.toString("utf8"));
         }

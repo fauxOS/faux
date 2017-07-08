@@ -10,160 +10,74 @@ const fs = new VFS(
       id: 0,
       type: "d",
       files: {
-        ".": 0,
-        "..": 0,
         bin: 1,
         dev: 2,
         etc: 3,
         home: 4,
-        lib: 5,
-        log: 6,
-        mnt: 7,
-        tmp: 8,
-        usr: 9
+        log: 5,
+        tmp: 6
       }
     }),
 
+    // /bin
     new OFS_Inode({
       links: 1,
       type: "d",
       id: 1,
       files: {
-        ".": 1,
-        "..": 0
+        fsh: 7
       }
     }),
 
+    // /dev
     new OFS_Inode({
       links: 1,
       type: "d",
       id: 2,
-      files: {
-        ".": 2,
-        "..": 0
-      }
+      files: {}
     }),
 
+    // /etc
     new OFS_Inode({
       links: 1,
       type: "d",
       id: 3,
-      files: {
-        ".": 3,
-        "..": 0
-      }
+      files: {}
     }),
 
+    // /home
     new OFS_Inode({
       links: 1,
       type: "d",
       id: 4,
-      files: {
-        ".": 4,
-        "..": 0
-      }
+      files: {}
     }),
 
+    // /log
     new OFS_Inode({
       links: 1,
       type: "d",
       id: 5,
-      files: {
-        ".": 5,
-        "..": 0
-      }
+      files: {}
     }),
 
+    // /tmp
     new OFS_Inode({
       links: 1,
       type: "d",
       id: 6,
-      files: {
-        ".": 6,
-        "..": 0
-      }
+      files: {}
     }),
 
+    // /bin/fsh
     new OFS_Inode({
       links: 1,
-      type: "d",
+      type: "f",
+      exec: true,
       id: 7,
-      files: {
-        ".": 7,
-        "..": 0
-      }
-    }),
-
-    new OFS_Inode({
-      links: 1,
-      type: "d",
-      id: 8,
-      files: {
-        ".": 8,
-        "..": 0
-      }
-    }),
-
-    new OFS_Inode({
-      links: 1,
-      type: "d",
-      id: 9,
-      files: {
-        ".": 9,
-        "..": 0
-      }
-    })
-  ])
-);
-
-// Mount /lib
-fs.mount(
-  new OFS([
-    new OFS_Inode({
-      links: 1,
-      id: 0,
-      type: "d",
-      files: {
-        ".": 0,
-        "..": 0,
-        lib: 1
-      }
-    }),
-
-    new OFS_Inode({
-      links: 1,
-      type: "f",
-      exec: true,
-      id: 1,
-      /* lib */ data: "" /* end */
-    })
-  ]),
-  "/lib"
-);
-
-// Mount /bin
-fs.mount(
-  new OFS([
-    new OFS_Inode({
-      links: 1,
-      id: 0,
-      type: "d",
-      files: {
-        ".": 0,
-        "..": 0,
-        fsh: 1
-      }
-    }),
-
-    new OFS_Inode({
-      links: 1,
-      type: "f",
-      exec: true,
-      id: 1,
       /* fsh */ data: "" /* end */
     })
-  ]),
-  "/bin"
+  ])
 );
 
 fs.mount(new DOMFS(), "/dev/dom");

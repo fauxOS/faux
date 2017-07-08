@@ -1,6 +1,4 @@
-const utils = {};
-
-utils.genUUID = function() {
+export function genUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(
     char
   ) {
@@ -8,15 +6,15 @@ utils.genUUID = function() {
       v = char === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
-};
+}
 
-utils.mkWorker = function(scriptStr) {
+export function mkWorker(scriptStr) {
   const blob = new Blob([scriptStr], { type: "application/javascript" });
   const uri = URL.createObjectURL(blob);
   return new Worker(uri);
-};
+}
 
-utils.openLocalFile = function(readAs = "readAsText") {
+export function openLocalFile(readAs = "readAsText") {
   const input = document.createElement("input");
   input.type = "file";
   input.click();
@@ -30,9 +28,9 @@ utils.openLocalFile = function(readAs = "readAsText") {
       };
     };
   });
-};
+}
 
-utils.http = function(uri, method = "GET") {
+export function http(uri, method = "GET") {
   return new Promise((resolve, reject) => {
     if (!uri instanceof String) {
       reject("URI invalid");
@@ -51,6 +49,4 @@ utils.http = function(uri, method = "GET") {
     };
     xhr.send();
   });
-};
-
-export default utils;
+}

@@ -1,4 +1,4 @@
-import Pathname from "../../../misc/pathname.js";
+import { chop, dirname, basename } from "../../../misc/path.js";
 
 export default class DOMFS {
   constructor(selectorBase = "") {
@@ -6,12 +6,12 @@ export default class DOMFS {
   }
 
   resolve(path) {
-    const pathname = new Pathname(path);
+    const chopped = chop(path);
     // If we are at the DOM root, i.e. /dev/dom/
-    if (pathname.chop[0] === "/") {
+    if (chopped[0] === "/") {
       return document.querySelector("*");
     } else {
-      let selector = " " + pathname.chop.join(" > ");
+      let selector = " " + chopped.join(" > ");
       // For child selection by index
       // element.children[0] becomes /dev/dom/element/1
       selector = selector.replace(/ (\d)/g, " :nth-child($1)");
@@ -20,15 +20,14 @@ export default class DOMFS {
   }
 
   touch(path) {
-    const pathname = new Pathname(path);
-    const parent = this.resolve(pathname.parent);
+    const parent = this.resolve(dirname(path));
     if (!parent) {
       return -1;
     }
     // When creating an element, you are only allowed to use the element name
     // e.g. touch("/dev/dom/body/#container/span")
     // You cannot touch a class, index, or id
-    const el = document.createElement(pathname.name);
+    const el = document.createElement(basename(path));
     return parent.appendChild(el);
   }
 }

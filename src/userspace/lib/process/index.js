@@ -1,15 +1,9 @@
-const stdin = {};
+export const stdin = {};
 
-const stdout = {
+export const stdout = {
   write(str) {
     console.log(str);
   }
 };
 
-const stderr = {};
-
-export default {
-  stdin,
-  stdout,
-  stderr
-};
+export const stderr = {};

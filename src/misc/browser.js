@@ -1,5 +1,3 @@
-const flags = {};
-
 // Example output: ["Browser", "xx.xx.xx"]
 function browserInfo() {
   const ua = navigator.userAgent;
@@ -18,15 +16,16 @@ function browserInfo() {
     }
   }
   if (matches[2]) {
-    return [matches[1], matches[2]];
+    return {
+      name: matches[1],
+      version: matches[2]
+    };
   } else {
-    return [navigator.appName, navigator.appVersion];
+    return {
+      name: navigator.appName,
+      version: navigator.appVersion
+    };
   }
 }
 
-const info = browserInfo();
-
-flags.browser = info[0];
-flags.version = info[1];
-
-export default flags;
+export default browserInfo();

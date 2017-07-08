@@ -1,13 +1,9 @@
-export default {
-  readFile(path = "/") {
-    return sys.open(path, "r").then(fd => {
-      return sys.read(fd);
-    });
-  },
+export async function readFile(path = "/") {
+  const fd = await sys.open(path, "r");
+  return sys.read(fd);
+}
 
-  writeFile(path = "/", data = "") {
-    return sys.open(path, "w").then(fd => {
-      return sys.write(fd, data);
-    });
-  }
-};
+export async function writeFile(path = "/", data = "") {
+  const fd = await sys.open(path, "w");
+  return sys.write(fd, data);
+}
