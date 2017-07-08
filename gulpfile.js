@@ -5,16 +5,23 @@ const inject = require("gulp-inject-string");
 const babili = require("gulp-babili");
 const rename = require("gulp-rename");
 const rollup = require("gulp-better-rollup");
+const ts = require("gulp-typescript");
 
 // A versatile compilation function
 // Uses Rollup to resolve dependencies, then minifies the result
-function build(name, path, minify = true, format = "iife") {
-  return gulp
+const build = (name, path, minify = true, format = "iife") =>
+  gulp
     .src(path)
     .pipe(
       rollup({
-        format: format,
-        moduleName: name
+        moduleName: name,
+        format
+      })
+    )
+    .pipe(
+      ts({
+        allowJs: true,
+        target: "es6"
       })
     )
     .pipe(
@@ -27,74 +34,45 @@ function build(name, path, minify = true, format = "iife") {
     )
     .pipe(rename(name + ".js"))
     .pipe(gulp.dest("build/"));
-}
 
-// The kernel is a foundation for all the other code
-// Even the userspace gets plugged into the kernel via the VFS
-// This is why the kernel is the only module that must be in UMD format
-gulp.task("kernel", function() {
-  return build("faux", "src/kernel/index.js", false, "umd");
-});
+// The kernel is a foundation for userspace, which gets injected in later on
+gulp.task("kernel", () => build("faux", "src/kernel/index.js", false, "umd"));
 
-// A standard library
-gulp.task("lib:build", function() {
-  return build("lib", "src/userspace/lib/index.js");
-});
+// A core library
+gulp.task("lib", () => build("lib", "src/userspace/lib/index.js"));
 
 // The Faux SHell
-gulp.task("fsh:build", function() {
-  return build("fsh", "src/userspace/fsh/index.js");
-});
+gulp.task("fsh", () => build("fsh", "src/userspace/fsh/index.js"));
 
 // Get the builds out of the way, before we inject them into the kernel
-gulp.task("builds", ["kernel", "lib:build", "fsh:build"]);
+gulp.task("builds", ["kernel", "lib", "fsh"]);
 
-// Injections
+// Convert a file's contents into a JSON-safe string
+const jsStringEmbed = path => JSON.stringify(fs.readFileSync(path).toString());
 
-function toSingleLineString(file) {
-  return JSON.stringify(require(file));
-}
+// Inject everything
+gulp.task("injections", ["builds"], () =>
+  gulp
+    .src("build/faux.js")
+    // Inject core library into each process
+    .pipe(inject.replace(/\"inject-lib\"/, jsStringEmbed("build/lib.js")))
+    // Inject fsh into its own file
+    .pipe(inject.replace(/\"inject-fsh\"/, jsStringEmbed("build/fsh.js")))
+    // Inject version from package.json
+    .pipe(inject.replace(/inject-version/, require("./package.json").version))
+    // Output to dist/
+    .pipe(rename("fauxOS.js"))
+    .pipe(gulp.dest("dist/"))
+);
 
-gulp.task("injections", ["builds"], function() {
-  return (gulp
-      .src("build/faux.js")
-      // Inject core library into each process
-      .pipe(
-        inject.replace(
-          /\"inject-lib\"/,
-          JSON.stringify(fs.readFileSync("build/lib.js").toString())
-        )
-      )
-      // Inject fsh into its own file
-      .pipe(
-        inject.replace(
-          /\"inject-fsh\"/,
-          JSON.stringify(fs.readFileSync("build/fsh.js").toString())
-        )
-      )
-      // Inject version from package.json
-      .pipe(
-        inject.replace(
-          /\"inject-version\"/,
-          JSON.stringify(require("./package.json").version)
-        )
-      )
-      .pipe(gulp.dest("build/")) );
-});
+// Final minification
+gulp.task("default", ["injections"], () =>
+  gulp
+    .src("dist/fauxOS.js")
+    .pipe(babili({ mangle: false }))
+    .pipe(rename("fauxOS.min.js"))
+    .pipe(gulp.dest("dist/"))
+);
 
-// Final distributed files
-gulp.task("default", ["injections"], function() {
-  return (gulp
-      .src("build/faux.js")
-      // Fully-readable version
-      .pipe(rename("fauxOS.js"))
-      .pipe(gulp.dest("dist/"))
-      // Minified version
-      .pipe(babili({ mangle: false }))
-      .pipe(rename("fauxOS.min.js"))
-      .pipe(gulp.dest("dist/")) );
-});
-
-gulp.task("watch", function() {
-  gulp.watch("src/**/*.js", ["default"]);
-});
+// For development: run `gulp watch` to build on file save
+gulp.task("watch", () => gulp.watch("src/**/*.js", ["default"]));
