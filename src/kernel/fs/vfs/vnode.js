@@ -43,12 +43,12 @@ export default class VNode {
   set data(data) {
     if (this.type === "inode") {
       this.container.data = data;
-      return data;
+      return true;
     } else if (this.type === "element") {
       this.container.innerHTML = data;
-      return data;
+      return true;
     } else {
-      return -1;
+      return false;
     }
   }
 

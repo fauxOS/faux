@@ -17,7 +17,7 @@ function newID(length = 10) {
 // Make a request from the kernel with a system call
 // This wrapper returns a promise for every call
 // Usage: call("callName", ["arg1", "arg2"]).then(handleResult);
-function call(name, args) {
+function call(name = "", args = []) {
   // We use a message ID so we can order the kernel's responses
   const id = newID();
   // This is just the system call request format
@@ -47,31 +47,68 @@ function call(name, args) {
   });
 }
 
-// Spawn a new process from an executable image
-export async function spawn(image, argv = []) {
+/**
+ * Spawn a new process from an executable image
+ * @async
+ * @param {string} image - The executable code to run
+ * @param {array} argv - Argument vector for the new process
+ * @return {Promise<number>} pid - The ID of the new process
+ */
+export async function spawn(image = "", argv = []) {
   return call("spawn", [image, argv]);
 }
 
-// Execute by path, input commandline arguments
-// UNLIKE UNIX, exec will create a new process
-export async function exec(path, argv) {
+/**
+ * Spawn a new process from a path
+ * @async
+ * @param {string} path - The executable code file's path
+ * @param {array} argv
+ * @return {Promise<number>} pid
+ */
+export async function exec(path = "", argv = []) {
   return call("exec", [path, argv]);
 }
 
-// Boolean, true if we have access to file / file exists
-export async function access(path) {
+/**
+ * Check if a file exists
+ * @async
+ * @param {string} path
+ * @return {Promise<boolean>}
+ */
+export async function access(path = "") {
   return call("access", [path]);
 }
 
-// Open a file by path and promise the return of a file descriptor
-export async function open(path, mode = "r") {
+/**
+ * Get file/directory info
+ * @async
+ * @param {string} path
+ * @return {Promise<object>}
+ */
+export async function stat(path = "") {
+  return call("stat", [path]);
+}
+
+/**
+ * Open a file/directory to get its file descriptor
+ * @async
+ * @param {string} path
+ * @return {Promise<number>} fd - new file descriptor
+ */
+export async function open(path = "", mode = "r") {
   const fd = await call("open", [path, mode]);
   if (fd < 0) {
     return new Error("Could not open file");
   }
   return fd;
 }
-// Read a file descriptor and return data retrieved
+
+/**
+ * Read file contents from a file descriptor
+ * @async
+ * @param {number} fd
+ * @return {Promise<string>} data - file contents
+ */
 export async function read(fd) {
   const data = await call("read", [fd]);
   if (data === -2) {
@@ -82,8 +119,13 @@ export async function read(fd) {
   return data;
 }
 
-// Write data to a file descriptor
-export async function write(fd, data) {
+/**
+ * Write data to a file descriptor
+ * @async
+ * @param {number} fd
+ * @param {string} data - new file contents
+ */
+export async function write(fd, data = "") {
   const ret = await call("write", [fd, data]);
   if (ret < 0) {
     return new Error("Could not write data");
@@ -91,22 +133,41 @@ export async function write(fd, data) {
   return data;
 }
 
-// Get the currect working directory
+/**
+ * Get the currect working directory
+ * @async
+ * @return {Promise<string>} current working directory
+ */
 export async function pwd() {
   return call("pwd", []);
 }
 
-// cd
-export async function chdir(path) {
+/**
+ * Change the working directory
+ * @async
+ * @param {string} path - new working directory
+ */
+export async function chdir(path = "") {
   return call("chdir", [path]);
 }
 
-// Get environment variable
-export async function getenv(varName) {
-  return call("getenv", [varName]);
+/**
+ * Get an environment variable value by key,
+ * invoke with no arguments to return the whole environment variable object
+ * @async
+ * @param {string} key
+ * @return {Promise<string>} value
+ */
+export async function getenv(key) {
+  return call("getenv", [key]);
 }
 
-// Set environment variable
-export async function setenv(varName) {
-  return call("setenv", [varName]);
+/**
+ * Set an environment variable to a new value
+ * @async
+ * @param {string} key
+ * @param {string} value
+ */
+export async function setenv(key = "", value = "") {
+  return call("setenv", [key, value]);
 }

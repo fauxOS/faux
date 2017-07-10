@@ -1,33 +1,25 @@
+import fs from "../fs/index.js";
 import FileDescriptor from "./filedesc.js";
 import * as sys from "./syscalls.js";
 import { mkWorker } from "../../misc/utils.js";
 
 export default class Process {
-  constructor(image, argv) {
-    this.argv = [] || argv;
+  constructor(image = "", argv = []) {
+    this.image = image;
+    this.argv = argv;
     this.argc = this.argv.length;
     this.fds = [];
-    this.libs = [];
     this.cwd = "/";
     this.env = {
       SHELL: "fsh",
-      PATH: "/sbin:/bin",
+      PATH: "/bin",
       HOME: "/home",
       TERM: "xterm-256color"
     };
-    this.image = image;
     const lib = "inject-lib";
     // Information that we need to expose to userspace
-    const expose =
-      "process.argv = " +
-      JSON.stringify(this.argv) +
-      ";" +
-      "process.argc = " +
-      this.argc +
-      ";" +
-      "process.env = " +
-      JSON.stringify(this.env) +
-      ";";
+    const jsonArgv = JSON.stringify(this.argv);
+    const expose = `process.argv = ${jsonArgv}; process.argc = ${this.argc}`;
     // The worker is where the process is actually executed
     this.worker = mkWorker([lib, expose, image].join("\n\n"));
     // This event listener intercepts worker messages and then
@@ -63,22 +55,18 @@ export default class Process {
   }
 
   // Check if we can access/it exists
-  access(path, mode = "r") {
-    try {
-      const fd = new FileDescriptor(path, mode);
-      if (fd.vnode) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (err) {
+  access(path) {
+    const vnode = fs.resolve(path);
+    if (this.vnode.container) {
+      return true;
+    } else {
       return false;
     }
   }
 
   // Where open() actually runs
   // Return a file descriptor
-  open(path, mode) {
+  open(path, mode = "r") {
     if (!this.access(path, mode)) {
       return -1;
     }
