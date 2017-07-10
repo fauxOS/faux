@@ -1,13 +1,47 @@
-export default function getMode(modeStr = "r") {
-  // prettier-ignore
-  //             read,    write,  truncate,   create,   append
+export default function getMode(mode = "r") {
   const map = {
-    "r":        [true,    false,  false,      false,    false],
-    "r+":       [true,    true,   false,      false,    false],
-    "w":        [false,   true,   true,       true,     false],
-    "w+":       [true,    true,   true,       true,     false],
-    "a":        [false,   true,   false,      true,     true],
-    "a+":       [true,    true,   false,      true,     true]
+    r: {
+      read: true,
+      write: false,
+      truncate: false,
+      create: false,
+      append: false
+    },
+    "r+": {
+      read: true,
+      write: true,
+      truncate: false,
+      create: false,
+      append: false
+    },
+    w: {
+      read: false,
+      write: true,
+      truncate: true,
+      create: true,
+      append: false
+    },
+    "w+": {
+      read: true,
+      write: true,
+      truncate: true,
+      create: true,
+      append: false
+    },
+    a: {
+      read: false,
+      write: true,
+      truncate: false,
+      create: true,
+      append: true
+    },
+    "a+": {
+      read: true,
+      write: true,
+      truncate: false,
+      create: true,
+      append: true
+    }
   };
-  return map[modeStr];
+  return map[mode];
 }

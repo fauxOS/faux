@@ -12,16 +12,16 @@ export default class Process {
     this.cwd = "/";
     this.env = {
       SHELL: "fsh",
-      PATH: "/bin",
+      PATH: "./:/bin",
       HOME: "/home",
       TERM: "xterm-256color"
     };
-    const lib = "inject-lib";
     // Information that we need to expose to userspace
     const jsonArgv = JSON.stringify(this.argv);
-    const expose = `process.argv = ${jsonArgv}; process.argc = ${this.argc}`;
+    const expose = `const argv = ${jsonArgv}; const argc = ${this.argc};`;
+    const lib = "inject-lib";
     // The worker is where the process is actually executed
-    this.worker = mkWorker([lib, expose, image].join("\n\n"));
+    this.worker = mkWorker([expose, lib, image].join("\n\n"));
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     this.worker.addEventListener("message", message => {
@@ -57,7 +57,7 @@ export default class Process {
   // Check if we can access/it exists
   access(path) {
     const vnode = fs.resolve(path);
-    if (this.vnode.container) {
+    if (vnode.container) {
       return true;
     } else {
       return false;
@@ -67,11 +67,12 @@ export default class Process {
   // Where open() actually runs
   // Return a file descriptor
   open(path, mode = "r") {
-    if (!this.access(path, mode)) {
+    try {
+      const fd = new FileDescriptor(path, mode);
+      this.fds.push(fd);
+      return this.fds.length - 1;
+    } catch (err) {
       return -1;
     }
-    const fd = new FileDescriptor(path, mode);
-    this.fds.push(fd);
-    return this.fds.length - 1;
   }
 }

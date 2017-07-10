@@ -97,8 +97,8 @@ export function open(process, msgID, args) {
 // Read data from a file descriptor
 export function read(process, msgID, args) {
   const [fd] = args;
-  if (fd <= 0) {
-    return fail(process, msgID, "File Descriptor should be <= 0");
+  if (fd < 0) {
+    return fail(process, msgID, "File Descriptor should be >= 0");
   }
   const data = process.fds[fd].read();
   return pass(process, msgID, data);
@@ -107,8 +107,8 @@ export function read(process, msgID, args) {
 // Write data to a file descriptor
 export function write(process, msgID, args) {
   const [fd, data] = args;
-  if (fd <= 0) {
-    return fail(process, msgID, "File Descriptor should be <= 0");
+  if (fd < 0) {
+    return fail(process, msgID, "File Descriptor should be >= 0");
   }
   if (typeof data !== "string") {
     return fail(process, msgID, "Second argument - data - should be a string");

@@ -9,7 +9,7 @@ export default class FileDescriptor {
     this.vnode = fs.resolve(this.path);
     // Create if non-existent?
     if (!this.vnode.container) {
-      if (!this.mode[3]) {
+      if (!this.mode.create) {
         throw new Error("Path Unresolved");
       } else {
         fs.touch(this.path);
@@ -20,8 +20,7 @@ export default class FileDescriptor {
         }
       }
     }
-    // If truncate in mode
-    if (this.mode[2]) {
+    if (this.mode.truncate) {
       this.truncate();
     }
     this.type = this.vnode.type;
@@ -33,8 +32,7 @@ export default class FileDescriptor {
 
   // Return read data
   read() {
-    // Read mode set?
-    if (!this.mode[0]) {
+    if (!this.mode.read) {
       return -1;
     }
     return this.vnode.data;
