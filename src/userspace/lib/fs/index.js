@@ -1,5 +1,3 @@
-import { open, read, write } from "../syscalls.js";
-
 /**
  * Read a file's contents
  * @async
@@ -9,9 +7,9 @@ import { open, read, write } from "../syscalls.js";
  * @example fs.readFile("./file").then(console.log)
  */
 export async function readFile(path) {
-  const fd = await open(path, "r");
-  const data = read(fd);
-  close(fd);
+  const fd = await sys.open(path, "r");
+  const data = sys.read(fd);
+  sys.close(fd);
   return data;
 }
 
@@ -24,9 +22,9 @@ export async function readFile(path) {
  * @example fs.writeFile("./file", "contents")
  */
 export async function writeFile(path, data = "") {
-  const fd = await open(path, "w");
-  write(fd, data);
-  close(fd);
+  const fd = await sys.open(path, "w");
+  sys.write(fd, data);
+  sys.close(fd);
   return;
 }
 
@@ -39,8 +37,8 @@ export async function writeFile(path, data = "") {
  * @example fs.appendFile("/log/something", "[time]: Event\n")
  */
 export async function appendFile(path, data = "") {
-  const fd = await open(path, "a");
-  write(fd, data);
-  close(fd);
+  const fd = await sys.open(path, "a");
+  sys.write(fd, data);
+  sys.close(fd);
   return;
 }
