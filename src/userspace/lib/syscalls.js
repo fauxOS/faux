@@ -53,6 +53,8 @@ function call(name = "", args = []) {
  * @param {string} image - The executable code to run
  * @param {array} argv - Argument vector for the new process
  * @return {Promise<number>} pid - The ID of the new process
+ * 
+ * @example sys.spawn("console.log(argv)", ["hello", "world"])
  */
 export async function spawn(image = "", argv = []) {
   return call("spawn", [image, argv]);
@@ -64,8 +66,10 @@ export async function spawn(image = "", argv = []) {
  * @param {string} path - The executable code file's path
  * @param {array} argv
  * @return {Promise<number>} pid
+ * 
+ * @example sys.exec("/bin/ls", ["ls", "-a"])
  */
-export async function exec(path = "", argv = []) {
+export async function exec(path, argv = []) {
   return call("exec", [path, argv]);
 }
 
@@ -74,9 +78,11 @@ export async function exec(path = "", argv = []) {
  * @async
  * @param {string} path
  * @return {Promise<boolean>}
+ * 
+ * @example const exists = await sys.exists("/file")
  */
-export async function access(path = "") {
-  return call("access", [path]);
+export async function exists(path) {
+  return call("exists", [path]);
 }
 
 /**
@@ -84,8 +90,10 @@ export async function access(path = "") {
  * @async
  * @param {string} path
  * @return {Promise<object>}
+ * 
+ * @example const info = await sys.stat("/file")
  */
-export async function stat(path = "") {
+export async function stat(path) {
   return call("stat", [path]);
 }
 
@@ -94,8 +102,10 @@ export async function stat(path = "") {
  * @async
  * @param {string} path
  * @return {Promise<number>} fd - new file descriptor
+ * 
+ * @example const fd = await sys.open("/file")
  */
-export async function open(path = "", mode = "r") {
+export async function open(path, mode = "r") {
   const fd = await call("open", [path, mode]);
   if (fd < 0) {
     return new Error("Could not open file");
@@ -104,10 +114,48 @@ export async function open(path = "", mode = "r") {
 }
 
 /**
+ * Close a file descriptor from use
+ * @async
+ * @param {number} fd
+ * 
+ * @example sys.close(3)
+ */
+export async function close(fd) {
+  return call("close", [fd]);
+}
+
+/**
+ * Duplicate a file descriptor
+ * @async
+ * @param {number} fd - File descriptor to copy
+ * @return {Promise<number>} duplicated file descriptor
+ * 
+ * @example const copied = await sys.dup(0)
+ */
+export async function dup(fd) {
+  return call("dup", [fd]);
+}
+
+/**
+ * Duplicate a file descriptor to a new location, possibly overwriting one
+ * @async
+ * @param {number} fd1 - File descriptor to copy
+ * @param {number} fd2 - Target to copy to
+ * @return {Promise<number>} Second file descriptor
+ * 
+ * @example sys.dup2(1, 2)
+ */
+export async function dup2(fd1, fd2) {
+  return call("dup2", [fd1, fd2]);
+}
+
+/**
  * Read file contents from a file descriptor
  * @async
  * @param {number} fd
  * @return {Promise<string>} data - file contents
+ * 
+ * @example const contents = await sys.read(fd)
  */
 export async function read(fd) {
   const data = await call("read", [fd]);
@@ -124,6 +172,8 @@ export async function read(fd) {
  * @async
  * @param {number} fd
  * @param {string} data - new file contents
+ * 
+ * @example sys.write(1, "hello world")
  */
 export async function write(fd, data = "") {
   const ret = await call("write", [fd, data]);
@@ -137,6 +187,8 @@ export async function write(fd, data = "") {
  * Get the currect working directory
  * @async
  * @return {Promise<string>} current working directory
+ * 
+ * @example const cwd = await sys.pwd()
  */
 export async function pwd() {
   return call("pwd", []);
@@ -146,8 +198,10 @@ export async function pwd() {
  * Change the working directory
  * @async
  * @param {string} path - new working directory
+ * 
+ * @example sys.chdir("/home")
  */
-export async function chdir(path = "") {
+export async function chdir(path = "/home") {
   return call("chdir", [path]);
 }
 
@@ -157,6 +211,9 @@ export async function chdir(path = "") {
  * @async
  * @param {string} key
  * @return {Promise<string>} value
+ * 
+ * @example const usingAwait = (await sys.getenv("PATH")).split(":")
+ * @example const usingPromise = sys.getenv("PATH").then(path => path.split(":"))
  */
 export async function getenv(key) {
   return call("getenv", [key]);
@@ -167,7 +224,9 @@ export async function getenv(key) {
  * @async
  * @param {string} key
  * @param {string} value
+ * 
+ * @example sys.setenv("varName", "It doesn't have to be all caps")
  */
-export async function setenv(key = "", value = "") {
+export async function setenv(key, value = "") {
   return call("setenv", [key, value]);
 }

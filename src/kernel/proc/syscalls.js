@@ -59,14 +59,14 @@ export function exec(process, msgID, args) {
   return pass(process, msgID, pid);
 }
 
-// Check file access
-export function access(process, msgID, args) {
+// Check if a file exists
+export function exists(process, msgID, args) {
   const [inputPath] = args;
   if (typeof inputPath !== "string") {
     return fail(process, msgID, "First argument - path - should be a string");
   }
   const safePath = resolvePath(inputPath, process);
-  const result = process.access(safePath);
+  const result = process.exists(safePath);
   return pass(process, msgID, result);
 }
 
@@ -92,6 +92,48 @@ export function open(process, msgID, args) {
   const safePath = resolvePath(inputPath, process);
   const fd = process.open(safePath, mode);
   return pass(process, msgID, fd);
+}
+
+// Remove a file descriptor from the table
+export function close(process, msgID, args) {
+  const [fd] = args;
+  if (fd < 0) {
+    return fail(process, msgID, "File Descriptor should be >= 0");
+  }
+  if (!process.fds[fd]) {
+    return fail(process, msgID, "File Descriptor must exist");
+  }
+  const result = process.close(fd);
+  return pass(process, msgID, result);
+}
+
+// Duplicate a file descriptor
+export function dup(process, msgID, args) {
+  const [fd] = args;
+  if (fd < 0) {
+    return fail(process, msgID, "File Descriptor should be >= 0");
+  }
+  if (!process.fds[fd]) {
+    return fail(process, msgID, "File Descriptor must exist");
+  }
+  const newFd = process.dup(fd);
+  return pass(process, msgID, newFd);
+}
+
+// Duplicate a file descriptor to a specified location
+export function dup2(process, msgID, args) {
+  const [fd1, fd2] = args;
+  if (fd1 < 0) {
+    return fail(process, msgID, "File Descriptor 1 should be >= 0");
+  }
+  if (!process.fds[fd1]) {
+    return fail(process, msgID, "File Descriptor 1 must exist");
+  }
+  if (fd2 < 0) {
+    return fail(process, msgID, "File Descriptor 2 should be >= 0");
+  }
+  const newFd = process.dup2(fd1, fd2);
+  return pass(process, msgID, newFd);
 }
 
 // Read data from a file descriptor

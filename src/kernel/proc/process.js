@@ -54,8 +54,8 @@ export default class Process {
     }
   }
 
-  // Check if we can access/it exists
-  access(path) {
+  // Check if it exists
+  exists(path) {
     const vnode = fs.resolve(path);
     if (vnode.container) {
       return true;
@@ -74,5 +74,32 @@ export default class Process {
     } catch (err) {
       return -1;
     }
+  }
+
+  // Close a file descriptor
+  close(fd) {
+    if (!this.fds[fd]) {
+      return -1;
+    }
+    return (this.fds[fd] = null);
+  }
+
+  // Duplicate a file descriptor
+  dup(fd) {
+    if (!this.fds[fd]) {
+      return -1;
+    }
+    const copied = this.fds[fd];
+    this.fds.push(copied);
+    return this.fds.length - 1;
+  }
+
+  // Copy a file descriptor to a specified location
+  dup2(fd1, fd2) {
+    if (!this.fds[fd1]) {
+      return -1;
+    }
+    this.fds[fd2] = this.fds[fd1];
+    return fd2;
   }
 }
