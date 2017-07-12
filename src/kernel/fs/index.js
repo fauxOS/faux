@@ -1,84 +1,53 @@
 import OFS from "./ofs/index.js";
 import DOMFS from "./domfs/index.js";
 import VFS from "./vfs/index.js";
-import OFS_Inode from "./ofs/inode.js";
+import Inode from "./ofs/inode.js";
 
-const fs = new VFS(
-  new OFS([
-    new OFS_Inode({
-      links: 1,
-      id: 0,
-      type: "d",
-      files: {
-        bin: 1,
-        dev: 2,
-        etc: 3,
-        home: 4,
-        log: 5,
-        tmp: 6
-      }
-    }),
+const fsh = new Inode({
+  file: true,
+  executable: true,
+  contents: "inject-fsh"
+});
 
-    // /bin
-    new OFS_Inode({
-      links: 1,
-      type: "d",
-      id: 1,
-      files: {
-        fsh: 7
-      }
-    }),
+const bin = new Inode({
+  dir: true,
+  children: {
+    fsh
+  }
+});
 
-    // /dev
-    new OFS_Inode({
-      links: 1,
-      type: "d",
-      id: 2,
-      files: {}
-    }),
+const dev = new Inode({
+  dir: true,
+  children: {}
+});
 
-    // /etc
-    new OFS_Inode({
-      links: 1,
-      type: "d",
-      id: 3,
-      files: {}
-    }),
+const home = new Inode({
+  dir: true,
+  children: {}
+});
 
-    // /home
-    new OFS_Inode({
-      links: 1,
-      type: "d",
-      id: 4,
-      files: {}
-    }),
+const log = new Inode({
+  dir: true,
+  children: {}
+});
 
-    // /log
-    new OFS_Inode({
-      links: 1,
-      type: "d",
-      id: 5,
-      files: {}
-    }),
+const tmp = new Inode({
+  dir: true,
+  children: {}
+});
 
-    // /tmp
-    new OFS_Inode({
-      links: 1,
-      type: "d",
-      id: 6,
-      files: {}
-    }),
+const root = new Inode({
+  dir: true,
+  children: {
+    bin,
+    dev,
+    home,
+    log,
+    tmp
+  }
+});
 
-    // /bin/fsh
-    new OFS_Inode({
-      links: 1,
-      type: "f",
-      exec: true,
-      id: 7,
-      data: "inject-fsh"
-    })
-  ])
-);
+const fs = new VFS(new OFS([root, bin, dev, home, log, tmp, binFsh]));
 
 fs.mount(new DOMFS(), "/dev/dom");
 

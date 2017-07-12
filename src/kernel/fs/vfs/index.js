@@ -1,6 +1,5 @@
 import OFS from "../ofs/index.js";
 import { normalize, chop } from "../../../misc/path.js";
-import VNode from "./vnode.js";
 
 export default class VFS {
   constructor(rootDrive = new OFS()) {
@@ -19,12 +18,12 @@ export default class VFS {
   // Unmount a filesystem by mount point
   unmount(mountPoint) {
     const normalized = normalize(mountPoint);
-    return delete this.mounts[normalized];
+    return (this.mounts[normalized] = null);
   }
 
   // Resolve the path to the mounted filesystem
   // This is the first step to trace a path, before any data containers (inodes etc) are involved
-  mountPoint(path) {
+  getMountPoint(path) {
     // Get the segments of a path like this : ["/", "/path", "/path/example"]
     const pathArray = chop(path);
     // If its a root path, skip segments
@@ -51,34 +50,58 @@ export default class VFS {
     return resolves.pop();
   }
 
-  // Resolve a path to the fs provided data container
-  resolve(path) {
+  // Resolve a path to its mounted filesystem, and get its absolute path
+  // relative to its local file system's root
+  getPathInfo(path) {
     const normalized = normalize(path);
-    const mountPoint = this.mountPoint(normalized);
-    const fs = this.mounts[mountPoint];
-    // This strips off the mountpoint path from the given path,
-    // so that we can resolve relative to the filesystem's root.
-    // Example: given path is "/dev/dom/head/title"
-    // We find that the mountpoint is "/dev/dom".
-    // "/dev/dom/head/title" - "/dev/dom" = "/head/title"
-    // Pass "/head/title" to the local filesystem for it to resolve
-    const fsLocalPath = normalized.substring(mountPoint.length);
-    const container = fs.resolve(fsLocalPath);
-    if (container < 0) {
-      return -1;
-    }
-    return new VNode(container);
+    const mountPoint = this.getMountPoint(normalized);
+    const localFsPath = normalized.substring(mountPoint.length);
+    return {
+      localFs: this.mounts[mountPoint],
+      localFsPathArray: chop(localFsPath)
+    };
   }
 
-  touch(path) {
-    const normalized = normalize(path);
-    const mountPoint = this.mountPoint(path);
-    const fs = this.mounts[mountPoint];
-    const fsLocalPath = normalized.substring(mountPoint.length);
-    const touched = fs.touch(fsLocalPath);
-    if (touched < 0) {
+  // Resolve a path to the fs provided data container
+  resolve(path) {
+    const { localFs, localFsPathArray } = this.getPathInfo(path);
+    const inode = localFs.resolve(localFsPathArray);
+    if (inode < 0) {
       return -1;
     }
-    return touched;
+    return inode;
+  }
+
+  // Make a new file
+  create(path) {
+    const { localFs, localFsPathArray } = this.getPathInfo(path);
+    const inode = localFs.create(localFsPathArray);
+    if (inode < 0) {
+      return -1;
+    }
+    return inode;
+  }
+
+  // Make a new directory
+  mkdir(path) {
+    const { localFs, localFsPathArray } = this.getPathInfo(path);
+    const inode = localFs.mkdir(localFsPathArray);
+    if (inode < 0) {
+      return -1;
+    }
+    return inode;
+  }
+
+  // Hard link newPath to the same inode as oldPath
+  link(oldPath, newPath) {}
+
+  // Unlink (remove) a file
+  unlink(path) {
+    const { localFs, localFsPathArray } = this.getPathInfo(path);
+    const ret = localFs.unlink(localFsPathArray);
+    if (ret < 0) {
+      return -1;
+    }
+    return ret;
   }
 }

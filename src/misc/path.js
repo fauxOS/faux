@@ -125,11 +125,11 @@ export function join() {
 }
 
 // Chop a path into an array of names
-// "/paths/are/like/arrays" => ["paths", "are", "like", "arrays"]
+// "/paths/are/just/arrays" => ["paths", "are", "just", "arrays"]
 export function chop(path) {
   const segments = normalize(path).match(/[^/]+/g);
   if (!segments) {
-    return ["/"];
+    return [];
   } else {
     return segments;
   }

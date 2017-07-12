@@ -19,8 +19,8 @@
   "scripts": {
     "format": "prettier --write 'src/**/*.js'",
     "build": "yarn run format && gulp",
-    "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer &",
-    "dev": "yarn run test && gulp watch",
+    "test": "echo 'Open your browser to `http://localhost:8000`' && python -m SimpleHTTPServer",
+    "dev": "gulp watch",
     "clean": "yarn cache clean && rm -rf node_modules/ && rm -rf build/ && rm -rf dist/",
     "reset": "yarn run clean && yarn && yarn run build"
   },

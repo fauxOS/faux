@@ -1,138 +1,115 @@
-import { chop, dirname, basename, normalize } from "../../../misc/path.js";
-import OFS_Inode from "./inode.js";
+import Inode from "./inode.js";
 
 export default class OFS {
-  constructor() {
-    this.drive = arguments[0] || [
-      new OFS_Inode({
-        links: 1,
-        id: 0,
-        type: "d",
-        files: {}
+  constructor(inodes) {
+    this.inodes = inodes || [
+      new Inode({
+        dir: true,
+        children: {}
       })
     ];
   }
 
   // Resolve path to an inode, don't follow symbolic links
-  resolveHard(path) {
-    let inode = 0;
-    const trace = [inode];
-    if (path === "/" || path === "") {
-      return this.drive[inode];
-    }
-    const pathArray = chop(path);
-    for (let i = 0; i < pathArray.length; i++) {
+  resolve(pathArray) {
+    const rootInode = this.inodes[0];
+    // An array of inodes, maps 1:1 with the pathArray
+    const inodeArray = [rootInode];
+    // We iterate over each part of the path, filling up inodeArray
+    for (let i in pathArray) {
+      // We need the previous inode's directory contents
+      const prevInode = inodeArray.slice(-1)[0];
+      // Path contains segement that isn't a directory
+      if (!prevInode.children) {
+        return -1;
+      }
+      // Get the next inode
       const name = pathArray[i];
-      const inodeObj = this.drive[inode];
-      if (inodeObj.files === undefined) {
-        // Could not resolve path to inodes completely
-        return -1;
+      const nextInode = prevInode.children[name];
+      // Path contains non-existent entry
+      if (!nextInode) {
+        return -2;
       }
-      inode = inodeObj.files[name];
-      if (inode === undefined) {
-        // Could not find end inode, failed at segment name
-        return -1;
-      }
-      trace.push(inode);
+      inodeArray.push(nextInode);
     }
-    return this.drive[trace.pop()];
-  }
-
-  // Resolve and return the inode, follow symbolic links
-  resolve(path, redirectCount = 0) {
-    // Don't follow if we get to 50 symbolic link redirects
-    if (redirectCount >= 50) {
-      // Max symbolic link redirect count reached (50)
-      return -1;
-    }
-    const inode = this.resolveHard(path);
-    if (inode < 0) {
-      // Error on hard resolve
-      return -1;
-    }
-    if (inode.type === "sl") {
-      redirectCount++;
-      return this.resolve(inode.redirect, redirectCount);
-    }
-    return inode;
+    // Return the last inode resolved
+    return inodeArray.pop();
   }
 
   // Add a new inode to the disk
   // Defaults to just adding an inode, but if you pass a parent directory inode in,
-  // it will add `name` as an entry in `parentInode`
-  addInode(type, name = null, parentInode = null) {
+  // it will add `name` as an entry in `parent`
+  addInode(parent, name, config) {
     // Reject if name contains a "/"
     if (name.match("/")) {
       return -1;
     }
-    const id = this.drive.length;
-    this.drive[id] = new OFS_Inode({
-      links: 1,
-      type: type,
-      id: id
-    });
-    // Check parent if inode and directory
-    if (parentInode instanceof OFS_Inode && parentInode.type === "d") {
-      parentInode.files[name] = id;
+    const inode = new Inode(config);
+    // Check if parent is a directory
+    if (parent.dir) {
+      this.inodes.push(inode);
+      parent.children[name] = inode;
+    } else {
+      // Parent is not a directory
+      return -1;
     }
-    return this.drive[id];
+    return inode;
   }
 
   // Add a new file to the disk
-  touch(path) {
-    const parentInode = this.resolve(dirname(path));
-    const name = basename(path);
-    const inode = this.addInode("f", name, parentInode);
+  create(pathArray) {
+    const parent = this.resolve(pathArray.slice(0, -1));
+    const name = pathArray.slice(-1)[0];
+    const inode = this.addInode(parent, name, { file: true, contents: "" });
     if (inode < 0) {
       return -1;
     }
-    inode.data = "";
     return inode;
   }
 
   // Add a new directory Inode to the disk
-  mkDir(path) {
-    const parentInode = this.resolve(dirname(path));
-    const name = basename(path);
-    const inode = this.addInode("d", name, parentInode);
+  mkdir(pathArray) {
+    const parent = this.resolve(pathArray.slice(0, -1));
+    const name = pathArray.slice(-1)[0];
+    const inode = this.addInode(parent, name, { dir: true, children: {} });
     if (inode < 0) {
       return -1;
     }
-    inode.files = {};
     return inode;
   }
 
   // Make a hard link for an inode
-  mkLink(inode, path) {
-    const parentInode = this.resolve(dirname(path));
-    const name = basename(path);
-    // Same as in addInode, not very DRY I know...
-    if (name.match("/")) {
+  link(oldPathArray, newPathArray) {
+    const oldInode = this.resolve(oldPathArray);
+    const newParent = this.resolve(newPathArray.slice(0, -1));
+    const newName = newPathArray.slice(-1)[0];
+    // Reject if new name contains a "/"
+    if (newName.match("/")) {
       return -1;
     }
-    parentInode.files[name] = inode.id;
-    return inode;
-  }
-
-  // Make a symbolic link inode
-  mkSymLink(refPath, linkPath) {
-    const parentInode = this.resolve(dirname(path));
-    const name = basename(path);
-    const inode = this.addInode("sl", name, parentInode);
-    if (inode < 0) {
+    // Check if new parent is a directory
+    if (newParent.dir) {
+      newParent.children[newName] = oldInode;
+    } else {
+      // New parent is not a directory
       return -1;
     }
-    inode.redirect = normalize(refPath);
-    return inode;
   }
 
   // Remove by unlinking
-  rm(path) {
-    const parentInode = this.resolve(dirname(path));
-    const name = basename(path);
-    if (parentInode < 0) {
+  unlink(pathArray) {
+    const parent = this.resolve(pathArray.slice(0, -1));
+    const name = pathArray.slice(-1)[0];
+    if (parent < 0) {
       return -1;
     }
-    return delete parentInode.files[name];
+    // Check if parent is a directory
+    if (parent.dir) {
+      delete parent.children[name];
+      return;
+    } else {
+      // Parent is not a directory
+      return -1;
+    }
   }
 }

@@ -6,45 +6,56 @@ export default class FileDescriptor {
   constructor(path, mode) {
     this.mode = getMode(mode);
     this.path = normalize(path);
-    this.vnode = fs.resolve(this.path);
+    this.inode = fs.resolve(this.path);
     // Create if non-existent?
-    if (!this.vnode.container) {
-      if (!this.mode.create) {
-        throw new Error("Path Unresolved");
-      } else {
-        fs.touch(this.path);
-        this.vnode = fs.resolve(this.path);
+    if (!this.inode) {
+      if (this.mode.create) {
+        fs.create(this.path);
+        // Try resolving a second time
+        this.inode = fs.resolve(this.path);
         // Probably an error creating the file
-        if (this.vnode < 0) {
-          throw new Error("Error on file creation or resolve");
+        if (!this.inode) {
+          // Error on file creation
+          return -2;
         }
+      } else {
+        // Does not exist
+        return -1;
       }
     }
+    // Truncate if mode is set
     if (this.mode.truncate) {
-      this.truncate();
+      this.inode.truncate();
     }
-    this.type = this.vnode.type;
   }
 
-  truncate() {
-    this.vnode.data = "";
-  }
-
-  // Return read data
+  // Return file contents
   read() {
-    if (!this.mode.read) {
+    if (this.mode.read) {
+      return this.inode.read();
+    } else {
+      // Read mode not set
       return -1;
     }
-    return this.vnode.data;
   }
 
-  // Write data out
-  write(data) {
-    return (this.vnode.data = data);
+  // Write file contents
+  write(contents) {
+    if (this.mode.write) {
+      // Append if in append mode
+      if (this.mode.append) {
+        return this.inode.append(contents);
+      } else {
+        return this.inode.write(contents);
+      }
+    } else {
+      // Write mode not set
+      return -1;
+    }
   }
 
-  // View "directory" contents or return null
+  // Read directory contents
   readdir() {
-    return this.vnode.files;
+    return this.inode.readdir();
   }
 }
