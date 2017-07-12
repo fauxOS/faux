@@ -55,7 +55,7 @@ export default class VFS {
   getPathInfo(path) {
     const normalized = normalize(path);
     const mountPoint = this.getMountPoint(normalized);
-    const localFsPath = normalized.substring(mountPoint.length);
+    const localFsPath = normalized.substring(mountPoint.length) || "/";
     return {
       localFs: this.mounts[mountPoint],
       localFsPathArray: chop(localFsPath)

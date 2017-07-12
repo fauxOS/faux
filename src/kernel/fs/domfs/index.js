@@ -21,10 +21,7 @@ export default class DOMFS {
     }
     // Return an inode that VFS can understand
     return new Inode({
-      dir: true,
-      children: element.children,
-      file: true,
-      contents: element.outerHTML
+      raw: element
     });
   }
 
@@ -42,10 +39,7 @@ export default class DOMFS {
     parent.appendChild(element);
     // Again, so that VFS understands
     return new Inode({
-      dir: true,
-      children: element.children,
-      file: true,
-      contents: element.outerHTML
+      raw: element
     });
   }
 

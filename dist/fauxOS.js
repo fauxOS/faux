@@ -178,7 +178,32 @@
         constructor(config = {}) {
             this.links = 1;
             this.executable = false;
+            this.dir = true;
+            this.file = true;
             Object.assign(this, config);
+        }
+        get contents() {
+            return this.raw.innerHTML;
+        }
+        set contents(contents) {
+            return (this.raw.innerHTML = contents);
+        }
+        get children() {
+            const dir = [];
+            const children = $0.children;
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
+                const name = child.localName;
+                const id = child.id ? "#" + child.id : "";
+                const classes = child.className
+                    ? "." + child.className.replace(/\s+/g, ".")
+                    : "";
+                // Push a css selector for the child
+                dir.push(name + id + classes);
+                // Push a css :nth-child() selector number
+                dir.push(i + 1);
+            }
+            return dir;
         }
         // Read file contents
         read() {
@@ -198,21 +223,7 @@
         }
         // Read a directory
         readdir() {
-            const dir = [];
-            const children = $0.children;
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
-                const name = child.localName;
-                const id = child.id ? "#" + child.id : "";
-                const classes = child.className
-                    ? "." + child.className.replace(/\s+/g, ".")
-                    : "";
-                // Push a css selector for the child
-                dir.push(name + id + classes);
-                // Push a css :nth-child() selector number
-                dir.push(i + 1);
-            }
-            return dir;
+            return Object.keys(this.children);
         }
     }
     class DOMFS {
@@ -236,10 +247,7 @@
             }
             // Return an inode that VFS can understand
             return new Inode$1({
-                dir: true,
-                children: element.children,
-                file: true,
-                contents: element.outerHTML
+                raw: element
             });
         }
         // Create a new element
@@ -256,10 +264,7 @@
             parent.appendChild(element);
             // Again, so that VFS understands
             return new Inode$1({
-                dir: true,
-                children: element.children,
-                file: true,
-                contents: element.outerHTML
+                raw: element
             });
         }
         // In the DOM, link and unlink make no sense
@@ -395,7 +400,7 @@
         getPathInfo(path) {
             const normalized = normalize(path);
             const mountPoint = this.getMountPoint(normalized);
-            const localFsPath = normalized.substring(mountPoint.length);
+            const localFsPath = normalized.substring(mountPoint.length) || "/";
             return {
                 localFs: this.mounts[mountPoint],
                 localFsPathArray: chop(localFsPath)
@@ -440,44 +445,18 @@
             return ret;
         }
     }
-    const fsh = new Inode({
+    const rootFs = new OFS();
+    const bin = rootFs.mkdir(["bin"]);
+    rootFs.addInode(bin, "fsh", {
         file: true,
         executable: true,
         contents: "(function(){\"use strict\";function tokenizeLine(line=\"\"){const tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String);for(let token,i=0;i<tokens.length;i++)token=tokens[i],tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2]);return tokens}function lex(input=\"\"){const allTokens=[],lines=input.match(/(\\\\;|[^;])+/g);for(let tokens,i=0;i<lines.length;i++)tokens=tokenizeLine(lines[i]),allTokens.push(tokens);return allTokens}function parseCommand(tokens){const command={type:\"simple\",argv:tokens,argc:tokens.length,name:tokens[0]};return command}(function(input=\"\"){const AST={type:\"script\",commands:[]},commands=lex(input);for(let parsed,i=0;i<commands.length;i++)parsed=parseCommand(commands[i]),AST.commands[i]=parsed;return AST})(\"echo hello, world\")})();"
     });
-    const bin = new Inode({
-        dir: true,
-        children: {
-            fsh
-        }
-    });
-    const dev = new Inode({
-        dir: true,
-        children: {}
-    });
-    const home = new Inode({
-        dir: true,
-        children: {}
-    });
-    const log = new Inode({
-        dir: true,
-        children: {}
-    });
-    const tmp = new Inode({
-        dir: true,
-        children: {}
-    });
-    const root = new Inode({
-        dir: true,
-        children: {
-            bin,
-            dev,
-            home,
-            log,
-            tmp
-        }
-    });
-    const fs = new VFS(new OFS([root, bin, dev, home, log, tmp, binFsh]));
+    rootFs.mkdir(["dev"]);
+    rootFs.mkdir(["home"]);
+    rootFs.mkdir(["log"]);
+    rootFs.mkdir(["tmp"]);
+    const fs = new VFS(rootFs);
     fs.mount(new DOMFS(), "/dev/dom");
     function getMode(mode = "r") {
         const map = {
@@ -937,21 +916,19 @@
         }
     }
     class ProcessTable {
-        constructor(init) {
-            if (init === undefined) {
-                throw new Error("Init process must be defined");
+        constructor(init = new Process()) {
+            if (!init instanceof Process) {
+                throw new Error("Init process is invalid");
             }
-            this.list = [null, init];
-            this.nextPID = 2;
+            this.list = [init];
         }
         add(process) {
-            this.nextPID = this.list.push(process);
-            return this.nextPID - 1;
+            return this.list.push(process) - 1;
         }
         emit(name, detail, pids = []) {
             // Default empty array means all processes
             if (pids.length === 0) {
-                for (let i = 1; i < this.list.length; i++) {
+                for (let i in this.list) {
                     // Post the message every process' webworker
                     this.list[i].worker.postMessage({
                         type: "event",
@@ -963,7 +940,8 @@
             else {
                 // Post the message to each process as specified by the pids array
                 for (let i in pids) {
-                    this.list[pids[i]].worker.postMessage({
+                    const pid = pids[i];
+                    this.list[pid].worker.postMessage({
                         type: "event",
                         name,
                         detail
@@ -972,7 +950,7 @@
             }
         }
     }
-    var processTable = new ProcessTable(new Process());
+    var processTable = new ProcessTable();
     // Example output: ["Browser", "xx.xx.xx"]
     function browserInfo() {
         const ua = navigator.userAgent;

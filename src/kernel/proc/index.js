@@ -1,23 +1,21 @@
 import Process from "./process.js";
 
 class ProcessTable {
-  constructor(init) {
-    if (init === undefined) {
-      throw new Error("Init process must be defined");
+  constructor(init = new Process()) {
+    if (!init instanceof Process) {
+      throw new Error("Init process is invalid");
     }
-    this.list = [null, init];
-    this.nextPID = 2;
+    this.list = [init];
   }
 
   add(process) {
-    this.nextPID = this.list.push(process);
-    return this.nextPID - 1;
+    return this.list.push(process) - 1;
   }
 
   emit(name, detail, pids = []) {
     // Default empty array means all processes
     if (pids.length === 0) {
-      for (let i = 1; i < this.list.length; i++) {
+      for (let i in this.list) {
         // Post the message every process' webworker
         this.list[i].worker.postMessage({
           type: "event",
@@ -28,7 +26,8 @@ class ProcessTable {
     } else {
       // Post the message to each process as specified by the pids array
       for (let i in pids) {
-        this.list[pids[i]].worker.postMessage({
+        const pid = pids[i];
+        this.list[pid].worker.postMessage({
           type: "event",
           name,
           detail
@@ -38,4 +37,4 @@ class ProcessTable {
   }
 }
 
-export default new ProcessTable(new Process());
+export default new ProcessTable();
