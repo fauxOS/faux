@@ -445,6 +445,40 @@
             return ret;
         }
     }
+    class Console {
+        constructor() {
+            // The element to listen to
+            this.inputElement = null;
+            // Stores keyCodes emitted by this.inputElement
+            this.keyBuffer = [];
+            // The function used to push events to the keyBuffer
+            this.listener = e => this.keyBuffer.push(e.keyCode);
+        }
+        // Attach to an element and listen to its keydown events
+        attachTo(inputElement = document.querySelector("#terminal")) {
+            if (!inputElement) {
+                throw new Error("No element to attach to");
+            }
+            // Remove listener from previous inputElement
+            if (this.inputElement) {
+                this.inputElement.removeEventListener("keydown", this.listener);
+            }
+            // Add the event listener
+            this.inputElement = inputElement;
+            this.inputElement.addEventListener("keydown", this.listener);
+        }
+        // Return an array of KeyboardEvent.keyCodes stored in this.keyBuffer, then empty it
+        read() {
+            const ret = Object.assign([], this.keyBuffer);
+            this.keyBuffer = [];
+            return ret;
+        }
+        // Clients should override this
+        write(contents) {
+            console.log("Unhandled console write: " + contents);
+        }
+    }
+    var console$1 = new Console();
     const rootFs = new OFS();
     const bin = rootFs.mkdir(["bin"]);
     rootFs.addInode(bin, "fsh", {
@@ -452,7 +486,16 @@
         executable: true,
         contents: "(function(){\"use strict\";function tokenizeLine(line=\"\"){const tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String);for(let token,i=0;i<tokens.length;i++)token=tokens[i],tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2]);return tokens}function lex(input=\"\"){const allTokens=[],lines=input.match(/(\\\\;|[^;])+/g);for(let tokens,i=0;i<lines.length;i++)tokens=tokenizeLine(lines[i]),allTokens.push(tokens);return allTokens}function parseCommand(tokens){const command={type:\"simple\",argv:tokens,argc:tokens.length,name:tokens[0]};return command}(function(input=\"\"){const AST={type:\"script\",commands:[]},commands=lex(input);for(let parsed,i=0;i<commands.length;i++)parsed=parseCommand(commands[i]),AST.commands[i]=parsed;return AST})(\"echo hello, world\")})();"
     });
-    rootFs.mkdir(["dev"]);
+    const dev = rootFs.mkdir(["dev"]);
+    rootFs.addInode(dev, "console", {
+        file: true,
+        get contents() {
+            return console$1.read();
+        },
+        set contents(contents) {
+            return console$1.write(contents);
+        }
+    });
     rootFs.mkdir(["home"]);
     rootFs.mkdir(["log"]);
     rootFs.mkdir(["tmp"]);
@@ -925,28 +968,16 @@
         add(process) {
             return this.list.push(process) - 1;
         }
-        emit(name, detail, pids = []) {
-            // Default empty array means all processes
-            if (pids.length === 0) {
-                for (let i in this.list) {
-                    // Post the message every process' webworker
-                    this.list[i].worker.postMessage({
-                        type: "event",
-                        name,
-                        detail
-                    });
-                }
-            }
-            else {
-                // Post the message to each process as specified by the pids array
-                for (let i in pids) {
-                    const pid = pids[i];
-                    this.list[pid].worker.postMessage({
-                        type: "event",
-                        name,
-                        detail
-                    });
-                }
+        emit(name, detail, pids = Object.keys(this.list)) {
+            // Post the message to each process as specified by the pids array
+            for (let i in pids) {
+                const pid = pids[i];
+                // Post the message every process' webworker
+                this.list[pid].worker.postMessage({
+                    type: "event",
+                    name,
+                    detail
+                });
             }
         }
     }
@@ -984,6 +1015,7 @@
         sys,
         proc: processTable,
         utils,
+        console: console$1,
         browser,
         version: "0.0.3"
     };
