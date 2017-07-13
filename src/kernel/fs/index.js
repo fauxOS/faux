@@ -15,12 +15,12 @@ rootFs.addInode(bin, "fsh", {
 
 const dev = rootFs.mkdir(["dev"]);
 
-rootFs.addInode(dev, "console", {
-  file: true,
-  get contents() {
+const consoleInode = rootFs.addInode(dev, "console", { file: true });
+Object.defineProperty(consoleInode, "contents", {
+  get() {
     return console.read();
   },
-  set contents(contents) {
+  set(contents) {
     return console.write(contents);
   }
 });
