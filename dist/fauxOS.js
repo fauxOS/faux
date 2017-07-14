@@ -473,21 +473,51 @@
         }
         // Takes a KeyboardEvent and decides what to do
         handleEvent(e) {
-            const code = e.which;
-            if (this.config.echo) {
-                console$1.write(code);
+            let { key } = e;
+            if (key === "Backspace") {
+                this.lineBuffer = this.lineBuffer.slice(0, -1);
+                // Back one, overwrite with space, then back once more
+                console$1.write("\b \b");
+                this.push("\b");
             }
-            if (this.config.raw) {
-                // Enter key pressed
-                if (this.code === 13) {
-                    const line = this.lineBuffer.join("") + "\r\n";
-                    this.input += line;
-                    return;
-                }
-                this.lineBuffer.push(code);
+            else if (key === "Enter") {
+                // Allow reading the current line
+                const line = this.lineBuffer.join("") + "\r\n";
+                this.input += line;
+                this.push("\n");
+                // Clear this.lineBuffer
+                this.lineBuffer = [];
+            }
+            else if (key === "Shift") {
+            }
+            else if (key === "Control") {
+            }
+            else if (key === "Alt") {
+            }
+            else if (key === "Meta") {
+            }
+            else if (key === "ArrowUp") {
+            }
+            else if (key === "ArrowDown") {
+            }
+            else if (key === "ArrowLeft") {
+            }
+            else if (key === "ArrowRight") {
             }
             else {
-                this.input += code;
+                this.push(key);
+            }
+        }
+        push(key) {
+            if (this.config.echo) {
+                console$1.write(key);
+            }
+            if (!this.config.raw) {
+                this.lineBuffer.push(key);
+            }
+            else {
+                // Raw mode just appends the key
+                this.input += key;
             }
         }
         // Clear and return this.input
