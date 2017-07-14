@@ -106,11 +106,7 @@ export async function stat(path) {
  * @example const fd = await sys.open("/file")
  */
 export async function open(path, mode = "r") {
-  const fd = await call("open", [path, mode]);
-  if (fd < 0) {
-    return new Error("Could not open file");
-  }
-  return fd;
+  return call("open", [path, mode]);
 }
 
 /**
@@ -158,13 +154,19 @@ export async function dup2(fd1, fd2) {
  * @example const contents = await sys.read(fd)
  */
 export async function read(fd) {
-  const data = await call("read", [fd]);
-  if (data === -2) {
-    return new Error("No data returned, possibly a directory");
-  } else if (data < 0) {
-    return new Error("Could not get data");
-  }
-  return data;
+  return call("read", [fd]);
+}
+
+/**
+ * Read directory children, like what ls does
+ * @async
+ * @param {number} fd
+ * @return {Promise<array>} children - directory entries
+ * 
+ * @example const dirArray = await sys.readdir(fd)
+ */
+export async function readdir(fd) {
+  return call("readdir", [fd]);
 }
 
 /**
@@ -176,11 +178,29 @@ export async function read(fd) {
  * @example sys.write(1, "hello world")
  */
 export async function write(fd, data = "") {
-  const ret = await call("write", [fd, data]);
-  if (ret < 0) {
-    return new Error("Could not write data");
-  }
-  return data;
+  return call("write", [fd, data]);
+}
+
+/**
+ * Create a new directory
+ * @async
+ * @param {string} path
+ * 
+ * @example sys.mkdir("/home/newdir")
+ */
+export async function mkdir(path) {
+  return call("mkdir", [path]);
+}
+
+/**
+ * Remove a hard link, what rm does
+ * @async
+ * @param {string} path
+ * 
+ * @example sys.rm("/home/oldfile")
+ */
+export async function unlink(path) {
+  return call("unlink", [path]);
 }
 
 /**

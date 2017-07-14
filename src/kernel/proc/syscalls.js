@@ -77,7 +77,14 @@ export function stat(process, msgID, args) {
     return fail(process, msgID, "First argument - path - should be a string");
   }
   const safePath = resolvePath(inputPath, process);
-  const vnode = fs.resolve(safePath);
+  const inode = fs.resolve(safePath);
+  return pass(process, msgID, {
+    file: !!inode.file,
+    dir: !!inode.dir,
+    device: !!inode.device,
+    executable: !!inode.executable,
+    links: inode.links
+  });
 }
 
 // Resolve a path into a file descriptor, and add it to the table
@@ -91,6 +98,9 @@ export function open(process, msgID, args) {
   }
   const safePath = resolvePath(inputPath, process);
   const fd = process.open(safePath, mode);
+  if (fd < 0) {
+    return fail("Could not open file");
+  }
   return pass(process, msgID, fd);
 }
 
@@ -143,7 +153,25 @@ export function read(process, msgID, args) {
     return fail(process, msgID, "File Descriptor should be >= 0");
   }
   const data = process.fds[fd].read();
+  if (data === -2) {
+    return fail("No data returned, possibly not a file");
+  } else if (data < 0) {
+    return fail("Could not get data");
+  }
   return pass(process, msgID, data);
+}
+
+// Read directory children
+export function readdir(process, msgID, args) {
+  const [fd] = args;
+  if (fd < 0) {
+    return fail(process, msgID, "File Descriptor should be >= 0");
+  }
+  const children = process.fds[fd].readdir();
+  if (children < 0) {
+    return fail("No children returned, possibly not a directory");
+  }
+  return pass(process, msgID, children);
 }
 
 // Write data to a file descriptor
@@ -156,6 +184,37 @@ export function write(process, msgID, args) {
     return fail(process, msgID, "Second argument - data - should be a string");
   }
   const result = process.fds[fd].write(data);
+  if (result < 0) {
+    return fail("Could not write data");
+  }
+  return pass(process, msgID, result);
+}
+
+// Create a new directory
+export function mkdir(process, msgID, args) {
+  const [inputPath] = args;
+  if (typeof inputPath !== "string") {
+    return fail(process, msgID, "First argument - path - should be a string");
+  }
+  const safePath = resolvePath(inputPath, process);
+  const result = fs.mkdir(safePath);
+  if (result < 0) {
+    return fail("Could not create directory");
+  }
+  return pass(process, msgID, safePath);
+}
+
+// Remove a hard link, what rm does
+export function unlink(process, msgID, args) {
+  const [inputPath] = args;
+  if (typeof inputPath !== "string") {
+    return fail(process, msgID, "First argument - path - should be a string");
+  }
+  const safePath = resolvePath(inputPath, process);
+  const result = fs.unlink(safePath);
+  if (result < 0) {
+    return fail("Could not create directory");
+  }
   return pass(process, msgID, result);
 }
 

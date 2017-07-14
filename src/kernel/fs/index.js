@@ -15,15 +15,7 @@ rootFs.addInode(bin, "fsh", {
 
 const dev = rootFs.mkdir(["dev"]);
 
-const consoleInode = rootFs.addInode(dev, "console", { file: true });
-Object.defineProperty(consoleInode, "contents", {
-  get() {
-    return console.read();
-  },
-  set(contents) {
-    return console.write(contents);
-  }
-});
+rootFs.addInode(dev, "console", { device: true });
 
 rootFs.mkdir(["home"]);
 rootFs.mkdir(["log"]);

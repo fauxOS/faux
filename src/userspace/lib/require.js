@@ -1,14 +1,17 @@
 async function loadFile(path) {
   // If path is a file
-  if (await sys.access(path)) {
+  const pathStat = await sys.stat(path);
+  if (pathStat.file) {
     return self.eval(await fs.readFile(path));
   }
   // If path.js is a file
-  if (await sys.access(path + ".js")) {
+  const pathJsStat = await sys.stat(path + ".js");
+  if (pathJsStat.file) {
     return self.eval(await fs.readFile(path + ".js"));
   }
   // If path.json is a file
-  if (await sys.access(path + ".json")) {
+  const pathJsonStat = await sys.stat(path + ".json");
+  if (pathJsonStat.file) {
     return JSON.parse(await fs.readFile(path + ".json"));
   }
   // None worked
