@@ -17,7 +17,7 @@ export default class Inode {
 
   get children() {
     const dir = [];
-    const children = $0.children;
+    const children = this.raw.children;
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const name = child.localName;

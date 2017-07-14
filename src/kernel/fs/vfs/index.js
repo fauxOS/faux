@@ -11,8 +11,14 @@ export default class VFS {
   // Mount a filesystem
   mount(fs, mountPoint) {
     const normalized = normalize(mountPoint);
-    this.mounts[normalized] = fs;
-    return normalized;
+    const inode = this.resolve(normalized);
+    if (inode && inode.dir) {
+      this.mounts[normalized] = fs;
+      return normalized;
+    } else {
+      // No directory to mount onto
+      return -1;
+    }
   }
 
   // Unmount a filesystem by mount point

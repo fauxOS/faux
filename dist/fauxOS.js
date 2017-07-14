@@ -190,7 +190,7 @@
         }
         get children() {
             const dir = [];
-            const children = $0.children;
+            const children = this.raw.children;
             for (let i = 0; i < children.length; i++) {
                 const child = children[i];
                 const name = child.localName;
@@ -359,8 +359,15 @@
         // Mount a filesystem
         mount(fs, mountPoint) {
             const normalized = normalize(mountPoint);
-            this.mounts[normalized] = fs;
-            return normalized;
+            const inode = this.resolve(normalized);
+            if (inode && inode.dir) {
+                this.mounts[normalized] = fs;
+                return normalized;
+            }
+            else {
+                // No directory to mount onto
+                return -1;
+            }
         }
         // Unmount a filesystem by mount point
         unmount(mountPoint) {
@@ -487,12 +494,13 @@
         contents: "(function(){\"use strict\";function tokenizeLine(line=\"\"){const tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String);for(let token,i=0;i<tokens.length;i++)token=tokens[i],tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2]);return tokens}function lex(input=\"\"){const allTokens=[],lines=input.match(/(\\\\;|[^;])+/g);for(let tokens,i=0;i<lines.length;i++)tokens=tokenizeLine(lines[i]),allTokens.push(tokens);return allTokens}function parseCommand(tokens){const command={type:\"simple\",argv:tokens,argc:tokens.length,name:tokens[0]};return command}(function(input=\"\"){const AST={type:\"script\",commands:[]},commands=lex(input);for(let parsed,i=0;i<commands.length;i++)parsed=parseCommand(commands[i]),AST.commands[i]=parsed;return AST})(\"echo hello, world\")})();"
     });
     const dev = rootFs.mkdir(["dev"]);
+    rootFs.mkdir(["dev", "dom"]);
+    fs.mount(new DOMFS(), "/dev/dom");
     rootFs.addInode(dev, "console", { device: true });
     rootFs.mkdir(["home"]);
     rootFs.mkdir(["log"]);
     rootFs.mkdir(["tmp"]);
     const fs = new VFS(rootFs);
-    fs.mount(new DOMFS(), "/dev/dom");
     function getMode(mode = "r") {
         const map = {
             r: {
