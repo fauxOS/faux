@@ -25,7 +25,7 @@ export default async function load(requirePath = "") {
   }
   // Try loading as a file
   try {
-    return loadFile(requirePath);
+    return await loadFile(requirePath);
   } catch (err) {
     // If it fails, try to load an index file
     return loadFile(requirePath + "/index");
