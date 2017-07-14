@@ -229,7 +229,7 @@
     class DOMFS {
         constructor() {
             // In the DOM context, this alias makes sense
-            this.prototype.mkdir = this.create;
+            this.mkdir = this.create;
         }
         resolve(pathArray) {
             let element;
@@ -524,7 +524,7 @@
             this.termios = new Termios();
             this.listener = new Listener(this.termios);
             // Relay reads through termios
-            this.prototype.read = this.termios.read;
+            this.read = this.termios.read;
         }
         // Clients should override this
         write(contents) {
