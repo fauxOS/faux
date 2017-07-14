@@ -452,6 +452,42 @@
             return ret;
         }
     }
+    var normalize$1 = function (e) {
+        const { key } = e;
+        if (key === "Backspace") {
+            return "\b";
+        }
+        else if (key === "Enter") {
+            return "\n";
+        }
+        else if (key === "Shift") {
+            return "";
+        }
+        else if (key === "Control") {
+            return "";
+        }
+        else if (key === "Alt") {
+            return "";
+        }
+        else if (key === "Meta") {
+            return "";
+        }
+        else if (key === "ArrowUp") {
+            return "";
+        }
+        else if (key === "ArrowDown") {
+            return "";
+        }
+        else if (key === "ArrowLeft") {
+            return "";
+        }
+        else if (key === "ArrowRight") {
+            return "";
+        }
+        else {
+            return key;
+        }
+    };
     class Termios {
         constructor(config = {}) {
             // This line buffer is used so that the user can edit
@@ -473,51 +509,32 @@
         }
         // Takes a KeyboardEvent and decides what to do
         handleEvent(e) {
-            let { key } = e;
-            if (key === "Backspace") {
+            const key = normalize$1(e);
+            if (this.config.raw) {
+                // Raw mode just appends the key
+                this.input += key;
+            }
+            else if (key === "\b") {
                 this.lineBuffer = this.lineBuffer.slice(0, -1);
                 // Back one, overwrite with space, then back once more
                 console$1.write("\b \b");
-                this.push("\b");
             }
-            else if (key === "Enter") {
+            else if (key === "\n") {
+                this.lineBuffer.push("\n");
                 // Allow reading the current line
-                const line = this.lineBuffer.join("") + "\r\n";
+                const line = this.lineBuffer.join("");
                 this.input += line;
-                this.push("\n");
                 // Clear this.lineBuffer
                 this.lineBuffer = [];
-            }
-            else if (key === "Shift") {
-            }
-            else if (key === "Control") {
-            }
-            else if (key === "Alt") {
-            }
-            else if (key === "Meta") {
-            }
-            else if (key === "ArrowUp") {
-            }
-            else if (key === "ArrowDown") {
-            }
-            else if (key === "ArrowLeft") {
-            }
-            else if (key === "ArrowRight") {
+                // Carriage return and line feed
+                console$1.write("\r\n");
             }
             else {
-                this.push(key);
-            }
-        }
-        push(key) {
-            if (this.config.echo) {
-                console$1.write(key);
-            }
-            if (!this.config.raw) {
+                // All other printable keys
+                if (this.config.echo) {
+                    console$1.write(key);
+                }
                 this.lineBuffer.push(key);
-            }
-            else {
-                // Raw mode just appends the key
-                this.input += key;
             }
         }
         // Clear and return this.input

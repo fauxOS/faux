@@ -1,4 +1,5 @@
 import console from "./index.js";
+import normalize from "./normalize.js";
 
 export default class Termios {
   constructor(config = {}) {
@@ -22,41 +23,29 @@ export default class Termios {
 
   // Takes a KeyboardEvent and decides what to do
   handleEvent(e) {
-    let { key } = e;
-    if (key === "Backspace") {
+    const key = normalize(e);
+    if (this.config.raw) {
+      // Raw mode just appends the key
+      this.input += key;
+    } else if (key === "\b") {
       this.lineBuffer = this.lineBuffer.slice(0, -1);
       // Back one, overwrite with space, then back once more
       console.write("\b \b");
-      this.push("\b");
-    } else if (key === "Enter") {
+    } else if (key === "\n") {
+      this.lineBuffer.push("\n");
       // Allow reading the current line
-      const line = this.lineBuffer.join("") + "\r\n";
+      const line = this.lineBuffer.join("");
       this.input += line;
-      this.push("\n");
       // Clear this.lineBuffer
       this.lineBuffer = [];
-    } else if (key === "Shift") {
-    } else if (key === "Control") {
-    } else if (key === "Alt") {
-    } else if (key === "Meta") {
-    } else if (key === "ArrowUp") {
-    } else if (key === "ArrowDown") {
-    } else if (key === "ArrowLeft") {
-    } else if (key === "ArrowRight") {
+      // Carriage return and line feed
+      console.write("\r\n");
     } else {
-      this.push(key);
-    }
-  }
-
-  push(key) {
-    if (this.config.echo) {
-      console.write(key);
-    }
-    if (!this.config.raw) {
+      // All other printable keys
+      if (this.config.echo) {
+        console.write(key);
+      }
       this.lineBuffer.push(key);
-    } else {
-      // Raw mode just appends the key
-      this.input += key;
     }
   }
 
