@@ -3,7 +3,7 @@ import Inode from "./inode.js";
 export default class DOMFS {
   constructor() {
     // In the DOM context, this alias makes sense
-    this.mkdir = this.create;
+    this.prototype.mkdir = this.create;
   }
 
   resolve(pathArray) {

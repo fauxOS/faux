@@ -16,7 +16,6 @@ rootFs.addInode(bin, "fsh", {
 const dev = rootFs.mkdir(["dev"]);
 
 rootFs.mkdir(["dev", "dom"]);
-fs.mount(new DOMFS(), "/dev/dom");
 rootFs.addInode(dev, "console", { device: true });
 
 rootFs.mkdir(["home"]);
@@ -24,5 +23,6 @@ rootFs.mkdir(["log"]);
 rootFs.mkdir(["tmp"]);
 
 const fs = new VFS(rootFs);
+fs.mount(new DOMFS(), "/dev/dom");
 
 export default fs;

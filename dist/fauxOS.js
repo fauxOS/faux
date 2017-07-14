@@ -229,7 +229,7 @@
     class DOMFS {
         constructor() {
             // In the DOM context, this alias makes sense
-            this.mkdir = this.create;
+            this.prototype.mkdir = this.create;
         }
         resolve(pathArray) {
             let element;
@@ -452,14 +452,58 @@
             return ret;
         }
     }
-    class Console {
-        constructor() {
+    class Termios {
+        constructor(config = {}) {
+            // This line buffer is used so that the user can edit
+            // typing mistakes before the input is read by a program
+            this.lineBuffer = [];
+            // The string that will be returned on this.read()
+            this.input = "";
+            // Here is the termios configuration
+            this.config = {
+                // Whether termios should be active at all
+                // If this is true, termios will relay
+                // characters without buffering them
+                raw: false,
+                // When a user types, should they see their input?
+                // Setting this false is useful for e.g. password input
+                echo: true
+            };
+            Object.assign(this.config, config);
+        }
+        // Takes a KeyboardEvent and decides what to do
+        handleEvent(e) {
+            const code = e.which;
+            if (this.config.echo) {
+                console$1.write(code);
+            }
+            if (this.config.raw) {
+                // Enter key pressed
+                if (this.code === 13) {
+                    const line = this.lineBuffer.join("") + "\r\n";
+                    this.input += line;
+                    return;
+                }
+                this.lineBuffer.push(code);
+            }
+            else {
+                this.input += code;
+            }
+        }
+        // Clear and return this.input
+        read() {
+            const ret = this.input;
+            this.input = "";
+            return ret;
+        }
+    }
+    class Listener {
+        constructor(termios = new Termios()) {
+            this.termios = termios;
             // The element to listen to
             this.inputElement = null;
-            // Stores keyCodes emitted by this.inputElement
-            this.keyBuffer = [];
             // The function used to push events to the keyBuffer
-            this.listener = e => this.keyBuffer.push(e.keyCode);
+            this.listener = e => this.termios.handleEvent(e);
         }
         // Attach to an element and listen to its keydown events
         attachTo(inputElement = document.querySelector("#terminal")) {
@@ -474,11 +518,13 @@
             this.inputElement = inputElement;
             this.inputElement.addEventListener("keydown", this.listener);
         }
-        // Return an array of KeyboardEvent.keyCodes stored in this.keyBuffer, then empty it
-        read() {
-            const ret = Object.assign([], this.keyBuffer);
-            this.keyBuffer = [];
-            return ret;
+    }
+    class Console {
+        constructor() {
+            this.termios = new Termios();
+            this.listener = new Listener(this.termios);
+            // Relay reads through termios
+            this.prototype.read = this.termios.read;
         }
         // Clients should override this
         write(contents) {
@@ -495,12 +541,12 @@
     });
     const dev = rootFs.mkdir(["dev"]);
     rootFs.mkdir(["dev", "dom"]);
-    fs.mount(new DOMFS(), "/dev/dom");
     rootFs.addInode(dev, "console", { device: true });
     rootFs.mkdir(["home"]);
     rootFs.mkdir(["log"]);
     rootFs.mkdir(["tmp"]);
     const fs = new VFS(rootFs);
+    fs.mount(new DOMFS(), "/dev/dom");
     function getMode(mode = "r") {
         const map = {
             r: {
