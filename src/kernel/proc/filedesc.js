@@ -8,7 +8,7 @@ export default class FileDescriptor {
     this.path = normalize(path);
     this.inode = fs.resolve(this.path);
     // Create if non-existent?
-    if (!this.inode) {
+    if (this.inode < 0) {
       if (this.mode.create) {
         fs.create(this.path);
         // Try resolving a second time
