@@ -482,7 +482,7 @@
             const char = String.fromCharCode(which);
             // Handle input normally
             if (this.config.buffer) {
-                handle(char);
+                this.handle(char);
             }
             else {
                 // Without buffering, this is just a simple relay
