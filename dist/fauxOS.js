@@ -452,42 +452,6 @@
             return ret;
         }
     }
-    var normalize$1 = function (e) {
-        const { key } = e;
-        if (key === "Backspace") {
-            return "\b";
-        }
-        else if (key === "Enter") {
-            return "\n";
-        }
-        else if (key === "Shift") {
-            return "";
-        }
-        else if (key === "Control") {
-            return "";
-        }
-        else if (key === "Alt") {
-            return "";
-        }
-        else if (key === "Meta") {
-            return "";
-        }
-        else if (key === "ArrowUp") {
-            return "";
-        }
-        else if (key === "ArrowDown") {
-            return "";
-        }
-        else if (key === "ArrowLeft") {
-            return "";
-        }
-        else if (key === "ArrowRight") {
-            return "";
-        }
-        else {
-            return key;
-        }
-    };
     class Termios {
         constructor(config = {}) {
             // This line buffer is used so that the user can edit
@@ -497,45 +461,14 @@
             this.input = "";
             // Here is the termios configuration
             this.config = {
-                // Whether termios should be active at all
-                // If this is true, termios will relay
-                // characters without buffering them
-                raw: false,
+                // Whether termios should be active at all.
+                // If this is set false, termios won't buffer and allow line editing
+                buffer: true,
                 // When a user types, should they see their input?
                 // Setting this false is useful for e.g. password input
                 echo: true
             };
             Object.assign(this.config, config);
-        }
-        // Takes a KeyboardEvent and decides what to do
-        handleEvent(e) {
-            const key = normalize$1(e);
-            if (this.config.raw) {
-                // Raw mode just appends the key
-                this.input += key;
-            }
-            else if (key === "\b") {
-                this.lineBuffer = this.lineBuffer.slice(0, -1);
-                // Back one, overwrite with space, then back once more
-                console$1.write("\b \b");
-            }
-            else if (key === "\n") {
-                this.lineBuffer.push("\n");
-                // Allow reading the current line
-                const line = this.lineBuffer.join("");
-                this.input += line;
-                // Clear this.lineBuffer
-                this.lineBuffer = [];
-                // Carriage return and line feed
-                console$1.write("\r\n");
-            }
-            else {
-                // All other printable keys
-                if (this.config.echo) {
-                    console$1.write(key);
-                }
-                this.lineBuffer.push(key);
-            }
         }
         // Clear and return this.input
         read() {
@@ -543,35 +476,63 @@
             this.input = "";
             return ret;
         }
-    }
-    class Listener {
-        constructor(termios = new Termios()) {
-            this.termios = termios;
-            // The element to listen to
-            this.inputElement = null;
-            // The function used to push events to the keyBuffer
-            this.listener = e => this.termios.handleEvent(e);
+        // Takes a KeyboardEvent and decides what to do
+        send(e) {
+            const { which } = e;
+            const char = String.fromCharCode(which);
+            // Handle input normally
+            if (this.config.buffer) {
+                handle(char);
+            }
+            else {
+                // Without buffering, this is just a simple relay
+                this.input += char;
+            }
+            // Echo input to the terminal so the user sees
+            // what is being typed
+            if (this.config.echo) {
+                console$1.write(char);
+            }
         }
-        // Attach to an element and listen to its keydown events
-        attachTo(inputElement = document.querySelector("#terminal")) {
-            if (!inputElement) {
-                throw new Error("No element to attach to");
+        // If the character is special, handle it.
+        // If it is normal, just push it to the lineBuffer
+        handle(char) {
+            if (char === "\b") {
+                this.backSpace();
             }
-            // Remove listener from previous inputElement
-            if (this.inputElement) {
-                this.inputElement.removeEventListener("keydown", this.listener);
+            else if (char === "\r") {
+                this.enter();
             }
-            // Add the event listener
-            this.inputElement = inputElement;
-            this.inputElement.addEventListener("keydown", this.listener);
+            else {
+                // Normal character, just push it to the lineBuffer
+                this.lineBuffer.push(char);
+            }
+        }
+        // Discard last written character
+        backSpace() {
+            this.lineBuffer.pop();
+            // Back one, overwrite with space, then back once more
+            console$1.write("\b \b");
+        }
+        // Save the last line and start a new one
+        enter(shiftKey) {
+            this.lineBuffer.push("\n");
+            // Push the lineBuffer away
+            const line = this.lineBuffer.join("");
+            this.input += line;
+            // Clear the lineBuffer
+            this.lineBuffer = [];
+            // Carriage return and line feed
+            console$1.write("\r\n");
         }
     }
     class Console {
         constructor() {
             this.termios = new Termios();
-            this.listener = new Listener(this.termios);
-            // Relay reads through termios
-            this.read = this.termios.read;
+        }
+        // Relay reads through termios
+        read() {
+            return this.termios.read();
         }
         // Clients should override this
         write(contents) {
