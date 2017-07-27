@@ -1,28 +1,36 @@
 import OFS from "./ofs/index.js";
+import Inode from "./ofs/inode.js";
 import DOMFS from "./domfs/index.js";
 import VFS from "./vfs/index.js";
-import console from "./dev/console/index.js";
+import devices from "../devices/index.js";
 
-const rootFs = new OFS();
+// Root file system
+const root = new OFS();
 
-const bin = rootFs.mkdir(["bin"]);
+// Top level directories
+root.mkdir(["bin"]);
+root.mkdir(["dev"]);
+root.mkdir(["dev", "dom"]);
+root.mkdir(["home"]);
+root.mkdir(["log"]);
+root.mkdir(["tmp"]);
 
-rootFs.addInode(bin, "fsh", {
-  file: true,
-  executable: true,
-  contents: "inject-fsh"
-});
+// Faux SHell
+root.addInode(
+  ["bin"],
+  "fsh",
+  new Inode({
+    file: true,
+    executable: true,
+    contents: "inject-fsh"
+  })
+);
 
-const dev = rootFs.mkdir(["dev"]);
+// Virtual Filesystem Switch
+const fs = new VFS(root);
 
-rootFs.mkdir(["dev", "dom"]);
-rootFs.addInode(dev, "console", { device: true });
-
-rootFs.mkdir(["home"]);
-rootFs.mkdir(["log"]);
-rootFs.mkdir(["tmp"]);
-
-const fs = new VFS(rootFs);
+// Mount other file systems
 fs.mount(new DOMFS(), "/dev/dom");
+fs.mount(devices, "/dev");
 
 export default fs;

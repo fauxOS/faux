@@ -6,8 +6,12 @@
     'use strict';
     class Inode {
         constructor(config = {}) {
+            // Defaults
             this.links = 1;
+            this.file = false;
             this.executable = false;
+            this.dir = false;
+            // Overwrite defaults
             Object.assign(this, config);
         }
         // Read file contents
@@ -16,8 +20,7 @@
                 return this.contents;
             }
             else {
-                // Not a file
-                return -1;
+                throw new Error("Not a file");
             }
         }
         // Overwrite file contents
@@ -27,8 +30,7 @@
                 return;
             }
             else {
-                // Not a file
-                return -1;
+                throw new Error("Not a file");
             }
         }
         // Append file contents
@@ -38,8 +40,7 @@
                 return;
             }
             else {
-                // Not a file
-                return -1;
+                throw new Error("Not a file");
             }
         }
         // Truncate file contents
@@ -49,8 +50,7 @@
                 return;
             }
             else {
-                // Not a file
-                return -1;
+                throw new Error("Not a file");
             }
         }
         // Read a directory
@@ -59,13 +59,13 @@
                 return Object.keys(this.children);
             }
             else {
-                // Not a directory
-                return -1;
+                throw new Error("Not a directory");
             }
         }
     }
     class OFS {
         constructor(inodes) {
+            // Array of all inodes in this file system
             this.inodes = inodes || [
                 new Inode({
                     dir: true,
@@ -82,60 +82,49 @@
             for (let i in pathArray) {
                 // We need the previous inode's directory contents
                 const prevInode = inodeArray.slice(-1)[0];
-                // Path contains segement that isn't a directory
                 if (!prevInode.children) {
-                    return -1;
+                    throw new Error("Path contains segement that isn't a directory");
                 }
                 // Get the next inode
                 const name = pathArray[i];
                 const nextInode = prevInode.children[name];
-                // Path contains non-existent entry
                 if (!nextInode) {
-                    return -2;
+                    throw new Error("Path contains non-existent entry");
                 }
                 inodeArray.push(nextInode);
             }
             // Return the last inode resolved
             return inodeArray.pop();
         }
-        // Add a new inode to the disk
-        // Defaults to just adding an inode, but if you pass a parent directory inode in,
-        // it will add `name` as an entry in `parent`
-        addInode(parent, name, config) {
-            // Reject if name contains a "/"
+        // Add an inode directly to a parent
+        addInode(parentPathArray, name, inode) {
             if (name.match("/")) {
-                return -1;
+                throw new Error("Name can't contain forward slashes");
             }
-            const inode = new Inode(config);
+            const parent = this.resolve(parentPathArray);
             // Check if parent is a directory
             if (parent.dir) {
                 this.inodes.push(inode);
                 parent.children[name] = inode;
             }
             else {
-                // Parent is not a directory
-                return -1;
+                throw new Error("Parent is not a directory");
             }
-            return inode;
         }
         // Add a new file to the disk
         create(pathArray) {
-            const parent = this.resolve(pathArray.slice(0, -1));
+            const parent = pathArray.slice(0, -1);
             const name = pathArray.slice(-1)[0];
-            const inode = this.addInode(parent, name, { file: true, contents: "" });
-            if (inode < 0) {
-                return -1;
-            }
+            const inode = new Inode({ file: true, contents: "" });
+            this.addInode(parent, name, inode);
             return inode;
         }
         // Add a new directory Inode to the disk
         mkdir(pathArray) {
-            const parent = this.resolve(pathArray.slice(0, -1));
+            const parent = pathArray.slice(0, -1);
             const name = pathArray.slice(-1)[0];
-            const inode = this.addInode(parent, name, { dir: true, children: {} });
-            if (inode < 0) {
-                return -1;
-            }
+            const inode = new Inode({ dir: true, children: {} });
+            this.addInode(parent, name, inode);
             return inode;
         }
         // Make a hard link for an inode
@@ -143,43 +132,40 @@
             const oldInode = this.resolve(oldPathArray);
             const newParent = this.resolve(newPathArray.slice(0, -1));
             const newName = newPathArray.slice(-1)[0];
-            // Reject if new name contains a "/"
             if (newName.match("/")) {
-                return -1;
+                throw new Error("Name can't contain forward slashes");
             }
             // Check if new parent is a directory
             if (newParent.dir) {
                 newParent.children[newName] = oldInode;
+                oldInode.links++;
             }
             else {
-                // New parent is not a directory
-                return -1;
+                throw new Error("New parent is not a directory");
             }
         }
         // Remove by unlinking
         unlink(pathArray) {
             const parent = this.resolve(pathArray.slice(0, -1));
             const name = pathArray.slice(-1)[0];
-            if (parent < 0) {
-                return -1;
-            }
             // Check if parent is a directory
             if (parent.dir) {
                 delete parent.children[name];
                 return;
             }
             else {
-                // Parent is not a directory
-                return -1;
+                throw new Error("Parent is not a directory");
             }
         }
     }
     class Inode$1 {
         constructor(config = {}) {
+            // Defaults
             this.links = 1;
+            this.file = true;
             this.executable = false;
             this.dir = true;
-            this.file = true;
+            // Overwrite defaults
             Object.assign(this, config);
         }
         get contents() {
@@ -245,6 +231,9 @@
                 selector = selector.replace(/ (\d)/g, " :nth-child($1)");
                 element = document.querySelector(selector);
             }
+            if (!element) {
+                throw new Error("Failed to resolve");
+            }
             // Return an inode that VFS can understand
             return new Inode$1({
                 raw: element
@@ -253,15 +242,13 @@
         // Create a new element
         create(pathArray) {
             const parent = this.resolve(pathArray.slice(0, -1));
-            if (!parent) {
-                return -1;
-            }
             // When creating an element, you are only allowed to use the element name
             // e.g. create("/dev/dom/body/#container/span")
             // You cannot create a class, index, or id
             const name = pathArray.slice(-1)[0];
             const element = document.createElement(name);
-            parent.appendChild(element);
+            // Access the DOM node in parent.raw
+            parent.raw.appendChild(element);
             // Again, so that VFS understands
             return new Inode$1({
                 raw: element
@@ -365,30 +352,28 @@
                 return normalized;
             }
             else {
-                // No directory to mount onto
-                return -1;
+                throw new Error("No directory to mount to");
             }
         }
         // Unmount a filesystem by mount point
         unmount(mountPoint) {
             const normalized = normalize(mountPoint);
-            return (this.mounts[normalized] = null);
+            this.mounts[normalized] = null;
         }
         // Resolve the path to the mounted filesystem
         // This is the first step to trace a path, before any data containers (inodes etc) are involved
         getMountPoint(path) {
             // Get the segments of a path like this : ["/", "/path", "/path/example"]
-            const pathArray = chop(path);
-            // If its a root path, skip segments
-            if (pathArray.length === 1 && pathArray[0] === "/") {
-                return pathArray;
-            }
-            const segments = [];
-            // Applies to any other path
-            for (let i = 0; i <= pathArray.length; i++) {
-                let matchPath = pathArray.slice(0, i);
-                segments.push("/" + matchPath.join("/"));
-            }
+            const segments = (() => {
+                const pathArray = chop(path);
+                const segments = [];
+                // Applies to any other path
+                for (let i = 0; i <= pathArray.length; i++) {
+                    let matchPath = pathArray.slice(0, i);
+                    segments.push("/" + matchPath.join("/"));
+                }
+                return segments;
+            })();
             // Array of resolved mounted disks
             const resolves = [];
             // Iterate all of the mount points
@@ -416,40 +401,33 @@
         // Resolve a path to the fs provided data container
         resolve(path) {
             const { localFs, localFsPathArray } = this.getPathInfo(path);
-            const inode = localFs.resolve(localFsPathArray);
-            if (inode < 0) {
-                return -1;
-            }
-            return inode;
+            return localFs.resolve(localFsPathArray);
         }
         // Make a new file
         create(path) {
             const { localFs, localFsPathArray } = this.getPathInfo(path);
-            const inode = localFs.create(localFsPathArray);
-            if (inode < 0) {
-                return -1;
-            }
-            return inode;
+            return localFs.create(localFsPathArray);
         }
         // Make a new directory
         mkdir(path) {
             const { localFs, localFsPathArray } = this.getPathInfo(path);
-            const inode = localFs.mkdir(localFsPathArray);
-            if (inode < 0) {
-                return -1;
-            }
-            return inode;
+            return localFs.mkdir(localFsPathArray);
         }
         // Hard link newPath to the same inode as oldPath
         link(oldPath, newPath) { }
         // Unlink (remove) a file
         unlink(path) {
             const { localFs, localFsPathArray } = this.getPathInfo(path);
-            const ret = localFs.unlink(localFsPathArray);
-            if (ret < 0) {
-                return -1;
-            }
-            return ret;
+            localFs.unlink(localFsPathArray);
+        }
+    }
+    function isEchoable(key) {
+        switch (key) {
+            // Arrow keys
+            case ("\x1b[A", "\x1b[B", "\x1b[C", "\x1b[D"):
+                return false;
+            default:
+                return true;
         }
     }
     class Console {
@@ -477,7 +455,7 @@
         }
         // Clients should override this
         write(contents) {
-            console.log("Unhandled console write: " + contents);
+            console.warn("Unhandled console write: " + contents);
         }
         // Takes the key pressed and decides what to do
         send(key, e) {
@@ -492,22 +470,27 @@
             // Echo input to the terminal so the user sees
             // what is being typed
             if (this.config.echo) {
-                this.write(key);
+                // Only echo if the key is echoable
+                if (isEchoable(key)) {
+                    this.write(key);
+                }
             }
         }
         // If the character is special, handle it.
         // If it is normal, just push it to the lineBuffer
         handle(key) {
-            // Handle the DELETE sequence `^?` rather than backspace
-            if (key === "\x7f") {
-                this.backSpace();
-            }
-            else if (key === "\r") {
-                this.enter();
-            }
-            else {
-                // Normal character, just push it to the lineBuffer
-                this.lineBuffer.push(key);
+            switch (key) {
+                // Handle the DELETE sequence `^?` rather than backspace
+                case "\x7f":
+                    this.backSpace();
+                case "\r":
+                    this.enter();
+                // Arrow keys
+                case ("\x1b[A", "\x1b[B", "\x1b[C", "\x1b[D"):
+                    this.arrow(key);
+                default:
+                    // Normal character, just push it to the lineBuffer
+                    this.lineBuffer.push(key);
             }
         }
         // Discard last written character
@@ -527,23 +510,37 @@
             // Carriage return and line feed
             this.write("\r\n");
         }
+        // Handle direction changes
+        arrow(key) {
+            // Unimplemented
+        }
     }
-    var console$1 = new Console();
-    const rootFs = new OFS();
-    const bin = rootFs.mkdir(["bin"]);
-    rootFs.addInode(bin, "fsh", {
+    var console$2 = new Console();
+    const inode = new Inode();
+    inode.read = () => console$2.read();
+    inode.write = data => console$2.write(data);
+    const devices = new OFS();
+    devices.addInode([], "console", inode);
+    // Root file system
+    const root = new OFS();
+    // Top level directories
+    root.mkdir(["bin"]);
+    root.mkdir(["dev"]);
+    root.mkdir(["dev", "dom"]);
+    root.mkdir(["home"]);
+    root.mkdir(["log"]);
+    root.mkdir(["tmp"]);
+    // Faux SHell
+    root.addInode(["bin"], "fsh", new Inode({
         file: true,
         executable: true,
         contents: "(function(){\"use strict\";function tokenizeLine(line=\"\"){const tokens=line.match(/([\"'])(?:\\\\|.)+\\1|((?:[^\\\\\\s]|\\\\.)*)/g).filter(String);for(let token,i=0;i<tokens.length;i++)token=tokens[i],tokens[i]=token.replace(/\\\\(?=.)/g,\"\"),token.match(/^[\"'].+(\\1)$/m)&&(tokens[i]=/^([\"'])(.+)(\\1)$/gm.exec(token)[2]);return tokens}function lex(input=\"\"){const allTokens=[],lines=input.match(/(\\\\;|[^;])+/g);for(let tokens,i=0;i<lines.length;i++)tokens=tokenizeLine(lines[i]),allTokens.push(tokens);return allTokens}function parseCommand(tokens){const command={type:\"simple\",argv:tokens,argc:tokens.length,name:tokens[0]};return command}(function(input=\"\"){const AST={type:\"script\",commands:[]},commands=lex(input);for(let parsed,i=0;i<commands.length;i++)parsed=parseCommand(commands[i]),AST.commands[i]=parsed;return AST})(\"echo hello, world\")})();"
-    });
-    const dev = rootFs.mkdir(["dev"]);
-    rootFs.mkdir(["dev", "dom"]);
-    rootFs.addInode(dev, "console", { device: true });
-    rootFs.mkdir(["home"]);
-    rootFs.mkdir(["log"]);
-    rootFs.mkdir(["tmp"]);
-    const fs = new VFS(rootFs);
+    }));
+    // Virtual Filesystem Switch
+    const fs = new VFS(root);
+    // Mount other file systems
     fs.mount(new DOMFS(), "/dev/dom");
+    fs.mount(devices, "/dev");
     function getMode(mode = "r") {
         const map = {
             r: {
@@ -595,22 +592,22 @@
         constructor(path, mode) {
             this.mode = getMode(mode);
             this.path = normalize(path);
-            this.inode = fs.resolve(this.path);
-            // Create if non-existent?
-            if (this.inode < 0) {
+            try {
+                this.inode = fs.resolve(this.path);
+            }
+            catch (err) {
+                // Create if non-existent?
                 if (this.mode.create) {
                     fs.create(this.path);
                     // Try resolving a second time
                     this.inode = fs.resolve(this.path);
                     // Probably an error creating the file
                     if (!this.inode) {
-                        // Error on file creation
-                        return -2;
+                        throw new Error("Error on file creation");
                     }
                 }
                 else {
-                    // Does not exist
-                    return -1;
+                    throw new Error("Does not exist");
                 }
             }
             // Truncate if mode is set
@@ -624,8 +621,7 @@
                 return this.inode.read();
             }
             else {
-                // Read mode not set
-                return -1;
+                throw new Error("Read mode unset");
             }
         }
         // Write file contents
@@ -640,8 +636,7 @@
                 }
             }
             else {
-                // Write mode not set
-                return -1;
+                throw new Error("Write mode unset");
             }
         }
         // Read directory contents
@@ -675,102 +670,126 @@
         });
     }
     // Spawn a new process from an executable image
-    function spawn(process, msgID, args) {
-        const [image, argv] = args;
+    function spawn(process, msgID, [image, argv]) {
         if (typeof image !== "string") {
             return fail(process, msgID, "First argument - image - should be a string");
         }
         if (!argv instanceof Array) {
             return fail(process, msgID, "Second argument - argv - should be an array");
         }
-        const newProcess = new Process(image, argv);
-        const pid = processTable.add(newProcess);
-        return pass(process, msgID, pid);
+        try {
+            const newProcess = new Process(image, argv);
+            const pid = processTable.add(newProcess);
+            return pass(process, msgID, pid);
+        }
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Spawn a new process from a file path
-    function exec(process, msgID, args) {
-        const [inputPath, argv] = args;
+    function exec(process, msgID, [inputPath, argv]) {
         if (typeof inputPath !== "string") {
             return fail(process, msgID, "First argument - path - should be a string");
         }
         if (!argv instanceof Array) {
             return fail(process, msgID, "Second argument - argv - should be an array");
         }
-        const safePath = resolvePath(inputPath, process);
-        const image = fs.resolve(safePath).data;
-        const newProcess = new Process(image, argv);
-        const pid = processTable.add(newProcess);
-        return pass(process, msgID, pid);
+        try {
+            const safePath = resolvePath(inputPath, process);
+            const image = fs.resolve(safePath).data;
+            const newProcess = new Process(image, argv);
+            const pid = processTable.add(newProcess);
+            return pass(process, msgID, pid);
+        }
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Check if a file exists
-    function exists(process, msgID, args) {
-        const [inputPath] = args;
+    function exists(process, msgID, [inputPath]) {
         if (typeof inputPath !== "string") {
             return fail(process, msgID, "First argument - path - should be a string");
         }
-        const safePath = resolvePath(inputPath, process);
-        const result = process.exists(safePath);
-        return pass(process, msgID, result);
+        try {
+            const safePath = resolvePath(inputPath, process);
+            const result = process.exists(safePath);
+            return pass(process, msgID, result);
+        }
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Get file/directory info
-    function stat(process, msgID, args) {
-        const [inputPath] = args;
+    function stat(process, msgID, [inputPath]) {
         if (typeof inputPath !== "string") {
             return fail(process, msgID, "First argument - path - should be a string");
         }
-        const safePath = resolvePath(inputPath, process);
-        const inode = fs.resolve(safePath);
-        return pass(process, msgID, {
-            file: !!inode.file,
-            dir: !!inode.dir,
-            device: !!inode.device,
-            executable: !!inode.executable,
-            links: inode.links
-        });
+        try {
+            const safePath = resolvePath(inputPath, process);
+            const inode = fs.resolve(safePath);
+            return pass(process, msgID, {
+                file: !!inode.file,
+                dir: !!inode.dir,
+                device: !!inode.device,
+                executable: !!inode.executable,
+                links: inode.links
+            });
+        }
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Resolve a path into a file descriptor, and add it to the table
-    function open(process, msgID, args) {
-        const [inputPath, mode] = args;
+    function open(process, msgID, [inputPath, mode]) {
         if (typeof inputPath !== "string") {
             return fail(process, msgID, "First argument - path - should be a string");
         }
         if (typeof mode !== "string") {
             return fail(process, msgID, "Second argument - mode - should be a string");
         }
-        const safePath = resolvePath(inputPath, process);
-        const fd = process.open(safePath, mode);
-        if (fd < 0) {
-            return fail("Could not open file");
+        try {
+            const safePath = resolvePath(inputPath, process);
+            const fd = process.open(safePath, mode);
+            return pass(process, msgID, fd);
         }
-        return pass(process, msgID, fd);
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Remove a file descriptor from the table
-    function close(process, msgID, args) {
-        const [fd] = args;
+    function close(process, msgID, [fd]) {
         if (fd < 0) {
             return fail(process, msgID, "File Descriptor should be >= 0");
         }
         if (!process.fds[fd]) {
             return fail(process, msgID, "File Descriptor must exist");
         }
-        const result = process.close(fd);
-        return pass(process, msgID, result);
+        try {
+            const result = process.close(fd);
+            return pass(process, msgID, result);
+        }
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Duplicate a file descriptor
-    function dup(process, msgID, args) {
-        const [fd] = args;
+    function dup(process, msgID, [fd]) {
         if (fd < 0) {
             return fail(process, msgID, "File Descriptor should be >= 0");
         }
         if (!process.fds[fd]) {
             return fail(process, msgID, "File Descriptor must exist");
         }
-        const newFd = process.dup(fd);
-        return pass(process, msgID, newFd);
+        try {
+            const newFd = process.dup(fd);
+            return pass(process, msgID, newFd);
+        }
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Duplicate a file descriptor to a specified location
-    function dup2(process, msgID, args) {
-        const [fd1, fd2] = args;
+    function dup2(process, msgID, [fd1, fd2]) {
         if (fd1 < 0) {
             return fail(process, msgID, "File Descriptor 1 should be >= 0");
         }
@@ -780,84 +799,90 @@
         if (fd2 < 0) {
             return fail(process, msgID, "File Descriptor 2 should be >= 0");
         }
-        const newFd = process.dup2(fd1, fd2);
-        return pass(process, msgID, newFd);
+        try {
+            const newFd = process.dup2(fd1, fd2);
+            return pass(process, msgID, newFd);
+        }
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Read data from a file descriptor
-    function read(process, msgID, args) {
-        const [fd] = args;
+    function read(process, msgID, [fd]) {
         if (fd < 0) {
             return fail(process, msgID, "File Descriptor should be >= 0");
         }
-        const data = process.fds[fd].read();
-        if (data === -2) {
-            return fail("No data returned, possibly not a file");
+        try {
+            const data = process.fds[fd].read();
+            return pass(process, msgID, data);
         }
-        else if (data < 0) {
-            return fail("Could not get data");
+        catch (err) {
+            return fail(process, msgID, err);
         }
-        return pass(process, msgID, data);
     }
     // Read directory children
-    function readdir(process, msgID, args) {
-        const [fd] = args;
+    function readdir(process, msgID, [fd]) {
         if (fd < 0) {
             return fail(process, msgID, "File Descriptor should be >= 0");
         }
-        const children = process.fds[fd].readdir();
-        if (children < 0) {
-            return fail("No children returned, possibly not a directory");
+        try {
+            const children = process.fds[fd].readdir();
+            return pass(process, msgID, children);
         }
-        return pass(process, msgID, children);
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Write data to a file descriptor
-    function write(process, msgID, args) {
-        const [fd, data] = args;
+    function write(process, msgID, [fd, data]) {
         if (fd < 0) {
             return fail(process, msgID, "File Descriptor should be >= 0");
         }
         if (typeof data !== "string") {
             return fail(process, msgID, "Second argument - data - should be a string");
         }
-        const result = process.fds[fd].write(data);
-        if (result < 0) {
-            return fail("Could not write data");
+        try {
+            const result = process.fds[fd].write(data);
+            return pass(process, msgID, result);
         }
-        return pass(process, msgID, result);
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Create a new directory
-    function mkdir(process, msgID, args) {
-        const [inputPath] = args;
+    function mkdir(process, msgID, [inputPath]) {
         if (typeof inputPath !== "string") {
             return fail(process, msgID, "First argument - path - should be a string");
         }
-        const safePath = resolvePath(inputPath, process);
-        const result = fs.mkdir(safePath);
-        if (result < 0) {
-            return fail("Could not create directory");
+        try {
+            const safePath = resolvePath(inputPath, process);
+            const result = fs.mkdir(safePath);
+            return pass(process, msgID, result);
         }
-        return pass(process, msgID, safePath);
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Remove a hard link, what rm does
-    function unlink(process, msgID, args) {
-        const [inputPath] = args;
+    function unlink(process, msgID, [inputPath]) {
         if (typeof inputPath !== "string") {
             return fail(process, msgID, "First argument - path - should be a string");
         }
-        const safePath = resolvePath(inputPath, process);
-        const result = fs.unlink(safePath);
-        if (result < 0) {
-            return fail("Could not create directory");
+        try {
+            const safePath = resolvePath(inputPath, process);
+            const result = fs.unlink(safePath);
+            return pass(process, msgID, result);
         }
-        return pass(process, msgID, result);
+        catch (err) {
+            return fail(process, msgID, err);
+        }
     }
     // Tell what directory we are in
     function pwd(process, msgID, args) {
         return pass(process, msgID, process.cwd);
     }
     // Change the current working directory
-    function chdir(process, msgID, args) {
-        const [inputPath] = args;
+    function chdir(process, msgID, [inputPath]) {
         if (typeof inputPath !== "string") {
             return fail(process, msgID, "First argument - path - should be a string");
         }
@@ -866,8 +891,7 @@
         return pass(process, msgID, result);
     }
     // Get environment variable
-    function getenv(process, msgID, args) {
-        const [key] = args;
+    function getenv(process, msgID, [key]) {
         if (key) {
             if (typeof key !== "string") {
                 return fail(process, msgID, "First argument - key - should be a string (or a falsey value)");
@@ -880,8 +904,7 @@
         }
     }
     // Set environment variable
-    function setenv(process, msgID, args) {
-        const [key, value] = args;
+    function setenv(process, msgID, [key, value]) {
         if (typeof key !== "string") {
             return fail(process, msgID, "First argument - key - should be a string");
         }
@@ -1016,8 +1039,7 @@
         }
         // Check if it exists
         exists(path) {
-            const vnode = fs.resolve(path);
-            if (vnode.container) {
+            if (fs.resolve(path)) {
                 return true;
             }
             else {
@@ -1027,26 +1049,21 @@
         // Where open() actually runs
         // Return a file descriptor
         open(path, mode = "r") {
-            try {
-                const fd = new FileDescriptor(path, mode);
-                this.fds.push(fd);
-                return this.fds.length - 1;
-            }
-            catch (err) {
-                return -1;
-            }
+            const fd = new FileDescriptor(path, mode);
+            this.fds.push(fd);
+            return this.fds.length - 1;
         }
         // Close a file descriptor
         close(fd) {
             if (!this.fds[fd]) {
-                return -1;
+                throw new Error("File descriptor does not exist");
             }
             return (this.fds[fd] = null);
         }
         // Duplicate a file descriptor
         dup(fd) {
             if (!this.fds[fd]) {
-                return -1;
+                throw new Error("File descriptor does not exist");
             }
             const copied = this.fds[fd];
             this.fds.push(copied);
@@ -1055,7 +1072,7 @@
         // Copy a file descriptor to a specified location
         dup2(fd1, fd2) {
             if (!this.fds[fd1]) {
-                return -1;
+                throw new Error("File descriptor does not exist");
             }
             this.fds[fd2] = this.fds[fd1];
             return fd2;
@@ -1118,7 +1135,7 @@
         sys,
         proc: processTable,
         utils,
-        console: console$1,
+        console: console$2,
         browser,
         version: "0.0.3"
     };

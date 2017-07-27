@@ -1,7 +1,11 @@
 export default class Inode {
   constructor(config = {}) {
+    // Defaults
     this.links = 1;
+    this.file = false;
     this.executable = false;
+    this.dir = false;
+    // Overwrite defaults
     Object.assign(this, config);
   }
 
@@ -10,8 +14,7 @@ export default class Inode {
     if (this.file) {
       return this.contents;
     } else {
-      // Not a file
-      return -1;
+      throw new Error("Not a file");
     }
   }
 
@@ -21,8 +24,7 @@ export default class Inode {
       this.contents = contents;
       return;
     } else {
-      // Not a file
-      return -1;
+      throw new Error("Not a file");
     }
   }
 
@@ -32,8 +34,7 @@ export default class Inode {
       this.contents += contents;
       return;
     } else {
-      // Not a file
-      return -1;
+      throw new Error("Not a file");
     }
   }
 
@@ -43,8 +44,7 @@ export default class Inode {
       this.contents = "";
       return;
     } else {
-      // Not a file
-      return -1;
+      throw new Error("Not a file");
     }
   }
 
@@ -53,8 +53,7 @@ export default class Inode {
     if (this.dir) {
       return Object.keys(this.children);
     } else {
-      // Not a directory
-      return -1;
+      throw new Error("Not a directory");
     }
   }
 }

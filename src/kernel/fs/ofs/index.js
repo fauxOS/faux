@@ -2,6 +2,7 @@ import Inode from "./inode.js";
 
 export default class OFS {
   constructor(inodes) {
+    // Array of all inodes in this file system
     this.inodes = inodes || [
       new Inode({
         dir: true,
@@ -19,16 +20,14 @@ export default class OFS {
     for (let i in pathArray) {
       // We need the previous inode's directory contents
       const prevInode = inodeArray.slice(-1)[0];
-      // Path contains segement that isn't a directory
       if (!prevInode.children) {
-        return -1;
+        throw new Error("Path contains segement that isn't a directory");
       }
       // Get the next inode
       const name = pathArray[i];
       const nextInode = prevInode.children[name];
-      // Path contains non-existent entry
       if (!nextInode) {
-        return -2;
+        throw new Error("Path contains non-existent entry");
       }
       inodeArray.push(nextInode);
     }
@@ -36,45 +35,36 @@ export default class OFS {
     return inodeArray.pop();
   }
 
-  // Add a new inode to the disk
-  // Defaults to just adding an inode, but if you pass a parent directory inode in,
-  // it will add `name` as an entry in `parent`
-  addInode(parent, name, config) {
-    // Reject if name contains a "/"
+  // Add an inode directly to a parent
+  addInode(parentPathArray, name, inode) {
     if (name.match("/")) {
-      return -1;
+      throw new Error("Name can't contain forward slashes");
     }
-    const inode = new Inode(config);
+    const parent = this.resolve(parentPathArray);
     // Check if parent is a directory
     if (parent.dir) {
       this.inodes.push(inode);
       parent.children[name] = inode;
     } else {
-      // Parent is not a directory
-      return -1;
+      throw new Error("Parent is not a directory");
     }
-    return inode;
   }
 
   // Add a new file to the disk
   create(pathArray) {
-    const parent = this.resolve(pathArray.slice(0, -1));
+    const parent = pathArray.slice(0, -1);
     const name = pathArray.slice(-1)[0];
-    const inode = this.addInode(parent, name, { file: true, contents: "" });
-    if (inode < 0) {
-      return -1;
-    }
+    const inode = new Inode({ file: true, contents: "" });
+    this.addInode(parent, name, inode);
     return inode;
   }
 
   // Add a new directory Inode to the disk
   mkdir(pathArray) {
-    const parent = this.resolve(pathArray.slice(0, -1));
+    const parent = pathArray.slice(0, -1);
     const name = pathArray.slice(-1)[0];
-    const inode = this.addInode(parent, name, { dir: true, children: {} });
-    if (inode < 0) {
-      return -1;
-    }
+    const inode = new Inode({ dir: true, children: {} });
+    this.addInode(parent, name, inode);
     return inode;
   }
 
@@ -83,16 +73,15 @@ export default class OFS {
     const oldInode = this.resolve(oldPathArray);
     const newParent = this.resolve(newPathArray.slice(0, -1));
     const newName = newPathArray.slice(-1)[0];
-    // Reject if new name contains a "/"
     if (newName.match("/")) {
-      return -1;
+      throw new Error("Name can't contain forward slashes");
     }
     // Check if new parent is a directory
     if (newParent.dir) {
       newParent.children[newName] = oldInode;
+      oldInode.links++;
     } else {
-      // New parent is not a directory
-      return -1;
+      throw new Error("New parent is not a directory");
     }
   }
 
@@ -100,16 +89,12 @@ export default class OFS {
   unlink(pathArray) {
     const parent = this.resolve(pathArray.slice(0, -1));
     const name = pathArray.slice(-1)[0];
-    if (parent < 0) {
-      return -1;
-    }
     // Check if parent is a directory
     if (parent.dir) {
       delete parent.children[name];
       return;
     } else {
-      // Parent is not a directory
-      return -1;
+      throw new Error("Parent is not a directory");
     }
   }
 }

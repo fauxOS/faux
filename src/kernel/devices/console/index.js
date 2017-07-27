@@ -1,3 +1,13 @@
+function isEchoable(key) {
+  switch (key) {
+    // Arrow keys
+    case ("\x1b[A", "\x1b[B", "\x1b[C", "\x1b[D"):
+      return false;
+    default:
+      return true;
+  }
+}
+
 class Console {
   constructor(config = {}) {
     // This line buffer is used so that the user can edit
@@ -25,7 +35,7 @@ class Console {
 
   // Clients should override this
   write(contents) {
-    console.log("Unhandled console write: " + contents);
+    console.warn("Unhandled console write: " + contents);
   }
 
   // Takes the key pressed and decides what to do
@@ -40,21 +50,28 @@ class Console {
     // Echo input to the terminal so the user sees
     // what is being typed
     if (this.config.echo) {
-      this.write(key);
+      // Only echo if the key is echoable
+      if (isEchoable(key)) {
+        this.write(key);
+      }
     }
   }
 
   // If the character is special, handle it.
   // If it is normal, just push it to the lineBuffer
   handle(key) {
-    // Handle the DELETE sequence `^?` rather than backspace
-    if (key === "\x7f") {
-      this.backSpace();
-    } else if (key === "\r") {
-      this.enter();
-    } else {
-      // Normal character, just push it to the lineBuffer
-      this.lineBuffer.push(key);
+    switch (key) {
+      // Handle the DELETE sequence `^?` rather than backspace
+      case "\x7f":
+        this.backSpace();
+      case "\r":
+        this.enter();
+      // Arrow keys
+      case ("\x1b[A", "\x1b[B", "\x1b[C", "\x1b[D"):
+        this.arrow(key);
+      default:
+        // Normal character, just push it to the lineBuffer
+        this.lineBuffer.push(key);
     }
   }
 
@@ -77,6 +94,11 @@ class Console {
 
     // Carriage return and line feed
     this.write("\r\n");
+  }
+
+  // Handle direction changes
+  arrow(key) {
+    // Unimplemented
   }
 }
 

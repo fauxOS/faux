@@ -16,32 +16,30 @@ export default class VFS {
       this.mounts[normalized] = fs;
       return normalized;
     } else {
-      // No directory to mount onto
-      return -1;
+      throw new Error("No directory to mount to");
     }
   }
 
   // Unmount a filesystem by mount point
   unmount(mountPoint) {
     const normalized = normalize(mountPoint);
-    return (this.mounts[normalized] = null);
+    this.mounts[normalized] = null;
   }
 
   // Resolve the path to the mounted filesystem
   // This is the first step to trace a path, before any data containers (inodes etc) are involved
   getMountPoint(path) {
     // Get the segments of a path like this : ["/", "/path", "/path/example"]
-    const pathArray = chop(path);
-    // If its a root path, skip segments
-    if (pathArray.length === 1 && pathArray[0] === "/") {
-      return pathArray;
-    }
-    const segments = [];
-    // Applies to any other path
-    for (let i = 0; i <= pathArray.length; i++) {
-      let matchPath = pathArray.slice(0, i);
-      segments.push("/" + matchPath.join("/"));
-    }
+    const segments = (() => {
+      const pathArray = chop(path);
+      const segments = [];
+      // Applies to any other path
+      for (let i = 0; i <= pathArray.length; i++) {
+        let matchPath = pathArray.slice(0, i);
+        segments.push("/" + matchPath.join("/"));
+      }
+      return segments;
+    })();
     // Array of resolved mounted disks
     const resolves = [];
     // Iterate all of the mount points
@@ -71,31 +69,19 @@ export default class VFS {
   // Resolve a path to the fs provided data container
   resolve(path) {
     const { localFs, localFsPathArray } = this.getPathInfo(path);
-    const inode = localFs.resolve(localFsPathArray);
-    if (inode < 0) {
-      return -1;
-    }
-    return inode;
+    return localFs.resolve(localFsPathArray);
   }
 
   // Make a new file
   create(path) {
     const { localFs, localFsPathArray } = this.getPathInfo(path);
-    const inode = localFs.create(localFsPathArray);
-    if (inode < 0) {
-      return -1;
-    }
-    return inode;
+    return localFs.create(localFsPathArray);
   }
 
   // Make a new directory
   mkdir(path) {
     const { localFs, localFsPathArray } = this.getPathInfo(path);
-    const inode = localFs.mkdir(localFsPathArray);
-    if (inode < 0) {
-      return -1;
-    }
-    return inode;
+    return localFs.mkdir(localFsPathArray);
   }
 
   // Hard link newPath to the same inode as oldPath
@@ -104,10 +90,6 @@ export default class VFS {
   // Unlink (remove) a file
   unlink(path) {
     const { localFs, localFsPathArray } = this.getPathInfo(path);
-    const ret = localFs.unlink(localFsPathArray);
-    if (ret < 0) {
-      return -1;
-    }
-    return ret;
+    localFs.unlink(localFsPathArray);
   }
 }

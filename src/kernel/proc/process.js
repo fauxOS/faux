@@ -56,8 +56,7 @@ export default class Process {
 
   // Check if it exists
   exists(path) {
-    const vnode = fs.resolve(path);
-    if (vnode.container) {
+    if (fs.resolve(path)) {
       return true;
     } else {
       return false;
@@ -67,19 +66,15 @@ export default class Process {
   // Where open() actually runs
   // Return a file descriptor
   open(path, mode = "r") {
-    try {
-      const fd = new FileDescriptor(path, mode);
-      this.fds.push(fd);
-      return this.fds.length - 1;
-    } catch (err) {
-      return -1;
-    }
+    const fd = new FileDescriptor(path, mode);
+    this.fds.push(fd);
+    return this.fds.length - 1;
   }
 
   // Close a file descriptor
   close(fd) {
     if (!this.fds[fd]) {
-      return -1;
+      throw new Error("File descriptor does not exist");
     }
     return (this.fds[fd] = null);
   }
@@ -87,7 +82,7 @@ export default class Process {
   // Duplicate a file descriptor
   dup(fd) {
     if (!this.fds[fd]) {
-      return -1;
+      throw new Error("File descriptor does not exist");
     }
     const copied = this.fds[fd];
     this.fds.push(copied);
@@ -97,7 +92,7 @@ export default class Process {
   // Copy a file descriptor to a specified location
   dup2(fd1, fd2) {
     if (!this.fds[fd1]) {
-      return -1;
+      throw new Error("File descriptor does not exist");
     }
     this.fds[fd2] = this.fds[fd1];
     return fd2;

@@ -1,9 +1,11 @@
 export default class Inode {
   constructor(config = {}) {
+    // Defaults
     this.links = 1;
+    this.file = true;
     this.executable = false;
     this.dir = true;
-    this.file = true;
+    // Overwrite defaults
     Object.assign(this, config);
   }
 

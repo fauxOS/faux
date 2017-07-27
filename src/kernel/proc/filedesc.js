@@ -6,21 +6,20 @@ export default class FileDescriptor {
   constructor(path, mode) {
     this.mode = getMode(mode);
     this.path = normalize(path);
-    this.inode = fs.resolve(this.path);
-    // Create if non-existent?
-    if (this.inode < 0) {
+    try {
+      this.inode = fs.resolve(this.path);
+    } catch (err) {
+      // Create if non-existent?
       if (this.mode.create) {
         fs.create(this.path);
         // Try resolving a second time
         this.inode = fs.resolve(this.path);
         // Probably an error creating the file
         if (!this.inode) {
-          // Error on file creation
-          return -2;
+          throw new Error("Error on file creation");
         }
       } else {
-        // Does not exist
-        return -1;
+        throw new Error("Does not exist");
       }
     }
     // Truncate if mode is set
@@ -34,8 +33,7 @@ export default class FileDescriptor {
     if (this.mode.read) {
       return this.inode.read();
     } else {
-      // Read mode not set
-      return -1;
+      throw new Error("Read mode unset");
     }
   }
 
@@ -49,8 +47,7 @@ export default class FileDescriptor {
         return this.inode.write(contents);
       }
     } else {
-      // Write mode not set
-      return -1;
+      throw new Error("Write mode unset");
     }
   }
 

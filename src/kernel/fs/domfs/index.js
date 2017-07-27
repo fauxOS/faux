@@ -19,6 +19,9 @@ export default class DOMFS {
       selector = selector.replace(/ (\d)/g, " :nth-child($1)");
       element = document.querySelector(selector);
     }
+    if (!element) {
+      throw new Error("Failed to resolve");
+    }
     // Return an inode that VFS can understand
     return new Inode({
       raw: element
@@ -28,15 +31,13 @@ export default class DOMFS {
   // Create a new element
   create(pathArray) {
     const parent = this.resolve(pathArray.slice(0, -1));
-    if (!parent) {
-      return -1;
-    }
     // When creating an element, you are only allowed to use the element name
     // e.g. create("/dev/dom/body/#container/span")
     // You cannot create a class, index, or id
     const name = pathArray.slice(-1)[0];
     const element = document.createElement(name);
-    parent.appendChild(element);
+    // Access the DOM node in parent.raw
+    parent.raw.appendChild(element);
     // Again, so that VFS understands
     return new Inode({
       raw: element
@@ -45,6 +46,5 @@ export default class DOMFS {
 
   // In the DOM, link and unlink make no sense
   link() {}
-
   unlink() {}
 }
