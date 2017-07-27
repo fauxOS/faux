@@ -424,8 +424,12 @@
     function isEchoable(key) {
         switch (key) {
             // Arrow keys
-            case ("\x1b[A", "\x1b[B", "\x1b[C", "\x1b[D"):
+            case "\x1b[A":
+            case "\x1b[B":
+            case "\x1b[C":
+            case "\x1b[D":
                 return false;
+                break;
             default:
                 return true;
         }
@@ -483,11 +487,17 @@
                 // Handle the DELETE sequence `^?` rather than backspace
                 case "\x7f":
                     this.backSpace();
+                    break;
                 case "\r":
                     this.enter();
+                    break;
                 // Arrow keys
-                case ("\x1b[A", "\x1b[B", "\x1b[C", "\x1b[D"):
+                case "\x1b[A":
+                case "\x1b[B":
+                case "\x1b[C":
+                case "\x1b[D":
                     this.arrow(key);
+                    break;
                 default:
                     // Normal character, just push it to the lineBuffer
                     this.lineBuffer.push(key);
