@@ -41,6 +41,9 @@ gulp.task("kernel", () => build("faux", "src/kernel/index.js", false, "umd"));
 // A core library
 gulp.task("lib", () => build("lib", "src/userspace/lib/index.js"));
 
+// Init process
+gulp.task("init", () => build("init", "src/userspace/init.js"));
+
 // The Faux SHell
 gulp.task("fsh", () => build("fsh", "src/userspace/fsh/index.js"));
 
@@ -48,7 +51,7 @@ gulp.task("fsh", () => build("fsh", "src/userspace/fsh/index.js"));
 gulp.task("jsh", () => build("jsh", "src/userspace/jsh/index.js"));
 
 // Get the builds out of the way, before we inject them into the kernel
-gulp.task("builds", ["kernel", "lib", "fsh", "jsh"]);
+gulp.task("builds", ["kernel", "lib", "init", "fsh", "jsh"]);
 
 // Convert a file's contents into a JSON-safe string
 const jsStringEmbed = path => JSON.stringify(fs.readFileSync(path).toString());
@@ -59,6 +62,8 @@ gulp.task("injections", ["builds"], () =>
     .src("build/faux.js")
     // Inject core library into each process
     .pipe(inject.replace(/\"inject-lib\"/, jsStringEmbed("build/lib.js")))
+    // Inject init into its kernel-made process
+    .pipe(inject.replace(/\"inject-init\"/, jsStringEmbed("build/init.js")))
     // Inject fsh into its own file
     .pipe(inject.replace(/\"inject-fsh\"/, jsStringEmbed("build/fsh.js")))
     // Inject jsh

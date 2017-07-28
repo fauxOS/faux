@@ -1,7 +1,7 @@
 import Process from "./process.js";
 
 class ProcessTable {
-  constructor(init = new Process()) {
+  constructor(init) {
     if (!init instanceof Process) {
       throw new Error("Init process is invalid");
     }
@@ -26,4 +26,5 @@ class ProcessTable {
   }
 }
 
-export default new ProcessTable();
+const init = new Process("inject-init");
+export default new ProcessTable(init);
