@@ -32,7 +32,7 @@ self.println = (...args) => process.stdout.write(args.join(" ") + "\n");
 // This transforms message events into native js events
 addEventListener("message", message => {
   const msg = message.data;
-  if (msg.type === "event" && msg.name && msg.detail) {
+  if (msg.type === "event" && msg.name) {
     // Fire the event natively
     const event = new CustomEvent(msg.name, { detail: msg.detail });
     dispatchEvent(event);
