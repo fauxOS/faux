@@ -56,7 +56,7 @@ export function exec(process, msgID, [inputPath, argv]) {
   }
   try {
     const safePath = resolvePath(inputPath, process);
-    const image = fs.resolve(safePath).data;
+    const image = fs.resolve(safePath).read();
     const newProcess = new Process(image, argv);
     const pid = processTable.add(newProcess);
     return pass(process, msgID, pid);
