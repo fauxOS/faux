@@ -1117,7 +1117,7 @@
     root.addInode(["bin"], "jsh", new Inode({
         file: true,
         executable: true,
-        contents: "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})};(function(){\"use strict\";function prompt(str=\"jsh> \",color=\"green\"){return __awaiter(this,void 0,void 0,function*(){const prompt=cli.colorize(color,str);return print(prompt)})}function evaluate(str){return __awaiter(this,void 0,void 0,function*(){try{const result=self.eval(str),formatted=\"\\n\"+cli.colorize(\"green\",result);return yield println(formatted),prompt()}catch(err){const formatted=\"\\n\"+cli.colorize(\"red\",err);return yield println(formatted),prompt()}})}addEventListener(\"consoleInput\",function(){return __awaiter(this,void 0,void 0,function*(){const input=yield process.stdin.read();evaluate(input)})}),function(){return __awaiter(this,void 0,void 0,function*(){return yield println(\"Welcome to Faux's Javascript SHell!\\n\"),prompt()})}()})();"
+        contents: "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})};(function(){\"use strict\";function prompt(str=\"jsh> \",color=\"green\"){return __awaiter(this,void 0,void 0,function*(){const prompt=cli.colorize(color,str);return print(prompt)})}function evaluate(str){return __awaiter(this,void 0,void 0,function*(){try{const result=self.eval(str),formatted=\"\\n\"+cli.colorize(\"green\",result);return yield println(formatted),prompt()}catch(err){const formatted=\"\\n\"+cli.colorize(\"red\",err);return yield println(formatted),prompt()}})}addEventListener(\"consoleInput\",function(){return __awaiter(this,void 0,void 0,function*(){const input=yield process.stdin.read();evaluate(input)})}),function(){return __awaiter(this,void 0,void 0,function*(){return yield println(`Welcome to Faux's J${cli.colorize(\"dim\",\"avascript\")} SH${cli.colorize(\"dim\",\"ell\")}!\\n`),prompt()})}()})();"
     }));
     // Virtual Filesystem Switch
     const fs = new VFS(root);
@@ -1159,7 +1159,7 @@
         utils,
         console: console$2,
         browser,
-        version: "0.0.3"
+        version: "0.0.4"
     };
     return index;
 })));

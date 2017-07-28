@@ -1,7 +1,7 @@
 {
   "name": "faux",
   "description": "A virtual webpage operating system (pre-alpha)",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "dist/fauxOS.js",
   "browser": "dist/fauxOS.min.js",
   "devDependencies": {
