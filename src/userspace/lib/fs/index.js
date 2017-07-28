@@ -6,8 +6,8 @@
  * 
  * @example fs.readFile("./file").then(console.log)
  */
-export async function readFile(path) {
-  const fd = await sys.open(path, "r");
+export async function readFile(path, mode = "r") {
+  const fd = await sys.open(path, mode);
   const data = sys.read(fd);
   sys.close(fd);
   return data;
@@ -21,8 +21,8 @@ export async function readFile(path) {
  * 
  * @example fs.writeFile("./file", "contents")
  */
-export async function writeFile(path, data = "") {
-  const fd = await sys.open(path, "w");
+export async function writeFile(path, data = "", mode = "w") {
+  const fd = await sys.open(path, mode);
   sys.write(fd, data);
   sys.close(fd);
   return;
@@ -36,8 +36,8 @@ export async function writeFile(path, data = "") {
  * 
  * @example fs.appendFile("/log/something", "[time]: Event\n")
  */
-export async function appendFile(path, data = "") {
-  const fd = await sys.open(path, "a");
+export async function appendFile(path, data = "", mode = "a") {
+  const fd = await sys.open(path, mode);
   sys.write(fd, data);
   sys.close(fd);
   return;

@@ -1,3 +1,5 @@
+import proc from "../../proc/index.js";
+
 function isEchoable(key) {
   switch (key) {
     // Arrow keys
@@ -50,6 +52,8 @@ class Console {
     } else {
       // Without buffering, this is just a simple relay
       this.input += key;
+      // Emit event to userspace
+      proc.emit("consoleInput");
     }
     // Echo input to the terminal so the user sees
     // what is being typed
@@ -99,6 +103,8 @@ class Console {
     // Push the lineBuffer away
     const line = this.lineBuffer.join("");
     this.input += line;
+    // Emit event to userspace
+    proc.emit("consoleInput");
     // Clear the lineBuffer
     this.lineBuffer = [];
 

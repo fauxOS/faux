@@ -1,9 +1,10 @@
-export const stdin = {};
+import * as stdin from "./stdin.js";
+import * as stdout from "./stdout.js";
 
-export const stdout = {
-  write(str) {
-    console.log(str);
-  }
+const stderr = {};
+
+export default {
+  stdin,
+  stdout,
+  stderr
 };
-
-export const stderr = {};

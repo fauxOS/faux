@@ -1,18 +1,21 @@
+import { stat } from "./syscalls.js";
+import { readFile } from "./fs/index.js";
+
 async function loadFile(path) {
   // If path is a file
-  const pathStat = await sys.stat(path);
+  const pathStat = await stat(path);
   if (pathStat.file) {
-    return self.eval(await fs.readFile(path));
+    return self.eval(await readFile(path));
   }
   // If path.js is a file
-  const pathJsStat = await sys.stat(path + ".js");
+  const pathJsStat = await stat(path + ".js");
   if (pathJsStat.file) {
-    return self.eval(await fs.readFile(path + ".js"));
+    return self.eval(await readFile(path + ".js"));
   }
   // If path.json is a file
-  const pathJsonStat = await sys.stat(path + ".json");
+  const pathJsonStat = await stat(path + ".json");
   if (pathJsonStat.file) {
-    return JSON.parse(await fs.readFile(path + ".json"));
+    return JSON.parse(await readFile(path + ".json"));
   }
   // None worked
   throw new Error("not found");

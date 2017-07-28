@@ -5,7 +5,7 @@ import browser from "../../misc/browser.js";
 import * as path from "../../misc/path.js";
 import { http } from "../../misc/utils.js";
 import * as fs from "./fs/index.js";
-import * as process from "./process/index.js";
+import process from "./process/index.js";
 import require from "./require.js";
 
 import cli from "./cli/index.js";
@@ -24,6 +24,10 @@ Object.assign(self, {
 
   cli
 });
+
+// Convenience globals
+self.print = (...args) => process.stdout.write(args.join(" "));
+self.println = (...args) => process.stdout.write(args.join(" ") + "\n");
 
 // This transforms message events into native js events
 addEventListener("message", message => {

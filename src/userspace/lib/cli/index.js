@@ -1,13 +1,13 @@
 import ArgParser from "./argparser.js";
-import control from "./control.js";
-import dye from "./dye.js";
-import symbols from "./symbols.js";
-import Spinner from "./spinner.js";
+import * as control from "./control.js";
+import colorize from "./colorize/index.js";
+import * as symbols from "./symbols.js";
+import Spinner from "./spinner/index.js";
 
 export default {
   ArgParser,
   control,
-  dye,
+  colorize,
   symbols,
   Spinner
 };

@@ -1,24 +1,22 @@
-import dye from "./dye.js";
+import colorize from "./colorize/index.js";
 
-export default {
-  info: dye("blue", "ℹ"),
-  success: dye("green", "✔"),
-  warning: dye("yellow", "⚠"),
-  error: dye("red", "✖"),
-  star: dye("yellowBright", "★"),
-  radioOn: dye("green", "◉"),
-  radioOff: dye("red", "◯"),
-  checkboxOn: dye("green", "☒"),
-  checkboxOff: dye("red", "☐"),
-  arrowUp: "↑",
-  arrowDown: "↓",
-  arrowLeft: "←",
-  arrowRight: "→",
-  line: "─",
-  play: "▶",
-  pointer: "❯",
-  pointerSmall: "›",
-  square: "▇",
-  squareSmall: "◼",
-  bullet: "●"
-};
+export const info = colorize("blue", "ℹ");
+export const success = colorize("green", "✔");
+export const warning = colorize("yellow", "⚠");
+export const error = colorize("red", "✖");
+export const star = colorize("yellowBright", "★");
+export const radioOn = colorize("green", "◉");
+export const radioOff = colorize("red", "◯");
+export const checkboxOn = colorize("green", "☒");
+export const checkboxOff = colorize("red", "☐");
+export const arrowUp = "↑";
+export const arrowDown = "↓";
+export const arrowLeft = "←";
+export const arrowRight = "→";
+export const line = "─";
+export const play = "▶";
+export const pointer = "❯";
+export const pointerSmall = "›";
+export const square = "▇";
+export const squareSmall = "◼";
+export const bullet = "●";

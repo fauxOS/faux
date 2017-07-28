@@ -25,6 +25,16 @@ root.addInode(
     contents: "inject-fsh"
   })
 );
+// Javascript SHell
+root.addInode(
+  ["bin"],
+  "jsh",
+  new Inode({
+    file: true,
+    executable: true,
+    contents: "inject-jsh"
+  })
+);
 
 // Virtual Filesystem Switch
 const fs = new VFS(root);
