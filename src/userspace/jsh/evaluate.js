@@ -11,7 +11,10 @@ export default async function evaluate(str) {
     formatted = `\n${cli.colorize("green", serialized)}`;
     // Resolve promises so that we don't just print the returned promise itself"
     if (result instanceof Promise) {
-      formatted = `\n[object Promise] -> ${cli.colorize("green", serialized)}`;
+      formatted = `\n${cli.colorize("gray", "(Promise) ->")} ${cli.colorize(
+        "green",
+        serialized
+      )}`;
     }
   } catch (err) {
     formatted = `\n${cli.colorize("red", err)}`;
