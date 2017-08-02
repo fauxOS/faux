@@ -17,6 +17,9 @@ function isEchoable(key) {
 
 class Console {
   constructor(config = {}) {
+    // Bind the functions before passing them to LineBuffer
+    this.write.bind(this);
+    proc.emit.bind(proc);
     // This line buffer is used so that the user can edit
     // typing mistakes before the input is read by a program
     this.lineBuffer = new LineBuffer(this.write, proc.emit);
@@ -42,7 +45,7 @@ class Console {
 
   // Add a carriage-return to each line-feed, as terminal emulators require it
   write(contents) {
-    return this.write(contents.replace(/\n/g, "\r\n"));
+    return this.writeRaw(contents.replace(/\n/g, "\r\n"));
   }
 
   // Takes a key and decides what to do
@@ -52,7 +55,7 @@ class Console {
       this.lineBuffer.handle(key);
     } else {
       // Just emit a raw input event to userspace
-      proc.emit("consoleInput", { raw: true});
+      proc.emit("consoleInput", { raw: true });
     }
     // Echo input to the terminal so the user sees
     // what is being typed

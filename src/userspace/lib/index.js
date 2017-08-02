@@ -38,7 +38,7 @@ if (typeof CustomEvent === "undefined") {
       super(name);
       Object.assign(this, obj);
     }
-  }
+  };
 }
 
 // This transforms message events into native js events
