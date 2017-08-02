@@ -17,12 +17,13 @@ function isEchoable(key) {
 
 class Console {
   constructor(config = {}) {
-    // Bind the functions before passing them to LineBuffer
-    this.write.bind(this);
-    proc.emit.bind(proc);
     // This line buffer is used so that the user can edit
     // typing mistakes before the input is read by a program
-    this.lineBuffer = new LineBuffer(this.write, proc.emit);
+    this.lineBuffer = new LineBuffer(
+      // Bind the functions before passing them to LineBuffer.
+      this.write.bind(this),
+      proc.emit.bind(proc)
+    );
     this.config = {
       // Whether this should be active at all.
       // If buffer is set false, line editing will be skipped
