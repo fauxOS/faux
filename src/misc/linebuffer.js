@@ -8,12 +8,14 @@ export default class LineBuffer {
     // This buffer allows line edition before the user
     // sends input to the program.
     this.buffer = [];
+    // Input that hasn't been read yet, but is out of the buffer
+    this.input = "";
   }
 
   // Return and clear the input buffer
   read() {
-    const str = this.buffer.join("");
-    this.buffer = [];
+    const str = this.input;
+    this.input = "";
     return str;
   }
 

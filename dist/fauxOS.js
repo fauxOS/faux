@@ -1009,11 +1009,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             // This buffer allows line edition before the user
             // sends input to the program.
             this.buffer = [];
+            // Input that hasn't been read yet, but is out of the buffer
+            this.input = "";
         }
         // Return and clear the input buffer
         read() {
-            const str = this.buffer.join("");
-            this.buffer = [];
+            const str = this.input;
+            this.input = "";
             return str;
         }
         // If the character is special, handle it.
@@ -1102,10 +1104,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     }
     class Console {
         constructor(config = {}) {
-            // Bind the functions before passing them to LineBuffer.
             // This line buffer is used so that the user can edit
             // typing mistakes before the input is read by a program
-            this.lineBuffer = new LineBuffer(this.write.bind(this), processTable.emit.bind(processTable));
+            this.lineBuffer = new LineBuffer(
+            // Bind the functions before passing them to LineBuffer.
+            this.write.bind(this), processTable.emit.bind(processTable));
             this.config = {
                 // Whether this should be active at all.
                 // If buffer is set false, line editing will be skipped
