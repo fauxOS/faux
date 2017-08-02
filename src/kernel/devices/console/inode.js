@@ -3,8 +3,9 @@ import console from "./index.js";
 
 const inode = new Inode();
 
+// Reading not applicable
 inode.read = () => console.read();
-// Add a carriage-return to each line-feed, for the terminal emulator
-inode.write = data => console.write(data.replace(/\n/g, "\r\n"));
+// Only writing is allowed
+inode.write = data => console.write(data);
 
 export default inode;

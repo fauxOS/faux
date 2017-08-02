@@ -1,7 +1,7 @@
 import fs from "../fs/index.js";
 import FileDescriptor from "./filedesc.js";
 import * as sys from "./syscalls.js";
-import { mkWorker } from "../../misc/utils.js";
+import { spawnWorker } from "../../misc/utils.js";
 
 export default class Process {
   constructor(image = "", argv = []) {
@@ -18,10 +18,10 @@ export default class Process {
     };
     // Information that we need to expose to userspace
     const jsonArgv = JSON.stringify(this.argv);
-    const expose = `const argv = ${jsonArgv}; const argc = ${this.argc};`;
+    const expose = `const argv = ${jsonArgv}; const argc = argv.length`;
     const lib = "inject-lib";
     // The worker is where the process is actually executed
-    this.worker = mkWorker([expose, lib, image].join("\n\n"));
+    this.worker = spawnWorker([expose, lib, image].join("\n\n"));
     // This event listener intercepts worker messages and then
     // passes to the message handler, which decides what next
     this.worker.addEventListener("message", message => {
@@ -67,8 +67,14 @@ export default class Process {
   // Return a file descriptor
   open(path, mode = "r") {
     const fd = new FileDescriptor(path, mode);
-    this.fds.push(fd);
-    return this.fds.length - 1;
+    // The new file descriptor takes the first open space (from a closed fd),
+    // or just gets pushed to the array if there are no open spots.
+    let newFd = this.fds.indexOf(null);
+    if (newFd === -1) {
+      newFd = this.fds.length;
+    }
+    this.fds[newFd] = fd;
+    return newFd;
   }
 
   // Close a file descriptor

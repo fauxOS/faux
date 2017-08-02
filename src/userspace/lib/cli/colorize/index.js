@@ -1,4 +1,4 @@
-import * as ansi from "./ansi.js";
+import ansi from "./ansi.js";
 
 function wrap(style, str) {
   const [open, close] = ansi[style];

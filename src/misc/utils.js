@@ -8,8 +8,8 @@ export function genUUID() {
   });
 }
 
-export function mkWorker(scriptStr) {
-  const blob = new Blob([scriptStr], { type: "application/javascript" });
+export function spawnWorker(script = "") {
+  const blob = new Blob([script], { type: "application/javascript" });
   const uri = URL.createObjectURL(blob);
   return new Worker(uri);
 }

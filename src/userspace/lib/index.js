@@ -29,6 +29,18 @@ Object.assign(self, {
 self.print = (...args) => process.stdout.write(args.join(" "));
 self.println = (...args) => process.stdout.write(args.join(" ") + "\n");
 
+// Safari for whatever reason does not implement CustomEvent in web workers.
+// The error I get is "ReferenceError: Can't find variable: CustomEvent".
+// This is a little work-around, but it's not 100% compatable
+if (typeof CustomEvent === "undefined") {
+  self.CustomEvent = class CustomEvent extends Event {
+    constructor(name, obj) {
+      super(name);
+      Object.assign(this, obj);
+    }
+  }
+}
+
 // This transforms message events into native js events
 addEventListener("message", message => {
   const msg = message.data;

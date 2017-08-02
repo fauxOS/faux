@@ -1,4 +1,4 @@
-export default async function prompt(str = "jsh> ", color = "green") {
+export default async function prompt(str = "jsh> ", color = "gray") {
   const prompt = cli.colorize(color, str);
-  return print(prompt);
+  return await print(prompt);
 }
