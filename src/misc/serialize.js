@@ -1,6 +1,6 @@
 import { type } from "./utils.js";
 
-function inspectFunction(value, currentDepth = 0) {
+function serializeFunction(value, currentDepth = 0) {
   switch (currentDepth) {
     case 0:
       // Entire function text coerced to a string
@@ -24,22 +24,22 @@ export default function serialize(value, depthLimit = 5, currentDepth = 0) {
     case "object":
       ret = {};
       Object.keys(value).forEach(key => {
-        ret[key] = inspect(value[key], depthLimit, currentDepth + 1);
+        ret[key] = serialize(value[key], depthLimit, currentDepth + 1);
       });
       break;
     case "array":
       ret = [];
       for (let i in value) {
-        ret[i] = inspect(value[i], depthLimit, currentDepth + 1);
+        ret[i] = serialize(value[i], depthLimit, currentDepth + 1);
       }
       break;
     case "function":
-      ret = inspectFunction(value, currentDepth);
+      return serializeFunction(value, currentDepth);
       break;
     // All other values
     default:
       // Coerce to string
-      ret = value + "";
+      return value + "";
   }
   // If this is the first call (top level), then return the final string
   if (currentDepth === 0) {
