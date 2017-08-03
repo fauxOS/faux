@@ -8,16 +8,16 @@ export default async function evaluate(str) {
     const result = self.eval(str);
     // Serialized (to string) output
     const serialized = serialize(await result);
-    formatted = `\n${cli.colorize("green", serialized)}`;
+    formatted = `${cli.colorize("green", serialized)}`;
     // Resolve promises so that we don't just print the returned promise itself"
     if (result instanceof Promise) {
-      formatted = `\n${cli.colorize("gray", "(Promise) ->")} ${cli.colorize(
+      formatted = `${cli.colorize("gray", "(Promise) ->")} ${cli.colorize(
         "green",
         serialized
       )}`;
     }
   } catch (err) {
-    formatted = `\n${cli.colorize("red", err)}`;
+    formatted = cli.colorize("red", err);
   }
   await println(formatted);
   return await prompt();

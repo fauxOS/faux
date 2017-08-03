@@ -7,11 +7,11 @@ function serializeFunction(value, currentDepth = 0) {
       return value + "";
       break;
     case 1:
-      return "[Function]";
+      return `[Function: ${value.name}]`;
       break;
     case 2:
     default:
-      return `[Function: ${value.name}]`;
+      return "[Function]";
   }
 }
 

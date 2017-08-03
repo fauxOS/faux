@@ -43,10 +43,13 @@ export default class VFS {
     // Array of resolved mounted disks
     const resolves = [];
     // Iterate all of the mount points
-    Object.keys(this.mounts).forEach(mount => {
+    const mountPoints = Object.keys(this.mounts).sort(
+      (a, b) => a.length - b.length
+    );
+    mountPoints.forEach(point => {
       for (let i in segments) {
-        if (segments[i] === mount) {
-          resolves.push(mount);
+        if (segments[i] === point) {
+          resolves.push(point);
         }
       }
     });
