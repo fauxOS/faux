@@ -868,11 +868,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             xhr.send();
         });
     }
+    function type(value) {
+        let ret = typeof value;
+        if (ret === "object") {
+            if (value === null) {
+                ret = "null";
+            }
+            else {
+                if (value instanceof Array) {
+                    ret = "array";
+                }
+            }
+        }
+        return ret;
+    }
     var utils = Object.freeze({
         genUUID: genUUID,
         spawnWorker: spawnWorker,
         openLocalFile: openLocalFile,
-        http: http
+        http: http,
+        type: type
     });
     class Process {
         constructor(image = "", argv = []) {
@@ -1177,7 +1192,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     root.addInode(["bin"], "jsh", new Inode({
         file: true,
         executable: true,
-        contents: "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})};(function(){\"use strict\";function prompt(str=\"jsh> \",color=\"gray\"){return __awaiter(this,void 0,void 0,function*(){const prompt=cli.colorize(color,str);return yield print(prompt)})}function stripComma(ret){let i=ret.length-1,count=0;for(;\"\\n\"==ret.charAt(i);)i--,count++;for(\",\"==ret.charAt(i)&&(ret=ret.substring(0,i)),i=0;i<count;i++)ret+=\"\\n\";return ret}function serialize(o,stack=[],compact=0,limit=5){if(\"object\"!=typeof o)return o+\"\";let lf=\"\\n\",space=\" \",indentString=\"  \";for(let i in stack)indentString+=\"  \";1===compact?lf=space=\" \":1<=compact&&(lf=space=\"\");const isArray=o instanceof Array;let leadBrace,trailingBrace;isArray?(leadBrace=space+\"[\",trailingBrace=\"]\"):(leadBrace=space+\"{\",trailingBrace=\"}\");let ret=leadBrace+lf;for(let key in o)if(o.hasOwnProperty(key)){let objName=\"\";objName=isArray?\"\":-1==key.indexOf(\" \")?key+space+\":\"+space:\"\\\"\"+key+\"\\\"\"+space+\":\"+space;const subObj=o[key];switch(typeof subObj){case\"function\":ret+=indentString+objName+subObj+\",\"+lf;break;case\"object\":if(stack.length>limit)ret+=indentString+objName+\"\\\"(too deeply nested)\\\",\"+lf;else if(null==subObj)ret+=indentString+objName+\"null,\\n\";else{let found=!1;for(let m in stack)if(o==stack[m]){ret+=indentString+objName+\"\\\"(object is in stack)\\\",\"+lf,found=!0;break}!1==found&&(stack.push(o),ret+=indentString+objName+serialize(subObj,stack,compact,limit)+\",\"+lf,stack.pop())}break;case\"string\":{const map={\"\b\":\"\\\\b\",\"\t\":\"\\\\t\",\"\\n\":\"\\\\n\",\"\f\":\"\\\\f\",\"\\r\":\"\\\\r\",'\"':\"\\\\\\\"\",\"\\\\\":\"\\\\\\\\\"};for(let i in ret+=indentString+objName+\"\\\"\",subObj){const char=subObj.charAt(i);ret+=map[char]?map[char]:char}ret+=\"\\\",\"+lf}break;default:ret+=indentString+objName+subObj+\",\"+lf;}}return stripComma(ret)+indentString+trailingBrace}function evaluate(str){return __awaiter(this,void 0,void 0,function*(){let formatted=\"\";try{const result=self.eval(str),serialized=serialize((yield result));formatted=`\\n${cli.colorize(\"green\",serialized)}`,result instanceof Promise&&(formatted=`\\n${cli.colorize(\"gray\",\"(Promise) ->\")} ${cli.colorize(\"green\",serialized)}`)}catch(err){formatted=`\\n${cli.colorize(\"red\",err)}`}return yield println(formatted),yield prompt()})}addEventListener(\"consoleInput\",function(){return __awaiter(this,void 0,void 0,function*(){const input=yield process.stdin.read();evaluate(input)})}),function(){return __awaiter(this,void 0,void 0,function*(){return yield println(`Welcome to Faux's ${cli.colorize(\"bold\",\"J\")}avascript ${cli.colorize(\"bold\",\"SH\")}ell!\\n`),yield prompt()})}()})();"
+        contents: "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})};(function(){\"use strict\";function prompt(str=\"jsh> \",color=\"gray\"){return __awaiter(this,void 0,void 0,function*(){const prompt=cli.colorize(color,str);return yield print(prompt)})}function type(value){let ret=typeof value;return\"object\"==ret&&(null===value?ret=\"null\":value instanceof Array&&(ret=\"array\")),ret}function inspectFunction(value,currentDepth=0){switch(currentDepth){case 0:return value+\"\";break;case 1:return\"[Function]\";break;case 2:default:return`[Function: ${value.name}]`;}}function serialize(value,depthLimit=5,currentDepth=0){if(currentDepth>=depthLimit)return\"[...]\";let ret;switch(type(value)){case\"object\":ret={},Object.keys(value).forEach(key=>{ret[key]=inspect(value[key],depthLimit,currentDepth+1)});break;case\"array\":for(let i in ret=[],value)ret[i]=inspect(value[i],depthLimit,currentDepth+1);break;case\"function\":ret=inspectFunction(value,currentDepth);break;default:ret=value+\"\";}return 0===currentDepth?JSON.stringify(ret,null,2):ret}function evaluate(str){return __awaiter(this,void 0,void 0,function*(){let formatted=\"\";try{const result=self.eval(str),serialized=serialize((yield result));formatted=`\\n${cli.colorize(\"green\",serialized)}`,result instanceof Promise&&(formatted=`\\n${cli.colorize(\"gray\",\"(Promise) ->\")} ${cli.colorize(\"green\",serialized)}`)}catch(err){formatted=`\\n${cli.colorize(\"red\",err)}`}return yield println(formatted),yield prompt()})}addEventListener(\"consoleInput\",function(){return __awaiter(this,void 0,void 0,function*(){const input=yield process.stdin.read();evaluate(input)})}),function(){return __awaiter(this,void 0,void 0,function*(){return yield println(`Welcome to Faux's ${cli.colorize(\"bold\",\"J\")}avascript ${cli.colorize(\"bold\",\"SH\")}ell!\\n`),yield prompt()})}()})();"
     }));
     // Virtual Filesystem Switch
     const fs = new VFS(root);

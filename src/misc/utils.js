@@ -50,3 +50,17 @@ export function http(uri, method = "GET") {
     xhr.send();
   });
 }
+
+export function type(value) {
+  let ret = typeof value;
+  if (ret === "object") {
+    if (value === null) {
+      ret = "null";
+    } else {
+      if (value instanceof Array) {
+        ret = "array";
+      }
+    }
+  }
+  return ret;
+}
