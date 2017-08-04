@@ -1,10 +1,16 @@
 export function genUUID() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(
-    char
-  ) {
-    let r = (Math.random() * 16) | 0,
-      v = char === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
+  const base = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+  return base.replace(/[xy]/g, char => {
+    // Random integer between 0 and 16
+    const randFloat = Math.random() * 16;
+    const randInt = parseInt(randFloat);
+    if (char === "x") {
+      // "x" is replaced with any hex number
+      return randInt.toString(16);
+    } else {
+      // "y" is replaced with either 8, 9, a, or b
+      return ((randInt & 3) | 8).toString(16);
+    }
   });
 }
 

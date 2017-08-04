@@ -823,9 +823,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         setenv: setenv
     });
     function genUUID() {
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (char) {
-            let r = (Math.random() * 16) | 0, v = char === "x" ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
+        const base = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+        return base.replace(/[xy]/g, char => {
+            // Random integer between 0 and 16
+            const randFloat = Math.random() * 16;
+            const randInt = parseInt(randFloat);
+            if (char === "x") {
+                // "x" is replaced with any hex number
+                return randInt.toString(16);
+            }
+            else {
+                // "y" is replaced with either 8, 9, a, or b
+                return ((randInt & 3) | 8).toString(16);
+            }
         });
     }
     function spawnWorker(script = "") {
@@ -1204,9 +1214,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         // If it is normal, just push it to the lineBuffer
         handle(key) {
             switch (key) {
-                // Handle the DELETE sequence `^?` rather than standard backspace.
-                // For whatever reason, this method is actually more common
+                // Handle the DELETE sequence `^?` and ascii backspace.
                 case "\x7f":
+                case "\b":
                     this.backSpace();
                     break;
                 case "\r":
@@ -1222,39 +1232,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 default:
                     // Just push every other character to the buffer
                     this.buffer.add(this.cursorIndex, key);
-                    this.cursorIndex++;
+                    this.update(this.buffer.length - 1, this.cursorIndex + 1);
             }
         }
         cursorToStart() {
             // Make a string of backspaces for each character from the start to current position
-            const backspaces = new Array(this.cursorIndex + 2).join("\b");
+            const backspaces = new Array(this.cursorIndex + 1).join("\b");
             // Print the backspaces so the cursor goes to the start
             this.write(backspaces);
-            // Set cursor index to start
             this.cursorIndex = 0;
         }
-        eraseToEnd() {
-            // Make a string of spaces for each character from the current position to end
-            const spaces = new Array(this.buffer.length - this.cursorIndex + 2).join(" ");
+        // Make the terminal display reflect the current state
+        update(oldBufferLength, newCursorIndex) {
+            this.cursorToStart();
+            // Make a string of spaces for each character from the current position to last visible character
+            const spaces = new Array(oldBufferLength + 1).join(" ");
             // Print the spaces so the cursor goes to the end
             this.write(spaces);
-            // Print backspaces to keep the cursor where it started
+            // Print backspaces to get the cursor to the current cursorIndex
             this.write(spaces.replace(/ /g, "\b"));
-        }
-        // Replaces the visible line
-        replaceTerminalLine(line) {
-            this.cursorToStart();
-            this.eraseToEnd();
-            this.write(line);
-            this.cursorIndex = line.length;
+            this.write(this.buffer.toString());
+            // Get the cursor to the new position
+            const backspaces = new Array(this.buffer.length - newCursorIndex + 1).join("\b");
+            this.write(backspaces);
+            this.cursorIndex = newCursorIndex;
         }
         // Discard last written character
         backSpace() {
             // We can only delete characters in the buffer
             if (this.buffer.length > 0) {
                 this.buffer.remove(this.cursorIndex - 1);
-                this.cursorIndex--;
-                this.replaceTerminalLine(this.buffer.toString());
+                this.update(this.buffer.length + 1, this.cursorIndex - 1);
             }
             else {
                 return;
