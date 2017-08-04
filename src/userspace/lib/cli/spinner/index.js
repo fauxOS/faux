@@ -1,7 +1,7 @@
 import * as spinners from "./spinners.js";
 
 export default class Spinner {
-  constructor(name) {
+  constructor(name = "circle") {
     const spinner = spinners[name];
     this.frames = spinner.frames;
     this.index = 0;

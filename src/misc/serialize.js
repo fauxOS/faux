@@ -7,6 +7,9 @@ function serializeFunction(value, currentDepth = 0) {
       return value + "";
       break;
     case 1:
+      if (!value.name) {
+        return "[Function]";
+      }
       return `[Function: ${value.name}]`;
       break;
     case 2:
@@ -35,6 +38,9 @@ export default function serialize(value, depthLimit = 5, currentDepth = 0) {
       break;
     case "function":
       return serializeFunction(value, currentDepth);
+      break;
+    case "symbol":
+      return value.toString();
       break;
     // All other values
     default:

@@ -23,7 +23,7 @@ export const star = {
   frames: ["✶", "✸", "✹", "✺", "✹", "✷"]
 };
 
-export const bounceyBall = {
+export const ball = {
   fps: 8,
   frames: ["⠁", "⠂", "⠄", "⠂"]
 };

@@ -906,7 +906,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             // Information that we need to expose to userspace
             const jsonArgv = JSON.stringify(this.argv);
             const expose = `const argv = ${jsonArgv}; const argc = argv.length`;
-            const lib = "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})};(function(){\"use strict\";function newID(length=10){const chars=\"0123456789abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXTZ\".split(\"\");let id=\"\";for(let i=0;i<length;i++){const randomIndex=Math.floor(Math.random()*chars.length);id+=chars[randomIndex]}return id}function call(name=\"\",args=[]){const id=newID();return postMessage({type:\"syscall\",name,args,id}),new Promise((resolve,reject)=>{function listener(message){const msg=message.data;msg.id===id&&(\"success\"===msg.status?resolve(msg.result):reject(msg.reason),removeEventListener(\"message\",listener))}addEventListener(\"message\",listener)})}function stat(path){return __awaiter(this,void 0,void 0,function*(){return call(\"stat\",[path])})}function assertString(str){if(\"string\"!=typeof str)throw new Error(\"Some argument is not a string\")}function normalize(path){if(!path)return\".\";assertString(path);const significant=[];let isAbsolute=!1;0===path.indexOf(\"/\")&&(isAbsolute=!0);const pathArray=path.match(/[^/]+/g);for(let i in pathArray){const name=pathArray[i],lastItem=significant[significant.length-1];\".\"===name||(\"..\"===name?isAbsolute?significant.pop():0===significant.length||\"..\"===lastItem?significant.push(\"..\"):significant.pop():significant.push(name))}return isAbsolute?\"/\"+significant.join(\"/\"):significant.join(\"/\")}function parse(path=\"\"){assertString(path);const normalized=normalize(path),matches=normalized.match(splitPathRe);return{root:matches[1],dir:matches[2],base:matches[3],ext:matches[4],name:matches[3].slice(0,matches[3].length-matches[4].length)}}function readFile(path,mode=\"r\"){return __awaiter(this,void 0,void 0,function*(){const fd=yield sys.open(path,mode),data=sys.read(fd);return sys.close(fd),data})}function writeFile(path,data=\"\",mode=\"w\"){return __awaiter(this,void 0,void 0,function*(){const fd=yield sys.open(path,mode);return sys.write(fd,data),void sys.close(fd)})}function loadFile(path){return __awaiter(this,void 0,void 0,function*(){const pathStat=yield stat(path);if(pathStat.file)return self.eval((yield readFile(path)));const pathJsStat=yield stat(path+\".js\");if(pathJsStat.file)return self.eval((yield readFile(path+\".js\")));const pathJsonStat=yield stat(path+\".json\");if(pathJsonStat.file)return JSON.parse((yield readFile(path+\".json\")));throw new Error(\"not found\")})}function wrap(style,str){const[open,close]=ansi[style];return`\\x1b[${open}m${str}\\x1b[${close}m`}function colorize(styles,str){if(styles instanceof Array)for(let i in styles)str=wrap(styles[i],str);else\"string\"==typeof styles&&(str=wrap(styles,str));return str}var sys$1=Object.freeze({spawn:function(image=\"\",argv=[]){return __awaiter(this,void 0,void 0,function*(){return call(\"spawn\",[image,argv])})},exec:function(path,argv=[]){return __awaiter(this,void 0,void 0,function*(){return call(\"exec\",[path,argv])})},exists:function(path){return __awaiter(this,void 0,void 0,function*(){return call(\"exists\",[path])})},stat:stat,open:function(path,mode=\"r\"){return __awaiter(this,void 0,void 0,function*(){return call(\"open\",[path,mode])})},close:function(fd){return __awaiter(this,void 0,void 0,function*(){return call(\"close\",[fd])})},dup:function(fd){return __awaiter(this,void 0,void 0,function*(){return call(\"dup\",[fd])})},dup2:function(fd1,fd2){return __awaiter(this,void 0,void 0,function*(){return call(\"dup2\",[fd1,fd2])})},read:function(fd){return __awaiter(this,void 0,void 0,function*(){return call(\"read\",[fd])})},readdir:function(fd){return __awaiter(this,void 0,void 0,function*(){return call(\"readdir\",[fd])})},write:function(fd,data=\"\"){return __awaiter(this,void 0,void 0,function*(){return call(\"write\",[fd,data])})},mkdir:function(path){return __awaiter(this,void 0,void 0,function*(){return call(\"mkdir\",[path])})},unlink:function(path){return __awaiter(this,void 0,void 0,function*(){return call(\"unlink\",[path])})},pwd:function(){return __awaiter(this,void 0,void 0,function*(){return call(\"pwd\",[])})},chdir:function(path=\"/home\"){return __awaiter(this,void 0,void 0,function*(){return call(\"chdir\",[path])})},getenv:function(key){return __awaiter(this,void 0,void 0,function*(){return call(\"getenv\",[key])})},setenv:function(key,value=\"\"){return __awaiter(this,void 0,void 0,function*(){return call(\"setenv\",[key,value])})}}),browser=function(){const ua=navigator.userAgent,matches=ua.match(/(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\\/))\\/?\\s*([\\d.]+)/i)||[];if(/trident/i.test(matches[1])){const tem=ua.match(/\\brv[ :]+([\\d.]+)/g)||\"\";return[\"IE\",tem[1]]}if(\"Chrome\"===matches[1]){const tem=ua.match(/\\b(OPR|Edge)\\/([\\d.]+)/);if(tem)return[\"Opera\",tem[1]]}return matches[2]?{name:matches[1],version:matches[2]}:{name:navigator.appName,version:navigator.appVersion}}();const splitPathRe=/^(\\/?|)([\\s\\S]*?)((?:\\.{1,2}|[^\\/]+?|)(\\.[^.\\/]*|))(?:[\\/]*)$/;var path=Object.freeze({normalize:normalize,parse:parse,dirname:function(path=\"\"){const parsed=parse(path);return parsed.root?\"/\"+parsed.dir:parsed.dir},basename:function(path=\"\",extension=\"\"){const basename=parse(path).base,indexOf=basename.indexOf(extension);return indexOf&&indexOf+extension.length===basename.length?basename.slice(0,indexOf):basename},extname:function(path){return parse(path).ext},join:function(){const paths=[];for(let i in arguments)assertString(arguments[i]),paths.push(arguments[i]);const joined=paths.join(\"/\");return normalize(joined)},chop:function(path){const segments=normalize(path).match(/[^/]+/g);return segments?segments:[]}}),fs=Object.freeze({readFile:readFile,writeFile:writeFile,appendFile:function(path,data=\"\",mode=\"a\"){return __awaiter(this,void 0,void 0,function*(){const fd=yield sys.open(path,mode);return sys.write(fd,data),void sys.close(fd)})}}),stdin=Object.freeze({read:function(){return __awaiter(this,void 0,void 0,function*(){return readFile(\"/dev/console\")})}}),stdout=Object.freeze({write:function(str){return __awaiter(this,void 0,void 0,function*(){return writeFile(\"/dev/console\",str,\"r+\")})}});var process$1={stdin,stdout,stderr:{}};const esc=\"\\x1B\",beep=\"\\x07\";var control=Object.freeze({cursor:{move:{to:(x=1,y=1)=>esc+\"[\"+x+\";\"+y+\"H\",up:(n=1)=>esc+\"[\"+n+\"A\",down:(n=1)=>esc+\"[\"+n+\"B\",right:(n=1)=>esc+\"[\"+n+\"C\",left:(n=1)=>esc+\"[\"+n+\"D\",nextLine:()=>esc+\"[E\",prevLine:()=>esc+\"[F\",leftMost:()=>esc+\"[G\"},hide:()=>esc+\"[?25l\",show:()=>esc+\"[?25h\",shape:{block:()=>esc+\"]50;CursorShape=0\"+beep,bar:()=>esc+\"]50;CursorShape=1\"+beep,underscore:()=>esc+\"50;CursorShape=2\"+beep},savePosition:()=>esc+\"[s\",restorePosition:()=>esc+\"[u\"},line:{eraseEnd:()=>esc+\"[K\",eraseStart:()=>esc+\"[1K\",erase:()=>esc+\"[2K\"},screen:{eraseDown:()=>esc+\"[J\",eraseUp:()=>esc+\"[1J\",erase:()=>esc+\"[2J\",clear:()=>esc+\"c\",scrollUp:(n=1)=>esc+\"[\"+n+\"S\",scrollDown:(n=1)=>esc+\"[\"+n+\"T\"},misc:{beep:()=>beep,setTitle:str=>esc+\"]0;\"+str+beep}}),ansi={reset:[0,0],bold:[1,22],dim:[2,22],italic:[3,23],underline:[4,24],inverse:[7,27],hidden:[8,28],strikethrough:[9,29],black:[30,39],red:[31,39],green:[32,39],yellow:[33,39],blue:[34,39],magenta:[35,39],cyan:[36,39],white:[37,39],gray:[90,39],grey:[90,39],brightRed:[91,39],brightGreen:[92,39],brightYellow:[93,39],brightBlue:[94,39],brightMagenta:[95,39],brightCyan:[96,39],brightWhite:[97,39],bgBlack:[40,49],bgRed:[41,49],bgGreen:[42,49],bgYellow:[43,49],bgBlue:[44,49],bgMagenta:[45,49],bgCyan:[46,49],bgWhite:[47,49],bgGray:[100,49],bgGrey:[100,49],bgBrightRed:[101,49],bgBrightGreen:[102,49],bgBrightYellow:[103,49],bgBrightBlue:[104,49],bgBrightMagenta:[105,49],bgBrightCyan:[106,49],bgBrightWhite:[107,49]};const info=colorize(\"blue\",\"\\u2139\"),success=colorize(\"green\",\"\\u2714\"),warning=colorize(\"yellow\",\"\\u26A0\"),error=colorize(\"red\",\"\\u2716\"),star=colorize(\"brightYellow\",\"\\u2605\"),radioOn=colorize(\"green\",\"\\u25C9\"),radioOff=colorize(\"red\",\"\\u25EF\"),checkboxOn=colorize(\"green\",\"\\u2612\"),checkboxOff=colorize(\"red\",\"\\u2610\");var symbols=Object.freeze({info:info,success:success,warning:warning,error:error,star:star,radioOn:radioOn,radioOff:radioOff,checkboxOn:checkboxOn,checkboxOff:checkboxOff,arrowUp:\"\\u2191\",arrowDown:\"\\u2193\",arrowLeft:\"\\u2190\",arrowRight:\"\\u2192\",line:\"\\u2500\",play:\"\\u25B6\",pointer:\"\\u276F\",pointerSmall:\"\\u203A\",square:\"\\u2587\",squareSmall:\"\\u25FC\",bullet:\"\\u25CF\"});var spinners=Object.freeze({line:{fps:8,frames:[\"-\",\"\\\\\",\"|\",\"/\"]},dots:{fps:12.5,frames:[\"\\u280B\",\"\\u2819\",\"\\u2839\",\"\\u2838\",\"\\u283C\",\"\\u2834\",\"\\u2826\",\"\\u2827\",\"\\u2807\",\"\\u280F\"]},scrolling:{fps:5,frames:[\".  \",\".. \",\"...\",\" ..\",\"  .\",\"   \"]},scrolling2:{fps:2.5,frames:[\".  \",\".. \",\"...\",\"   \"]},star:{fps:14,frames:[\"\\u2736\",\"\\u2738\",\"\\u2739\",\"\\u273A\",\"\\u2739\",\"\\u2737\"]},bounceyBall:{fps:8,frames:[\"\\u2801\",\"\\u2802\",\"\\u2804\",\"\\u2802\"]},triangle:{fps:15,frames:[\"\\u25E2\",\"\\u25E3\",\"\\u25E4\",\"\\u25E5\"]},circle:{fps:15,frames:[\"\\u25D0\",\"\\u25D3\",\"\\u25D1\",\"\\u25D2\"]},bounce:{fps:12.5,frames:[\"( \\u25CF    )\",\"(  \\u25CF   )\",\"(   \\u25CF  )\",\"(    \\u25CF )\",\"(     \\u25CF)\",\"(    \\u25CF )\",\"(   \\u25CF  )\",\"(  \\u25CF   )\",\"( \\u25CF    )\",\"(\\u25CF     )\"]},clock:{fps:10,frames:[\"\\uD83D\\uDD50 \",\"\\uD83D\\uDD51 \",\"\\uD83D\\uDD52 \",\"\\uD83D\\uDD53 \",\"\\uD83D\\uDD54 \",\"\\uD83D\\uDD55 \",\"\\uD83D\\uDD56 \",\"\\uD83D\\uDD57 \",\"\\uD83D\\uDD58 \",\"\\uD83D\\uDD59 \",\"\\uD83D\\uDD5A \"]},pong:{fps:12.5,frames:[\"\\u2590\\u2802       \\u258C\",\"\\u2590\\u2808       \\u258C\",\"\\u2590 \\u2802      \\u258C\",\"\\u2590 \\u2820      \\u258C\",\"\\u2590  \\u2840     \\u258C\",\"\\u2590  \\u2820     \\u258C\",\"\\u2590   \\u2802    \\u258C\",\"\\u2590   \\u2808    \\u258C\",\"\\u2590    \\u2802   \\u258C\",\"\\u2590    \\u2820   \\u258C\",\"\\u2590     \\u2840  \\u258C\",\"\\u2590     \\u2820  \\u258C\",\"\\u2590      \\u2802 \\u258C\",\"\\u2590      \\u2808 \\u258C\",\"\\u2590       \\u2802\\u258C\",\"\\u2590       \\u2820\\u258C\",\"\\u2590       \\u2840\\u258C\",\"\\u2590      \\u2820 \\u258C\",\"\\u2590      \\u2802 \\u258C\",\"\\u2590     \\u2808  \\u258C\",\"\\u2590     \\u2802  \\u258C\",\"\\u2590    \\u2820   \\u258C\",\"\\u2590    \\u2840   \\u258C\",\"\\u2590   \\u2820    \\u258C\",\"\\u2590   \\u2802    \\u258C\",\"\\u2590  \\u2808     \\u258C\",\"\\u2590  \\u2802     \\u258C\",\"\\u2590 \\u2820      \\u258C\",\"\\u2590 \\u2840      \\u258C\",\"\\u2590\\u2820       \\u258C\"]}});Object.assign(self,{sys:sys$1,browser,path,http:function(uri,method=\"GET\"){return new Promise((resolve,reject)=>{!uri instanceof String&&reject(\"URI invalid\");const xhr=new XMLHttpRequest;xhr.open(method,uri,!0),xhr.onload=function(){300>xhr.status&&200<=xhr.status?resolve(xhr.response):reject(xhr.status+\" \"+xhr.statusText)},xhr.onerror=function(err){reject(err)},xhr.send()})},fs,process:process$1,require:function(requirePath=\"\"){return __awaiter(this,void 0,void 0,function*(){if(\"string\"!=typeof requirePath)throw new Error(\"argument is not a string\");try{return yield loadFile(requirePath)}catch(err){return loadFile(requirePath+\"/index\")}})},cli:{ArgParser:class{constructor(options){this.options=options||{}}parse(argv=process.argv){}},control,colorize,symbols,Spinner:class{constructor(name){const spinner=spinners[name];this.frames=spinner.frames,this.index=0,this.interval=Math.round(1e3/spinner.fps),this.setIntervalIndex=null}next(){this.index++;const realIndex=(this.index-1)%this.frames.length;return this.frames[realIndex]}start(outputFunction){outputFunction=outputFunction||(str=>process.stdout.write(str)),this.setIntervalIndex=setInterval(()=>{let frame=this.next(),clearFrame=frame.replace(/./g,\"\\b\");outputFunction(clearFrame),outputFunction(frame)},this.interval)}stop(){clearInterval(this.setIntervalIndex)}}}}),self.print=(...args)=>process$1.stdout.write(args.join(\" \")),self.println=(...args)=>process$1.stdout.write(args.join(\" \")+\"\\n\"),\"undefined\"==typeof CustomEvent&&(self.CustomEvent=class extends Event{constructor(name,obj){super(name),Object.assign(this,obj)}}),addEventListener(\"message\",message=>{const msg=message.data;if(\"event\"===msg.type&&msg.name){const event=new CustomEvent(msg.name,{detail:msg.detail});dispatchEvent(event)}})})();";
+            const lib = "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})};(function(){\"use strict\";function newID(length=10){const chars=\"0123456789abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXTZ\".split(\"\");let id=\"\";for(let i=0;i<length;i++){const randomIndex=Math.floor(Math.random()*chars.length);id+=chars[randomIndex]}return id}function call(name=\"\",args=[]){const id=newID();return postMessage({type:\"syscall\",name,args,id}),new Promise((resolve,reject)=>{function listener(message){const msg=message.data;msg.id===id&&(\"success\"===msg.status?resolve(msg.result):reject(msg.reason),removeEventListener(\"message\",listener))}addEventListener(\"message\",listener)})}function stat(path){return __awaiter(this,void 0,void 0,function*(){return call(\"stat\",[path])})}function assertString(str){if(\"string\"!=typeof str)throw new Error(\"Some argument is not a string\")}function normalize(path){if(!path)return\".\";assertString(path);const significant=[];let isAbsolute=!1;0===path.indexOf(\"/\")&&(isAbsolute=!0);const pathArray=path.match(/[^/]+/g);for(let i in pathArray){const name=pathArray[i],lastItem=significant[significant.length-1];\".\"===name||(\"..\"===name?isAbsolute?significant.pop():0===significant.length||\"..\"===lastItem?significant.push(\"..\"):significant.pop():significant.push(name))}return isAbsolute?\"/\"+significant.join(\"/\"):significant.join(\"/\")}function parse(path=\"\"){assertString(path);const normalized=normalize(path),matches=normalized.match(splitPathRe);return{root:matches[1],dir:matches[2],base:matches[3],ext:matches[4],name:matches[3].slice(0,matches[3].length-matches[4].length)}}function readFile(path,mode=\"r\"){return __awaiter(this,void 0,void 0,function*(){const fd=yield sys.open(path,mode),data=sys.read(fd);return sys.close(fd),data})}function writeFile(path,data=\"\",mode=\"w\"){return __awaiter(this,void 0,void 0,function*(){const fd=yield sys.open(path,mode);return sys.write(fd,data),void sys.close(fd)})}function loadFile(path){return __awaiter(this,void 0,void 0,function*(){const pathStat=yield stat(path);if(pathStat.file)return self.eval((yield readFile(path)));const pathJsStat=yield stat(path+\".js\");if(pathJsStat.file)return self.eval((yield readFile(path+\".js\")));const pathJsonStat=yield stat(path+\".json\");if(pathJsonStat.file)return JSON.parse((yield readFile(path+\".json\")));throw new Error(\"not found\")})}function wrap(style,str){const[open,close]=ansi[style];return`\\x1b[${open}m${str}\\x1b[${close}m`}function colorize(styles,str){if(styles instanceof Array)for(let i in styles)str=wrap(styles[i],str);else\"string\"==typeof styles&&(str=wrap(styles,str));return str}var sys$1=Object.freeze({spawn:function(image=\"\",argv=[]){return __awaiter(this,void 0,void 0,function*(){return call(\"spawn\",[image,argv])})},exec:function(path,argv=[]){return __awaiter(this,void 0,void 0,function*(){return call(\"exec\",[path,argv])})},exists:function(path){return __awaiter(this,void 0,void 0,function*(){return call(\"exists\",[path])})},stat:stat,open:function(path,mode=\"r\"){return __awaiter(this,void 0,void 0,function*(){return call(\"open\",[path,mode])})},close:function(fd){return __awaiter(this,void 0,void 0,function*(){return call(\"close\",[fd])})},dup:function(fd){return __awaiter(this,void 0,void 0,function*(){return call(\"dup\",[fd])})},dup2:function(fd1,fd2){return __awaiter(this,void 0,void 0,function*(){return call(\"dup2\",[fd1,fd2])})},read:function(fd){return __awaiter(this,void 0,void 0,function*(){return call(\"read\",[fd])})},readdir:function(fd){return __awaiter(this,void 0,void 0,function*(){return call(\"readdir\",[fd])})},write:function(fd,data=\"\"){return __awaiter(this,void 0,void 0,function*(){return call(\"write\",[fd,data])})},mkdir:function(path){return __awaiter(this,void 0,void 0,function*(){return call(\"mkdir\",[path])})},unlink:function(path){return __awaiter(this,void 0,void 0,function*(){return call(\"unlink\",[path])})},pwd:function(){return __awaiter(this,void 0,void 0,function*(){return call(\"pwd\",[])})},chdir:function(path=\"/home\"){return __awaiter(this,void 0,void 0,function*(){return call(\"chdir\",[path])})},getenv:function(key){return __awaiter(this,void 0,void 0,function*(){return call(\"getenv\",[key])})},setenv:function(key,value=\"\"){return __awaiter(this,void 0,void 0,function*(){return call(\"setenv\",[key,value])})}}),browser=function(){const ua=navigator.userAgent,matches=ua.match(/(vivaldi|opera|chrome|safari|firefox|msie|trident(?=\\/))\\/?\\s*([\\d.]+)/i)||[];if(/trident/i.test(matches[1])){const tem=ua.match(/\\brv[ :]+([\\d.]+)/g)||\"\";return[\"IE\",tem[1]]}if(\"Chrome\"===matches[1]){const tem=ua.match(/\\b(OPR|Edge)\\/([\\d.]+)/);if(tem)return[\"Opera\",tem[1]]}return matches[2]?{name:matches[1],version:matches[2]}:{name:navigator.appName,version:navigator.appVersion}}();const splitPathRe=/^(\\/?|)([\\s\\S]*?)((?:\\.{1,2}|[^\\/]+?|)(\\.[^.\\/]*|))(?:[\\/]*)$/;var path=Object.freeze({normalize:normalize,parse:parse,dirname:function(path=\"\"){const parsed=parse(path);return parsed.root?\"/\"+parsed.dir:parsed.dir},basename:function(path=\"\",extension=\"\"){const basename=parse(path).base,indexOf=basename.indexOf(extension);return indexOf&&indexOf+extension.length===basename.length?basename.slice(0,indexOf):basename},extname:function(path){return parse(path).ext},join:function(){const paths=[];for(let i in arguments)assertString(arguments[i]),paths.push(arguments[i]);const joined=paths.join(\"/\");return normalize(joined)},chop:function(path){const segments=normalize(path).match(/[^/]+/g);return segments?segments:[]}}),fs=Object.freeze({readFile:readFile,writeFile:writeFile,appendFile:function(path,data=\"\",mode=\"a\"){return __awaiter(this,void 0,void 0,function*(){const fd=yield sys.open(path,mode);return sys.write(fd,data),void sys.close(fd)})}}),stdin=Object.freeze({read:function(){return __awaiter(this,void 0,void 0,function*(){return readFile(\"/dev/console\")})}}),stdout=Object.freeze({write:function(str){return __awaiter(this,void 0,void 0,function*(){return writeFile(\"/dev/console\",str,\"r+\")})}});var process$1={stdin,stdout,stderr:{}};const esc=\"\\x1B\",beep=\"\\x07\";var control=Object.freeze({cursor:{move:{to:(x=1,y=1)=>esc+\"[\"+x+\";\"+y+\"H\",up:(n=1)=>esc+\"[\"+n+\"A\",down:(n=1)=>esc+\"[\"+n+\"B\",right:(n=1)=>esc+\"[\"+n+\"C\",left:(n=1)=>esc+\"[\"+n+\"D\",nextLine:()=>esc+\"[E\",prevLine:()=>esc+\"[F\",leftMost:()=>esc+\"[G\"},hide:()=>esc+\"[?25l\",show:()=>esc+\"[?25h\",shape:{block:()=>esc+\"]50;CursorShape=0\"+beep,bar:()=>esc+\"]50;CursorShape=1\"+beep,underscore:()=>esc+\"50;CursorShape=2\"+beep},savePosition:()=>esc+\"[s\",restorePosition:()=>esc+\"[u\"},line:{eraseEnd:()=>esc+\"[K\",eraseStart:()=>esc+\"[1K\",erase:()=>esc+\"[2K\"},screen:{eraseDown:()=>esc+\"[J\",eraseUp:()=>esc+\"[1J\",erase:()=>esc+\"[2J\",clear:()=>esc+\"c\",scrollUp:(n=1)=>esc+\"[\"+n+\"S\",scrollDown:(n=1)=>esc+\"[\"+n+\"T\"},misc:{beep:()=>beep,setTitle:str=>esc+\"]0;\"+str+beep}}),ansi={reset:[0,0],bold:[1,22],dim:[2,22],italic:[3,23],underline:[4,24],inverse:[7,27],hidden:[8,28],strikethrough:[9,29],black:[30,39],red:[31,39],green:[32,39],yellow:[33,39],blue:[34,39],magenta:[35,39],cyan:[36,39],white:[37,39],gray:[90,39],grey:[90,39],brightRed:[91,39],brightGreen:[92,39],brightYellow:[93,39],brightBlue:[94,39],brightMagenta:[95,39],brightCyan:[96,39],brightWhite:[97,39],bgBlack:[40,49],bgRed:[41,49],bgGreen:[42,49],bgYellow:[43,49],bgBlue:[44,49],bgMagenta:[45,49],bgCyan:[46,49],bgWhite:[47,49],bgGray:[100,49],bgGrey:[100,49],bgBrightRed:[101,49],bgBrightGreen:[102,49],bgBrightYellow:[103,49],bgBrightBlue:[104,49],bgBrightMagenta:[105,49],bgBrightCyan:[106,49],bgBrightWhite:[107,49]};const info=colorize(\"blue\",\"\\u2139\"),success=colorize(\"green\",\"\\u2714\"),warning=colorize(\"yellow\",\"\\u26A0\"),error=colorize(\"red\",\"\\u2716\"),star=colorize(\"brightYellow\",\"\\u2605\"),radioOn=colorize(\"green\",\"\\u25C9\"),radioOff=colorize(\"red\",\"\\u25EF\"),checkboxOn=colorize(\"green\",\"\\u2612\"),checkboxOff=colorize(\"red\",\"\\u2610\");var symbols=Object.freeze({info:info,success:success,warning:warning,error:error,star:star,radioOn:radioOn,radioOff:radioOff,checkboxOn:checkboxOn,checkboxOff:checkboxOff,arrowUp:\"\\u2191\",arrowDown:\"\\u2193\",arrowLeft:\"\\u2190\",arrowRight:\"\\u2192\",line:\"\\u2500\",play:\"\\u25B6\",pointer:\"\\u276F\",pointerSmall:\"\\u203A\",square:\"\\u2587\",squareSmall:\"\\u25FC\",bullet:\"\\u25CF\"});var spinners=Object.freeze({line:{fps:8,frames:[\"-\",\"\\\\\",\"|\",\"/\"]},dots:{fps:12.5,frames:[\"\\u280B\",\"\\u2819\",\"\\u2839\",\"\\u2838\",\"\\u283C\",\"\\u2834\",\"\\u2826\",\"\\u2827\",\"\\u2807\",\"\\u280F\"]},scrolling:{fps:5,frames:[\".  \",\".. \",\"...\",\" ..\",\"  .\",\"   \"]},scrolling2:{fps:2.5,frames:[\".  \",\".. \",\"...\",\"   \"]},star:{fps:14,frames:[\"\\u2736\",\"\\u2738\",\"\\u2739\",\"\\u273A\",\"\\u2739\",\"\\u2737\"]},ball:{fps:8,frames:[\"\\u2801\",\"\\u2802\",\"\\u2804\",\"\\u2802\"]},triangle:{fps:15,frames:[\"\\u25E2\",\"\\u25E3\",\"\\u25E4\",\"\\u25E5\"]},circle:{fps:15,frames:[\"\\u25D0\",\"\\u25D3\",\"\\u25D1\",\"\\u25D2\"]},bounce:{fps:12.5,frames:[\"( \\u25CF    )\",\"(  \\u25CF   )\",\"(   \\u25CF  )\",\"(    \\u25CF )\",\"(     \\u25CF)\",\"(    \\u25CF )\",\"(   \\u25CF  )\",\"(  \\u25CF   )\",\"( \\u25CF    )\",\"(\\u25CF     )\"]},clock:{fps:10,frames:[\"\\uD83D\\uDD50 \",\"\\uD83D\\uDD51 \",\"\\uD83D\\uDD52 \",\"\\uD83D\\uDD53 \",\"\\uD83D\\uDD54 \",\"\\uD83D\\uDD55 \",\"\\uD83D\\uDD56 \",\"\\uD83D\\uDD57 \",\"\\uD83D\\uDD58 \",\"\\uD83D\\uDD59 \",\"\\uD83D\\uDD5A \"]},pong:{fps:12.5,frames:[\"\\u2590\\u2802       \\u258C\",\"\\u2590\\u2808       \\u258C\",\"\\u2590 \\u2802      \\u258C\",\"\\u2590 \\u2820      \\u258C\",\"\\u2590  \\u2840     \\u258C\",\"\\u2590  \\u2820     \\u258C\",\"\\u2590   \\u2802    \\u258C\",\"\\u2590   \\u2808    \\u258C\",\"\\u2590    \\u2802   \\u258C\",\"\\u2590    \\u2820   \\u258C\",\"\\u2590     \\u2840  \\u258C\",\"\\u2590     \\u2820  \\u258C\",\"\\u2590      \\u2802 \\u258C\",\"\\u2590      \\u2808 \\u258C\",\"\\u2590       \\u2802\\u258C\",\"\\u2590       \\u2820\\u258C\",\"\\u2590       \\u2840\\u258C\",\"\\u2590      \\u2820 \\u258C\",\"\\u2590      \\u2802 \\u258C\",\"\\u2590     \\u2808  \\u258C\",\"\\u2590     \\u2802  \\u258C\",\"\\u2590    \\u2820   \\u258C\",\"\\u2590    \\u2840   \\u258C\",\"\\u2590   \\u2820    \\u258C\",\"\\u2590   \\u2802    \\u258C\",\"\\u2590  \\u2808     \\u258C\",\"\\u2590  \\u2802     \\u258C\",\"\\u2590 \\u2820      \\u258C\",\"\\u2590 \\u2840      \\u258C\",\"\\u2590\\u2820       \\u258C\"]}});Object.assign(self,{sys:sys$1,browser,path,http:function(uri,method=\"GET\"){return new Promise((resolve,reject)=>{!uri instanceof String&&reject(\"URI invalid\");const xhr=new XMLHttpRequest;xhr.open(method,uri,!0),xhr.onload=function(){300>xhr.status&&200<=xhr.status?resolve(xhr.response):reject(xhr.status+\" \"+xhr.statusText)},xhr.onerror=function(err){reject(err)},xhr.send()})},fs,process:process$1,require:function(requirePath=\"\"){return __awaiter(this,void 0,void 0,function*(){if(\"string\"!=typeof requirePath)throw new Error(\"argument is not a string\");try{return yield loadFile(requirePath)}catch(err){return loadFile(requirePath+\"/index\")}})},cli:{ArgParser:class{constructor(options){this.options=options||{}}parse(argv=process.argv){}},control,colorize,symbols,Spinner:class{constructor(name=\"circle\"){const spinner=spinners[name];this.frames=spinner.frames,this.index=0,this.interval=Math.round(1e3/spinner.fps),this.setIntervalIndex=null}next(){this.index++;const realIndex=(this.index-1)%this.frames.length;return this.frames[realIndex]}start(outputFunction){outputFunction=outputFunction||(str=>process.stdout.write(str)),this.setIntervalIndex=setInterval(()=>{let frame=this.next(),clearFrame=frame.replace(/./g,\"\\b\");outputFunction(clearFrame),outputFunction(frame)},this.interval)}stop(){clearInterval(this.setIntervalIndex)}}}}),self.print=(...args)=>process$1.stdout.write(args.join(\" \")),self.println=(...args)=>process$1.stdout.write(args.join(\" \")+\"\\n\"),\"undefined\"==typeof CustomEvent&&(self.CustomEvent=class extends Event{constructor(name,obj){super(name),Object.assign(this,obj)}}),addEventListener(\"message\",message=>{const msg=message.data;if(\"event\"===msg.type&&msg.name){const event=new CustomEvent(msg.name,{detail:msg.detail});dispatchEvent(event)}})})();";
             // The worker is where the process is actually executed
             this.worker = spawnWorker([expose, lib, image].join("\n\n"));
             // This event listener intercepts worker messages and then
@@ -1013,6 +1013,170 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     }
     const init = new Process("(function(){\"use strict\";sys.exec(\"/bin/jsh\")})();");
     var processTable = new ProcessTable(init);
+    class Node {
+        constructor(data) {
+            this.data = data;
+            this.prev = null;
+            this.next = null;
+        }
+    }
+    class DoublyLinkedList {
+        constructor() {
+            this.first = null;
+            this.last = null;
+            this.length = 0;
+        }
+        // Add to the front
+        unshift(data) {
+            if (!this.first) {
+                // First to add
+                this.first = new Node(data);
+                this.last = this.first;
+            }
+            else {
+                const newFirst = new Node(data);
+                newFirst.next = this.first;
+                this.first.prev = newFirst;
+                this.first = newFirst;
+            }
+            this.length++;
+            return data;
+        }
+        // Add to the end
+        push(data) {
+            if (!this.last) {
+                // First to add
+                this.last = new Node(data);
+                this.first = this.last;
+            }
+            else {
+                const newLast = new Node(data);
+                newLast.prev = this.last;
+                this.last.next = newLast;
+                this.last = newLast;
+            }
+            this.length++;
+            return data;
+        }
+        // Add at index
+        add(i, data) {
+            if (i < 0 || i > this.length) {
+                return null;
+            }
+            switch (i) {
+                // First node
+                case 0:
+                    return this.unshift(data);
+                    break;
+                // Last node
+                case this.length:
+                    return this.push(data);
+                    break;
+                // Middle node
+                default:
+                    const current = this.nodeAt(i);
+                    const beforeNodeToAdd = current.prev;
+                    const nodeToAdd = new Node(data);
+                    const afterNodeToAdd = current;
+                    nodeToAdd.next = afterNodeToAdd;
+                    nodeToAdd.prev = beforeNodeToAdd;
+                    beforeNodeToAdd.next = nodeToAdd;
+                    afterNodeToAdd.prev = nodeToAdd;
+                    this.length++;
+                    return data;
+            }
+        }
+        // Remove first
+        shift() {
+            const oldFirst = this.first;
+            if (this.first) {
+                if (this.last === this.first) {
+                    this.first = null;
+                    this.last = null;
+                }
+                else {
+                    this.first = this.first.next;
+                    this.first.prev = null;
+                }
+            }
+            this.length--;
+            return oldFirst.data;
+        }
+        // Remove last
+        pop() {
+            const oldLast = this.last;
+            if (this.last) {
+                if (this.last === this.first) {
+                    this.first = null;
+                    this.last = null;
+                }
+                else {
+                    this.last = this.last.prev;
+                    this.last.next = null;
+                }
+            }
+            this.length--;
+            return oldLast.data;
+        }
+        // Remove at index
+        remove(i) {
+            if (this.length === 0 || i < 0 || i > this.length - 1) {
+                return null;
+            }
+            switch (i) {
+                // First node
+                case 0:
+                    return this.shift();
+                    break;
+                // Last node
+                case this.length - 1:
+                    return this.pop();
+                    break;
+                // Middle node
+                default:
+                    const current = this.nodeAt(i);
+                    const beforeNodeToDelete = current.prev;
+                    const nodeToDelete = current;
+                    const afterNodeToDelete = current.next;
+                    beforeNodeToDelete.next = afterNodeToDelete;
+                    afterNodeToDelete.prev = beforeNodeToDelete;
+                    this.length--;
+                    return nodeToDelete.data;
+            }
+        }
+        nodeAt(i) {
+            // Starting position based on length and index.
+            // We choose what ever is closest to the node at `i`
+            if (this.length / 2 - (i + 1) < 0) {
+                let current = this.last;
+                // Go down until we reach the node
+                for (let count = 0; count < this.length - i - 1; count++) {
+                    current = current.prev;
+                }
+                return current;
+            }
+            else {
+                let current = this.first;
+                // Go up until we reach the node
+                for (let count = 0; count < i; count++) {
+                    current = current.next;
+                }
+                return current;
+            }
+        }
+        each(func) {
+            let current = this.first;
+            while (current) {
+                func(current.data);
+                current = current.next;
+            }
+        }
+        toString() {
+            const array = [];
+            this.each(val => array.push(val));
+            return array.join("");
+        }
+    }
     class LineBuffer {
         constructor(write, emit) {
             // Write function to write raw data to the terminal
@@ -1024,7 +1188,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             // The current line's raw buffer is stored here.
             // This buffer allows line edition before the user
             // sends input to the program.
-            this.buffer = [];
+            this.buffer = new DoublyLinkedList();
+            // Index of the cursor within the buffer
+            this.cursorIndex = 0;
             // Input that hasn't been read yet, but is out of the buffer
             this.input = "";
         }
@@ -1055,16 +1221,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     break;
                 default:
                     // Just push every other character to the buffer
-                    this.buffer.push(key);
+                    this.buffer.add(this.cursorIndex, key);
+                    this.cursorIndex++;
             }
+        }
+        cursorToStart() {
+            // Make a string of backspaces for each character from the start to current position
+            const backspaces = new Array(this.cursorIndex + 2).join("\b");
+            // Print the backspaces so the cursor goes to the start
+            this.write(backspaces);
+            // Set cursor index to start
+            this.cursorIndex = 0;
+        }
+        eraseToEnd() {
+            // Make a string of spaces for each character from the current position to end
+            const spaces = new Array(this.buffer.length - this.cursorIndex + 2).join(" ");
+            // Print the spaces so the cursor goes to the end
+            this.write(spaces);
+            // Print backspaces to keep the cursor where it started
+            this.write(spaces.replace(/ /g, "\b"));
+        }
+        // Replaces the visible line
+        replaceTerminalLine(line) {
+            this.cursorToStart();
+            this.eraseToEnd();
+            this.write(line);
+            this.cursorIndex = line.length;
         }
         // Discard last written character
         backSpace() {
             // We can only delete characters in the buffer
             if (this.buffer.length > 0) {
-                this.buffer.pop();
-                // Back one, overwrite with space, then back once more
-                this.write("\b \b");
+                this.buffer.remove(this.cursorIndex - 1);
+                this.cursorIndex--;
+                this.replaceTerminalLine(this.buffer.toString());
             }
             else {
                 return;
@@ -1072,15 +1262,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
         // Save the last line and start a new one
         enter(shiftKey) {
-            this.buffer.push("\n");
+            this.buffer.add(this.cursorIndex, "\n");
             // Stringify and push the buffer for reading
-            this.input += this.buffer.join("");
+            this.input += this.buffer.toString();
             // Emit event sending input, while clearing the buffer
             this.emit("consoleInput", { buffered: true });
             // Reset the buffer
-            this.buffer = [];
+            this.buffer = new DoublyLinkedList();
             // Write out a line feed
             this.write("\n");
+            this.cursorIndex = 0;
         }
         // Handle direction changes
         arrow(key) {
@@ -1094,9 +1285,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     break;
                 case "\x1b[C":// Right
                     detail.arrowRight = true;
+                    if (!(this.cursorIndex === this.buffer.length)) {
+                        this.cursorIndex++;
+                        this.write(key);
+                    }
                     break;
                 case "\x1b[D":// Left
                     detail.arrowLeft = true;
+                    if (!(this.cursorIndex === 0)) {
+                        this.cursorIndex--;
+                        this.write(key);
+                    }
                     break;
                 default:
                     return;
@@ -1193,7 +1392,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     root.addInode(["bin"], "jsh", new Inode({
         file: true,
         executable: true,
-        contents: "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})};(function(){\"use strict\";function prompt(str=\"jsh> \",color=\"gray\"){return __awaiter(this,void 0,void 0,function*(){const prompt=cli.colorize(color,str);return yield print(prompt)})}function type(value){let ret=typeof value;return\"object\"==ret&&(null===value?ret=\"null\":value instanceof Array&&(ret=\"array\")),ret}function serializeFunction(value,currentDepth=0){switch(currentDepth){case 0:return value+\"\";break;case 1:return`[Function: ${value.name}]`;break;case 2:default:return\"[Function]\";}}function serialize(value,depthLimit=5,currentDepth=0){if(currentDepth>=depthLimit)return\"[...]\";let ret;switch(type(value)){case\"object\":ret={},Object.keys(value).forEach(key=>{ret[key]=serialize(value[key],depthLimit,currentDepth+1)});break;case\"array\":for(let i in ret=[],value)ret[i]=serialize(value[i],depthLimit,currentDepth+1);break;case\"function\":return serializeFunction(value,currentDepth);break;default:return value+\"\";}return 0===currentDepth?JSON.stringify(ret,null,2):ret}function evaluate(str){return __awaiter(this,void 0,void 0,function*(){let formatted=\"\";try{const result=self.eval(str),serialized=serialize((yield result));formatted=`${cli.colorize(\"green\",serialized)}`,result instanceof Promise&&(formatted=`${cli.colorize(\"gray\",\"(Promise) ->\")} ${cli.colorize(\"green\",serialized)}`)}catch(err){formatted=cli.colorize(\"red\",err)}return yield println(formatted),yield prompt()})}addEventListener(\"consoleInput\",function(){return __awaiter(this,void 0,void 0,function*(){const input=yield process.stdin.read();evaluate(input)})}),function(){return __awaiter(this,void 0,void 0,function*(){return yield println(`Welcome to Faux's ${cli.colorize(\"bold\",\"J\")}avascript ${cli.colorize(\"bold\",\"SH\")}ell!\\n`),yield prompt()})}()})();"
+        contents: "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})};(function(){\"use strict\";function prompt(str=\"jsh> \",color=\"gray\"){return __awaiter(this,void 0,void 0,function*(){const prompt=cli.colorize(color,str);return yield print(prompt)})}function type(value){let ret=typeof value;return\"object\"==ret&&(null===value?ret=\"null\":value instanceof Array&&(ret=\"array\")),ret}function serializeFunction(value,currentDepth=0){switch(currentDepth){case 0:return value+\"\";break;case 1:return value.name?`[Function: ${value.name}]`:\"[Function]\";break;case 2:default:return\"[Function]\";}}function serialize(value,depthLimit=5,currentDepth=0){if(currentDepth>=depthLimit)return\"[...]\";let ret;switch(type(value)){case\"object\":ret={},Object.keys(value).forEach(key=>{ret[key]=serialize(value[key],depthLimit,currentDepth+1)});break;case\"array\":for(let i in ret=[],value)ret[i]=serialize(value[i],depthLimit,currentDepth+1);break;case\"function\":return serializeFunction(value,currentDepth);break;case\"symbol\":return value.toString();break;default:return value+\"\";}return 0===currentDepth?JSON.stringify(ret,null,2):ret}function evaluate(str){return __awaiter(this,void 0,void 0,function*(){let formatted=\"\";try{const result=self.eval(str),serialized=serialize((yield result));formatted=`${cli.colorize(\"green\",serialized)}`,result instanceof Promise&&(formatted=`${cli.colorize(\"gray\",\"(Promise) ->\")} ${cli.colorize(\"green\",serialized)}`)}catch(err){formatted=cli.colorize(\"red\",err)}return yield println(formatted),yield prompt()})}addEventListener(\"consoleInput\",function({detail}){return __awaiter(this,void 0,void 0,function*(){if(detail.buffered){const input=yield process.stdin.read();evaluate(input)}})}),function(){return __awaiter(this,void 0,void 0,function*(){return yield println(`Welcome to Faux's ${cli.colorize(\"bold\",\"J\")}avascript ${cli.colorize(\"bold\",\"SH\")}ell!\\n`),yield prompt()})}()})();"
     }));
     // Virtual Filesystem Switch
     const fs = new VFS(root);
