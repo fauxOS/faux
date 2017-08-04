@@ -1312,19 +1312,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             this.emit("consoleInput", detail);
         }
     }
-    function isEchoable(key) {
-        switch (key) {
-            // Arrow keys
-            case "\x1b[A":
-            case "\x1b[B":
-            case "\x1b[C":
-            case "\x1b[D":
-                return false;
-                break;
-            default:
-                return true;
-        }
-    }
     class Console {
         constructor(config = {}) {
             // This line buffer is used so that the user can edit
@@ -1335,10 +1322,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             this.config = {
                 // Whether this should be active at all.
                 // If buffer is set false, line editing will be skipped
-                buffer: true,
-                // When a user types, should they see their input?
-                // Setting this false is useful for e.g. password input
-                echo: true
+                buffer: true
             };
             Object.assign(this.config, config);
         }
@@ -1362,14 +1346,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             else {
                 // Just emit a raw input event to userspace
                 processTable.emit("consoleInput", { raw: true });
-            }
-            // Echo input to the terminal so the user sees
-            // what is being typed
-            if (this.config.echo) {
-                // Only echo if the key is echoable
-                if (isEchoable(key)) {
-                    this.writeRaw(key);
-                }
             }
         }
     }
