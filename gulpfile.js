@@ -50,8 +50,11 @@ gulp.task("fsh", () => build("fsh", "src/userspace/fsh/index.js"));
 // The Javascript SHell
 gulp.task("jsh", () => build("jsh", "src/userspace/jsh/index.js"));
 
+// ls
+gulp.task("ls", () => build("ls", "src/userspace/bin/ls.js"));
+
 // Get the builds out of the way, before we inject them into the kernel
-gulp.task("builds", ["kernel", "lib", "init", "fsh", "jsh"]);
+gulp.task("builds", ["kernel", "lib", "init", "fsh", "jsh", "ls"]);
 
 // Convert a file's contents into a JSON-safe string
 const jsStringEmbed = path => JSON.stringify(fs.readFileSync(path).toString());
@@ -68,6 +71,8 @@ gulp.task("injections", ["builds"], () =>
     .pipe(inject.replace(/\"inject-fsh\"/, jsStringEmbed("build/fsh.js")))
     // Inject jsh
     .pipe(inject.replace(/\"inject-jsh\"/, jsStringEmbed("build/jsh.js")))
+    // ls
+    .pipe(inject.replace(/\"inject-ls\"/, jsStringEmbed("build/ls.js")))
     // Inject version from package.json
     .pipe(inject.replace(/inject-version/, require("./package.json").version))
     // Output to dist/
