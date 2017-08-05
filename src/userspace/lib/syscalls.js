@@ -74,6 +74,16 @@ export async function exec(path, argv = []) {
 }
 
 /**
+ * Exit the current process (terminate)
+ * @async
+ * 
+ * @example sys.exit()
+ */
+export async function exit() {
+  return call("exit", []);
+}
+
+/**
  * Check if a file exists
  * @async
  * @param {string} path

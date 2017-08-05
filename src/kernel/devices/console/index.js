@@ -1,12 +1,12 @@
 import proc from "../../proc/index.js";
-import LineBuffer from "../../../misc/linebuffer.js";
+import LineEditor from "../../../misc/line_editor.js";
 
 class Console {
   constructor(config = {}) {
     // This line buffer is used so that the user can edit
     // typing mistakes before the input is read by a program
-    this.lineBuffer = new LineBuffer(
-      // Bind the functions before passing them to LineBuffer.
+    this.lineEditor = new LineEditor(
+      // Bind the functions before passing them to the line editor.
       this.write.bind(this),
       proc.emit.bind(proc)
     );
@@ -19,7 +19,7 @@ class Console {
   }
 
   read() {
-    return this.lineBuffer.read();
+    return this.lineEditor.read();
   }
 
   // Raw terminal write function that terminal emulators override
@@ -36,7 +36,7 @@ class Console {
   handle(key) {
     // Pass the key to the line buffer
     if (this.config.buffer) {
-      this.lineBuffer.handle(key);
+      this.lineEditor.handle(key);
     } else {
       // Just emit a raw input event to userspace
       proc.emit("consoleInput", { raw: true });

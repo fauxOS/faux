@@ -65,6 +65,15 @@ export function exec(process, msgID, [inputPath, argv]) {
   }
 }
 
+// Terminate the process that calls this
+export function exit(process, msgID, args) {
+  try {
+    process.worker.terminate();
+  } catch (err) {
+    return fail(process, msgID, err);
+  }
+}
+
 // Check if a file exists
 export function exists(process, msgID, [inputPath]) {
   if (typeof inputPath !== "string") {

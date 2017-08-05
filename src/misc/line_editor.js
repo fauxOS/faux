@@ -1,6 +1,6 @@
 import { DoublyLinkedList } from "./lists.js";
 
-export default class LineBuffer {
+export default class LineEditor {
   constructor(write, emit) {
     // Write function to write raw data to the terminal
     this.write = write || async function() {};
@@ -10,16 +10,19 @@ export default class LineBuffer {
     // This buffer allows line edition before the user
     // sends input to the program.
     this.buffer = new DoublyLinkedList();
+    // History of buffers typed before
+    this.history = [];
+    this.historyIndex = 0;
     // Index of the cursor within the buffer
     this.cursorIndex = 0;
     // Input that hasn't been read yet, but is out of the buffer
-    this.input = "";
+    this.readable = "";
   }
 
-  // Return and clear the input buffer
+  // Return and clear the readable buffer
   read() {
-    const str = this.input;
-    this.input = "";
+    const str = this.readable;
+    this.readable = "";
     return str;
   }
 
@@ -47,6 +50,12 @@ export default class LineBuffer {
         this.buffer.add(this.cursorIndex, key);
         this.update(this.buffer.length - 1, this.cursorIndex + 1);
     }
+  }
+
+  saveBuffer() {
+    // Add a copy of this buffer to the history
+    const bufferCopy = Object.assign(new DoublyLinkedList(), this.buffer);
+    this.history.push(bufferCopy);
   }
 
   cursorToStart() {
@@ -91,9 +100,9 @@ export default class LineBuffer {
     this.buffer.push("\n");
 
     // Stringify and push the buffer for reading
-    this.input += this.buffer.toString();
-    // Emit event sending input, while clearing the buffer
+    this.readable += this.buffer.toString();
     this.emit("consoleInput", { buffered: true });
+    this.saveBuffer();
     // Reset the buffer
     this.buffer = new DoublyLinkedList();
 
@@ -108,9 +117,23 @@ export default class LineBuffer {
     switch (key) {
       case "\x1b[A": // Up
         detail.arrowUp = true;
+        if (!(this.historyIndex === 0)) {
+          const oldBufferLength = this.buffer.length;
+          this.saveBuffer();
+          this.historyIndex--;
+          this.buffer = this.history[this.historyIndex];
+          this.update(oldBufferLength, this.buffer.length);
+        }
         break;
       case "\x1b[B": // Down
         detail.arrowDown = true;
+        if (!(this.historyIndex === this.history.length)) {
+          const oldBufferLength = this.buffer.length;
+          this.saveBuffer();
+          this.historyIndex++;
+          this.buffer = this.history[this.historyIndex];
+          this.update(oldBufferLength, this.buffer.length);
+        }
         break;
       case "\x1b[C": // Right
         detail.arrowRight = true;

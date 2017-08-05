@@ -12,3 +12,6 @@ try {
 } catch (err) {
   println(cli.colorize("red", err));
 }
+
+// Terminate this process immeditately
+sys.exit();
