@@ -1260,7 +1260,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         // Discard last written character
         backSpace() {
             // We can only delete characters in the buffer
-            if (this.buffer.length > 0) {
+            if (this.cursorIndex > 0) {
                 this.buffer.remove(this.cursorIndex - 1);
                 this.update(this.buffer.length + 1, this.cursorIndex - 1);
             }
@@ -1382,7 +1382,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     root.addInode(["bin"], "ls", new Inode({
         file: true,
         executable: true,
-        contents: "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})},ls=function(){\"use strict\";function ls(path=\"./\"){return __awaiter(this,void 0,void 0,function*(){const fd=sys.open(path),contents=sys.readdir(fd);let formatted=contents.join(\"  \");return println(formatted),contents})}try{ls(argv[0])}catch(err){println(cli.colorize(\"red\",err))}return ls}();"
+        contents: "var __awaiter=this&&this.__awaiter||function(thisArg,_arguments,P,generator){return new(P||(P=Promise))(function(resolve,reject){function fulfilled(value){try{step(generator.next(value))}catch(e){reject(e)}}function rejected(value){try{step(generator[\"throw\"](value))}catch(e){reject(e)}}function step(result){result.done?resolve(result.value):new P(function(resolve){resolve(result.value)}).then(fulfilled,rejected)}step((generator=generator.apply(thisArg,_arguments||[])).next())})},ls=function(){\"use strict\";function ls(path=\"./\"){return __awaiter(this,void 0,void 0,function*(){const fd=yield sys.open(path),contents=yield sys.readdir(fd);let formatted=contents.join(\"  \");return yield println(formatted),contents})}try{ls(argv[0])}catch(err){println(cli.colorize(\"red\",err))}return ls}();"
     }));
     // Virtual Filesystem Switch
     const fs = new VFS(root);

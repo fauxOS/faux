@@ -78,7 +78,7 @@ export default class LineBuffer {
   // Discard last written character
   backSpace() {
     // We can only delete characters in the buffer
-    if (this.buffer.length > 0) {
+    if (this.cursorIndex > 0) {
       this.buffer.remove(this.cursorIndex - 1);
       this.update(this.buffer.length + 1, this.cursorIndex - 1);
     } else {

@@ -1,8 +1,8 @@
 export default async function ls(path = "./") {
-  const fd = sys.open(path);
-  const contents = sys.readdir(fd);
+  const fd = await sys.open(path);
+  const contents = await sys.readdir(fd);
   let formatted = contents.join("  ");
-  println(formatted);
+  await println(formatted);
   return contents;
 }
 
