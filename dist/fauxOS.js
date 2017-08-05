@@ -1270,7 +1270,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
         // Save the last line and start a new one
         enter(shiftKey) {
-            this.buffer.add(this.cursorIndex, "\n");
+            this.buffer.push("\n");
             // Stringify and push the buffer for reading
             this.input += this.buffer.toString();
             // Emit event sending input, while clearing the buffer
