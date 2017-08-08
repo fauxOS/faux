@@ -55,7 +55,7 @@ export default class LineEditor {
   saveBuffer() {
     // Add a copy of this buffer to the history
     const bufferCopy = Object.assign(new DoublyLinkedList(), this.buffer);
-    this.history.push(bufferCopy);
+    this.history[this.historyIndex] = bufferCopy;
   }
 
   cursorToStart() {
@@ -126,7 +126,7 @@ export default class LineEditor {
         break;
       case "\x1b[B": // Down
         detail.arrowDown = true;
-        if (!(this.historyIndex === this.history.length)) {
+        if (!(this.historyIndex === this.history.length - 1)) {
           const oldBufferLength = this.buffer.length;
           this.saveBuffer();
           this.historyIndex++;
