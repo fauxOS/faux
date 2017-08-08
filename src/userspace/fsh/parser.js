@@ -4,13 +4,12 @@
 import lex from "./lexer.js";
 
 function parseCommand(tokens) {
-  const command = {
-    type: "simple"
+  return {
+    type: "simple",
+    argv: tokens,
+    argc: tokens.length,
+    name: tokens[0]
   };
-  command.argv = tokens;
-  command.argc = tokens.length;
-  command.name = tokens[0];
-  return command;
 }
 
 export default function parse(input = "") {
@@ -20,8 +19,8 @@ export default function parse(input = "") {
   };
   const commands = lex(input);
   // Parse the tokenized commands
-  for (let i = 0; i < commands.length; i++) {
-    let parsed = parseCommand(commands[i]);
+  for (let i in commands) {
+    const parsed = parseCommand(commands[i]);
     AST.commands[i] = parsed;
   }
   return AST;

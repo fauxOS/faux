@@ -1,3 +1,10 @@
-import parse from "./parser.js";
+import evaluate from "./evaluate.js";
 
-parse("echo hello, world");
+addEventListener("consoleInput", async function({ detail }) {
+  if (detail.buffered) {
+    const input = await process.stdin.read();
+    evaluate(input);
+  }
+});
+
+prompt();
