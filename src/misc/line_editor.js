@@ -97,10 +97,8 @@ export default class LineEditor {
 
   // Save the last line and start a new one
   enter(shiftKey) {
-    this.buffer.push("\n");
-
     // Stringify and push the buffer for reading
-    this.readable += this.buffer.toString();
+    this.readable += this.buffer.toString() + "\n";
     this.emit("consoleInput", { buffered: true });
     this.saveBuffer();
     // Reset the buffer
@@ -108,6 +106,7 @@ export default class LineEditor {
 
     // Write out a line feed
     this.write("\n");
+    this.historyIndex++;
     this.cursorIndex = 0;
   }
 

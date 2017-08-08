@@ -1288,15 +1288,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
         // Save the last line and start a new one
         enter(shiftKey) {
-            this.buffer.push("\n");
             // Stringify and push the buffer for reading
-            this.readable += this.buffer.toString();
+            this.readable += this.buffer.toString() + "\n";
             this.emit("consoleInput", { buffered: true });
             this.saveBuffer();
             // Reset the buffer
             this.buffer = new DoublyLinkedList();
             // Write out a line feed
             this.write("\n");
+            this.historyIndex++;
             this.cursorIndex = 0;
         }
         // Handle direction changes
