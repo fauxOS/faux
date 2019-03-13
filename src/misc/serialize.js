@@ -1,51 +1,35 @@
 import { type } from "./utils.js";
 
-function serializeFunction(value, currentDepth = 0) {
-  switch (currentDepth) {
-    case 0:
-      // Entire function text coerced to a string
-      return value + "";
-      break;
-    case 1:
-      return value.name ? `[Function: ${value.name}]` : "[Function]";
-      break;
-    case 2:
-    default:
-      return "[Function]";
-  }
-}
+const serialize = (value, depth=0, maxDepth=5) =>
+  depth > maxDepth
+  ? "[...]"
+: value == null
+  ? "null"
+: value == undefined
+  ? "undefined"
+: type(value) == "Object"
+  ? (() => {
+      const ret = Object.keys(value)
+        .reduce((acc, key) =>
+          Object.assign({}, acc, { [key]: serialize(value[key], depth+1, maxDepth) })
+        , {})
+      return depth == 0
+        ? JSON.stringify(ret, null, 2)
+        : ret
+    })()
+: type(value) == "Array"
+  ? (() => {
+    const ret = value.map(x => serialize(x, depth+1, maxDepth))
+    return depth == 0
+      ? JSON.stringify(ret, null, 2)
+      : ret
+  })()
+: value.inspect
+  ? value.inpect()
+: value.toString
+  ? value.toString()
+: value.name
+  ? value.name
+: type(value)
 
-export default function serialize(value, depthLimit = 5, currentDepth = 0) {
-  if (currentDepth >= depthLimit) {
-    return "[...]";
-  }
-  let ret;
-  switch (type(value)) {
-    case "Object":
-      ret = {};
-      Object.keys(value).forEach(key => {
-        ret[key] = serialize(value[key], depthLimit, currentDepth + 1);
-      });
-      break;
-    case "Array":
-      ret = [];
-      for (let i in value) {
-        ret[i] = serialize(value[i], depthLimit, currentDepth + 1);
-      }
-      break;
-    case "Function":
-      return serializeFunction(value, currentDepth);
-      break;
-    case "Symbol":
-      return value.toString();
-      break;
-    default:
-      return value.toString();
-  }
-  // If this is the first call (top level), then return the final string
-  if (currentDepth === 0) {
-    return JSON.stringify(ret, null, 2);
-  } else {
-    return ret;
-  }
-}
+export default serialize;
