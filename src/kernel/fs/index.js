@@ -8,48 +8,45 @@ import devices from "../devices/index.js";
 const root = new OFS();
 
 // Top level directories
-root.mkdir(["bin"]);
-root.mkdir(["dev"]);
-root.mkdir(["dev", "dom"]);
-root.mkdir(["home"]);
-root.mkdir(["log"]);
-root.mkdir(["tmp"]);
+root.createDirectory(["bin"]);
+root.createDirectory(["dev"]);
+root.createDirectory(["dev", "dom"]);
+root.createDirectory(["home"]);
+root.createDirectory(["log"]);
+root.createDirectory(["tmp"]);
 
 // Faux SHell
 root.addInode(
-  ["bin"],
-  "fsh",
+  ["bin", "fsh"],
   new Inode({
     file: true,
     executable: true,
-    contents: "inject-fsh"
+    raw: "inject-fsh"
   })
 );
 // Javascript SHell
 root.addInode(
-  ["bin"],
-  "jsh",
+  ["bin", "jsh"],
   new Inode({
     file: true,
     executable: true,
-    contents: "inject-jsh"
+    raw: "inject-jsh"
   })
 );
 // ls
 root.addInode(
-  ["bin"],
-  "ls",
+  ["bin", "ls"],
   new Inode({
     file: true,
     executable: true,
-    contents: "inject-ls"
+    raw: "inject-ls"
   })
 );
 
-// Virtual Filesystem Switch
+// Virtual Filesystem
 const fs = new VFS(root);
 
-// Mount other file systems
+// Mount file systems
 fs.mount(new DOMFS(), "/dev/dom");
 fs.mount(devices, "/dev");
 

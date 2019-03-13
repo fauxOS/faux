@@ -7,10 +7,7 @@ function serializeFunction(value, currentDepth = 0) {
       return value + "";
       break;
     case 1:
-      if (!value.name) {
-        return "[Function]";
-      }
-      return `[Function: ${value.name}]`;
+      return value.name ? `[Function: ${value.name}]` : "[Function]";
       break;
     case 2:
     default:
@@ -24,28 +21,26 @@ export default function serialize(value, depthLimit = 5, currentDepth = 0) {
   }
   let ret;
   switch (type(value)) {
-    case "object":
+    case "Object":
       ret = {};
       Object.keys(value).forEach(key => {
         ret[key] = serialize(value[key], depthLimit, currentDepth + 1);
       });
       break;
-    case "array":
+    case "Array":
       ret = [];
       for (let i in value) {
         ret[i] = serialize(value[i], depthLimit, currentDepth + 1);
       }
       break;
-    case "function":
+    case "Function":
       return serializeFunction(value, currentDepth);
       break;
-    case "symbol":
+    case "Symbol":
       return value.toString();
       break;
-    // All other values
     default:
-      // Coerce to string
-      return value + "";
+      return value.toString();
   }
   // If this is the first call (top level), then return the final string
   if (currentDepth === 0) {

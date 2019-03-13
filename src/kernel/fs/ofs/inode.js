@@ -1,59 +1,46 @@
+import { Ok, Err } from "../../../misc/fp.js";
+
 export default class Inode {
   constructor(config = {}) {
     // Defaults
-    this.links = 1;
     this.file = false;
+    this.directory = false;
+    this.children = undefined;
     this.executable = false;
-    this.dir = false;
+    this.raw = undefined;
     // Overwrite defaults
     Object.assign(this, config);
   }
 
   // Read file contents
-  read() {
-    if (this.file) {
-      return this.contents;
-    } else {
-      throw new Error("Not a file");
-    }
+  // Void -> Result(String)
+  readFile() {
+    return this.file ? Ok(this.raw) : Err("Not a file");
   }
 
   // Overwrite file contents
-  write(contents) {
-    if (this.file) {
-      this.contents = contents;
-      return;
-    } else {
-      throw new Error("Not a file");
-    }
+  // String -> Result(String)
+  writeFile(contents) {
+    return this.file ? Ok((this.raw = contents)) : Err("Not a file");
   }
 
   // Append file contents
-  append(contents) {
-    if (this.file) {
-      this.contents += contents;
-      return;
-    } else {
-      throw new Error("Not a file");
-    }
+  // String -> Result(String)
+  appendFile(contents) {
+    return this.file ? Ok((this.raw += contents)) : Err("Not a file");
   }
 
   // Truncate file contents
-  truncate() {
-    if (this.file) {
-      this.contents = "";
-      return;
-    } else {
-      throw new Error("Not a file");
-    }
+  // Void -> Result(String)
+  truncateFile() {
+    return this.file ? Ok((this.raw = "")) : Err("Not a file");
   }
 
   // Read a directory
-  readdir() {
-    if (this.dir) {
-      return Object.keys(this.children);
-    } else {
-      throw new Error("Not a directory");
-    }
+  // Void -> Result(Array(String))
+  readDirectory() {
+    return this.children
+      ? Ok(Object.keys(this.children))
+      : Err("Not a directory");
   }
 }

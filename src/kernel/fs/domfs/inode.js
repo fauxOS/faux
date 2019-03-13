@@ -1,62 +1,58 @@
+import { Ok, Err } from "../../../misc/fp.js";
+
 export default class Inode {
   constructor(config = {}) {
     // Defaults
-    this.links = 1;
     this.file = true;
+    this.directory = true;
     this.executable = false;
-    this.dir = true;
+    this.raw = undefined;
     // Overwrite defaults
     Object.assign(this, config);
   }
 
-  get contents() {
-    return this.raw.innerHTML;
-  }
-
-  set contents(contents) {
-    return (this.raw.innerHTML = contents);
-  }
-
+  // Array(HTMLElement)
   get children() {
-    const dir = [];
-    const children = this.raw.children;
-    for (let i = 0; i < children.length; i++) {
-      const child = children[i];
+    return Array.from(this.raw.children).flatMap((child, i) => {
       const name = child.localName;
       const id = child.id ? "#" + child.id : "";
       const classes = child.className
         ? "." + child.className.replace(/\s+/g, ".")
         : "";
-      // Push a css selector for the child
-      dir.push(name + id + classes);
-      // Push a css :nth-child() selector number
-      dir.push(i + 1);
-    }
-    return dir;
+      return [
+        name + id + classes, // A css selector for the child
+        i + 1 // A complementary css :nth-child() selector number
+      ];
+    });
   }
 
   // Read file contents
-  read() {
-    return this.contents;
+  // Void -> Result(String)
+  readFile() {
+    return Ok(this.raw.innerHTML);
   }
 
   // Overwrite file contents
-  write(contents) {
-    this.contents = contents;
+  // String -> Result(String)
+  writeFile(contents) {
+    return Ok((this.raw.innerHTML = contents));
   }
 
   // Append file contents
-  append(contents) {
-    this.contents += contents;
+  // String -> Result(String)
+  appendFile(contents) {
+    return Ok((this.raw.innerHTML += contents));
   }
 
   // Truncate file contents
-  truncate() {
-    this.contents = "";
+  // Void -> Result(String)
+  truncateFile() {
+    return Ok((this.raw.innerHTML = ""));
   }
 
   // Read a directory
-  readdir() {
-    return Object.keys(this.children);
+  // Void -> Result(Array(String))
+  readDirectory() {
+    return Ok(Object.keys(this.children));
   }
 }

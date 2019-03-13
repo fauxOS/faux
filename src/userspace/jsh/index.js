@@ -1,11 +1,11 @@
 import evaluate from "./evaluate.js";
-import init from "./init.js";
+import prompt from "./prompt.js";
 
-addEventListener("consoleInput", async function({ detail }) {
-  if (detail.buffered) {
-    const input = await process.stdin.read();
-    evaluate(input);
-  }
-});
+addEventListener(
+  "consoleInput",
+  ({ detail }) => (detail.buffered ? process.stdin.read().then(evaluate) : null)
+);
 
-init();
+// prettier-ignore
+println(`Welcome to Faux's ${cli.colorize("bold", "J")}avascript ${cli.colorize("bold", "SH")}ell!\n`)
+  .then(() => prompt());

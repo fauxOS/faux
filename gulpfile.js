@@ -5,23 +5,16 @@ const inject = require("gulp-inject-string");
 const babili = require("gulp-babili");
 const rename = require("gulp-rename");
 const rollup = require("gulp-better-rollup");
-const ts = require("gulp-typescript");
 
 // A versatile compilation function
 // Uses Rollup to resolve dependencies, then minifies the result
-const build = (name, path, minify = true, format = "iife") =>
+const build = (moduleName, path, minify = true, format = "iife") =>
   gulp
     .src(path)
     .pipe(
       rollup({
-        moduleName: name,
+        moduleName,
         format
-      })
-    )
-    .pipe(
-      ts({
-        allowJs: true,
-        target: "es6"
       })
     )
     .pipe(
@@ -32,7 +25,7 @@ const build = (name, path, minify = true, format = "iife") =>
         })
       )
     )
-    .pipe(rename(name + ".js"))
+    .pipe(rename(moduleName + ".js"))
     .pipe(gulp.dest("build/"));
 
 // The kernel is a foundation for userspace, which gets injected in later on

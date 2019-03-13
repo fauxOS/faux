@@ -7,7 +7,6 @@ function parseCommand(tokens) {
   return {
     type: "simple",
     argv: tokens,
-    argc: tokens.length,
     name: tokens[0]
   };
 }

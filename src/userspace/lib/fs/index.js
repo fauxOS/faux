@@ -8,7 +8,7 @@
  */
 export async function readFile(path, mode = "r") {
   const fd = await sys.open(path, mode);
-  const data = sys.read(fd);
+  const data = sys.readFile(fd);
   sys.close(fd);
   return data;
 }
@@ -23,7 +23,7 @@ export async function readFile(path, mode = "r") {
  */
 export async function writeFile(path, data = "", mode = "w") {
   const fd = await sys.open(path, mode);
-  sys.write(fd, data);
+  sys.writeFile(fd, data);
   sys.close(fd);
   return;
 }

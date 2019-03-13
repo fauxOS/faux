@@ -2,6 +2,7 @@ import * as sys from "./syscalls.js";
 
 import browser from "../../misc/browser.js";
 
+import * as fp from "../../misc/fp.js";
 import * as path from "../../misc/path.js";
 import { http } from "../../misc/utils.js";
 import * as fs from "./fs/index.js";
@@ -16,6 +17,7 @@ Object.assign(self, {
 
   browser,
 
+  fp,
   path,
   http,
   fs,
@@ -43,10 +45,10 @@ if (typeof CustomEvent === "undefined") {
 
 // This transforms message events into native js events
 addEventListener("message", message => {
-  const msg = message.data;
-  if (msg.type === "event" && msg.name) {
+  const { type, name, detail } = message.data;
+  if (type === "event" && name) {
     // Fire the event natively
-    const event = new CustomEvent(msg.name, { detail: msg.detail });
+    const event = new CustomEvent(name, { detail });
     dispatchEvent(event);
   }
 });

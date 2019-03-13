@@ -1,17 +1,11 @@
-export default async function ls(path = "./") {
-  const fd = await sys.open(path);
-  const contents = await sys.readdir(fd);
-  let formatted = contents.join("  ");
-  await println(formatted);
-  return contents;
-}
+export default ls;
 
-// Don't implement switches, flags, and all that yet
-try {
-  ls(argv[0]);
-} catch (err) {
-  println(cli.colorize("red", err));
-}
+const ls = ([name, ...args]) =>
+  sys
+    .open(args[0] || "./")
+    .then(fd => sys.readDirectory(fd))
+    .then(contents => contents.join(" "))
+    .then(println)
+    .catch(err => println(cli.colorize("red", err.toString())));
 
-// Terminate this process immeditately
-sys.exit();
+ls(argv).then(() => sys.exit());

@@ -1,50 +1,41 @@
 import Inode from "./inode.js";
+import { Ok, Err, Just, Nothing, propM, propR } from "../../../misc/fp.js";
 
 export default class DOMFS {
-  constructor() {
-    // In the DOM context, this alias makes sense
-    this.mkdir = this.create;
-  }
-
+  // [String] -> Result(Inode)
   resolve(pathArray) {
-    let element;
-    // Return root if pathArray is empty
-    if (pathArray.length === 0) {
-      // Return the document root element
-      element = document.querySelector("*");
-    } else {
-      let selector = " " + pathArray.join(" > ");
-      // For child selection by index
-      // element.children[0] becomes /dev/dom/element/1
-      selector = selector.replace(/ (\d)/g, " :nth-child($1)");
-      element = document.querySelector(selector);
-    }
-    if (!element) {
-      throw new Error("Failed to resolve");
-    }
-    // Return an inode that VFS can understand
-    return new Inode({
-      raw: element
-    });
+    // element.children[0] becomes /dev/dom/element/1
+    const selector =
+      pathArray.length === 0
+        ? "*" // Return root if pathArray is empty
+        : (" " + pathArray.join(" > ")).replace(/ (\d)/g, " :nth-child($1)");
+    const element = document.querySelector(selector);
+    return element ? Ok(new Inode({ raw: element })) : Err("Failed to resolve");
   }
 
   // Create a new element
-  create(pathArray) {
-    const parent = this.resolve(pathArray.slice(0, -1));
-    // When creating an element, you are only allowed to use the element name
-    // e.g. create("/dev/dom/body/#container/span")
-    // You cannot create a class, index, or id
+  // [String] -> Result(Inode)
+  createFile(pathArray) {
+    const parent = pathArray.slice(0, -1);
     const name = pathArray.slice(-1)[0];
     const element = document.createElement(name);
-    // Access the DOM node in parent.raw
-    parent.raw.appendChild(element);
-    // Again, so that VFS understands
-    return new Inode({
-      raw: element
-    });
+    return this.resolve(parent)
+      .chain(propR("raw"))
+      .chain(parentEl => parentEl.appendChild(element))
+      .map(() => new Inode({ raw: element }));
   }
 
-  // In the DOM, link and unlink make no sense
-  link() {}
-  unlink() {}
+  // Only makes sense in the DOM, all nodes are both files and directories
+  // [String] -> Result(Inode)
+  createDirectory(pathArray) {
+    return this.createFile(pathArray);
+  }
+
+  // Remove
+  // [String] -> Result(Boolean)
+  remove(pathArray) {
+    return this.resolve(pathArray)
+      .chain(propR("raw"))
+      .chain(element => element.remove());
+  }
 }

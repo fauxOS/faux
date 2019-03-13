@@ -24,7 +24,7 @@ class Console {
 
   // Raw terminal write function that terminal emulators override
   writeRaw(str) {
-    console.warn(`Unhandled console write: ${contents}`);
+    console.warn(`Unhandled console write: ${str}`);
   }
 
   // Add a carriage-return to each line-feed, as terminal emulators require it

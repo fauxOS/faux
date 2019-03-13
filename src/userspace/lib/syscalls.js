@@ -1,25 +1,16 @@
 // Generate a new random message id
-function newID(length = 10) {
-  // Make an array of alphanumeric characters
-  const chars = ("0123456789" +
-    "abcdefghiklmnopqrstuvwxyz" +
-    "ABCDEFGHIJKLMNOPQRSTUVWXTZ").split("");
-  let id = "";
-  for (let i = 0; i < length; i++) {
-    // Create a random index tht has a maximum possible value of chars.length - 1
-    const randomIndex = Math.floor(Math.random() * chars.length);
-    // Append some random character to the id
-    id += chars[randomIndex];
-  }
-  return id;
-}
+const newID = length =>
+  [...Array(length).keys()]
+    .map(_ => Math.round(Math.random() * 2 ** 16))
+    .map(n => String.fromCharCode(n))
+    .join("");
 
 // Make a request from the kernel with a system call
 // This wrapper returns a promise for every call
 // Usage: call("callName", ["arg1", "arg2"]).then(handleResult);
-function call(name = "", args = []) {
-  // We use a message ID so we can order the kernel's responses
-  const id = newID();
+function call(name, args = []) {
+  // We use a message ID so that we can order the kernel's responses
+  const id = newID(5);
   // This is just the system call request format
   postMessage({
     type: "syscall",
@@ -27,22 +18,17 @@ function call(name = "", args = []) {
     args,
     id
   });
+
   return new Promise((resolve, reject) => {
     function listener(message) {
       const msg = message.data;
-      // Ignore messages without the same id
-      if (msg.id === id) {
-        // Resolve when we get a success
-        if (msg.status === "success") {
-          resolve(msg.result);
-        } else {
-          // Reject with the reason for error
-          reject(msg.reason);
-        }
-        // Make sure we remove this event listener
-        removeEventListener("message", listener);
-      }
+      // Short circuit ignore messages without the same id
+      if (msg.id !== id) return;
+
+      removeEventListener("message", listener);
+      msg.status === "success" ? resolve(msg.result) : reject(msg.reason);
     }
+
     addEventListener("message", listener);
   });
 }
@@ -161,10 +147,10 @@ export async function dup2(fd1, fd2) {
  * @param {number} fd
  * @return {Promise<string>} data - file contents
  * 
- * @example const contents = await sys.read(fd)
+ * @example const contents = await sys.readFile(fd)
  */
-export async function read(fd) {
-  return call("read", [fd]);
+export async function readFile(fd) {
+  return call("readFile", [fd]);
 }
 
 /**
@@ -173,10 +159,10 @@ export async function read(fd) {
  * @param {number} fd
  * @return {Promise<array>} children - directory entries
  * 
- * @example const dirArray = await sys.readdir(fd)
+ * @example const dirArray = await sys.readDirectory(fd)
  */
-export async function readdir(fd) {
-  return call("readdir", [fd]);
+export async function readDirectory(fd) {
+  return call("readDirectory", [fd]);
 }
 
 /**
@@ -187,8 +173,8 @@ export async function readdir(fd) {
  * 
  * @example sys.write(1, "hello world")
  */
-export async function write(fd, data = "") {
-  return call("write", [fd, data]);
+export async function writeFile(fd, data = "") {
+  return call("writeFile", [fd, data]);
 }
 
 /**
@@ -196,32 +182,32 @@ export async function write(fd, data = "") {
  * @async
  * @param {string} path
  * 
- * @example sys.mkdir("/home/newdir")
+ * @example sys.createDirectory("/home/newdir")
  */
-export async function mkdir(path) {
-  return call("mkdir", [path]);
+export async function createDirectory(path) {
+  return call("createDirectory", [path]);
 }
 
 /**
- * Remove a hard link, what rm does
+ * Remove, what rm does
  * @async
  * @param {string} path
  * 
- * @example sys.rm("/home/oldfile")
+ * @example sys.remove("/home/oldfile")
  */
-export async function unlink(path) {
-  return call("unlink", [path]);
+export async function remove(path) {
+  return call("remove", [path]);
 }
 
 /**
- * Get the currect working directory
+ * Get the current working directory
  * @async
  * @return {Promise<string>} current working directory
  * 
- * @example const cwd = await sys.pwd()
+ * @example const cwd = await sys.currentDirectory()
  */
-export async function pwd() {
-  return call("pwd", []);
+export async function currentDirectory() {
+  return call("currentDirectory", []);
 }
 
 /**
@@ -229,10 +215,10 @@ export async function pwd() {
  * @async
  * @param {string} path - new working directory
  * 
- * @example sys.chdir("/home")
+ * @example sys.changeDirectory("/home")
  */
-export async function chdir(path = "/home") {
-  return call("chdir", [path]);
+export async function changeDirectory(path = "/home") {
+  return call("changeDirectory", [path]);
 }
 
 /**

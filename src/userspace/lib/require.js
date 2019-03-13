@@ -21,16 +21,5 @@ async function loadFile(path) {
   throw new Error("not found");
 }
 
-// This eval's in global webworker context and returns what eval returns
-export default async function load(requirePath = "") {
-  if (typeof requirePath !== "string") {
-    throw new Error("argument is not a string");
-  }
-  // Try loading as a file
-  try {
-    return await loadFile(requirePath);
-  } catch (err) {
-    // If it fails, try to load an index file
-    return loadFile(requirePath + "/index");
-  }
-}
+export default requirePath =>
+  loadFile(requirePath).catch(_ => loadFile(requirePath + "/index"));

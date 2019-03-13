@@ -12,17 +12,15 @@ class ProcessTable {
     return this.list.push(process) - 1;
   }
 
+  // Emit an event to each specified process
   emit(name, detail, pids = Object.keys(this.list)) {
-    // Post the message to each process as specified by the pids array
-    for (let i in pids) {
-      const pid = pids[i];
-      // Post the message every process' webworker
+    pids.map(pid =>
       this.list[pid].worker.postMessage({
         type: "event",
         name,
         detail
-      });
-    }
+      })
+    );
   }
 }
 

@@ -1,3 +1,5 @@
+import { Task } from "./fp.js";
+
 export function genUUID() {
   const base = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
   return base.replace(/[xy]/g, char => {
@@ -14,59 +16,37 @@ export function genUUID() {
   });
 }
 
-export function spawnWorker(script = "") {
+export const spawnWorker = script => {
   const blob = new Blob([script], { type: "application/javascript" });
   const uri = URL.createObjectURL(blob);
   return new Worker(uri);
-}
+};
 
-export function openLocalFile(readAs = "readAsText") {
+export const openLocalFile = (readAs = "readAsText") => {
   const input = document.createElement("input");
   input.type = "file";
   input.click();
-  return new Promise(function(resolve, reject) {
-    input.onchange = function() {
+  return Task(err => res => {
+    input.onchange = () => {
       const file = input.files[0];
       const reader = new FileReader();
       reader[readAs](file);
-      reader.onloadend = function() {
-        resolve(reader.result);
-      };
+      reader.onloadend = () => res(reader.result);
     };
   });
-}
+};
 
-export function http(uri, method = "GET") {
-  return new Promise((resolve, reject) => {
-    if (!uri instanceof String) {
-      reject("URI invalid");
-    }
+export const http = (uri, method = "GET") =>
+  Task(err => res => {
     const xhr = new XMLHttpRequest();
     xhr.open(method, uri, true);
-    xhr.onload = function() {
-      if (xhr.status < 300 && xhr.status >= 200) {
-        resolve(xhr.response);
-      } else {
-        reject(xhr.status + " " + xhr.statusText);
-      }
-    };
-    xhr.onerror = function(err) {
-      reject(err);
-    };
+    xhr.onload = () =>
+      xhr.status < 300 && xhr.status >= 200
+        ? res(xhr.response)
+        : err(xhr.status + " " + xhr.statusText);
+    xhr.onerror = err;
     xhr.send();
   });
-}
 
-export function type(value) {
-  let ret = typeof value;
-  if (ret === "object") {
-    if (value === null) {
-      ret = "null";
-    } else {
-      if (value instanceof Array) {
-        ret = "array";
-      }
-    }
-  }
-  return ret;
-}
+export const type = value =>
+  Object.prototype.toString.call(value).match(/\[object (.+)\]/i)[1];

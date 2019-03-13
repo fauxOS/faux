@@ -2,13 +2,11 @@ import prompt from "./prompt.js";
 import parse from "./parser.js";
 import which from "./which.js";
 
-export default async function evaluate(str) {
-  const ast = parse(str);
-  for (let i in ast.commands) {
-    const command = ast.commands[i];
-    const execPath = await which(command.name);
-    // Actually run the program
-    sys.exec(execPath, command.argv);
-  }
-  return await prompt();
-}
+// prettier-ignore
+export default str =>
+  parse(str).commands
+    .map(command =>
+      which(command.name)
+        .then(execPath => sys.exec(execPath, command.argv))
+        .then(() => prompt())
+        .catch(console.warn));

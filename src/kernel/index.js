@@ -4,6 +4,7 @@ import * as sys from "./proc/syscalls.js";
 import * as utils from "../misc/utils.js";
 import browser from "../misc/browser.js";
 import console from "./devices/console/index.js";
+import history from "../history/index.js";
 
 export default {
   fs,
@@ -12,5 +13,6 @@ export default {
   utils,
   console,
   browser,
+  history,
   version: "inject-version"
 };

@@ -1,67 +1,38 @@
-import OFS from "../ofs/index.js";
 import { normalize, chop } from "../../../misc/path.js";
+import { propR, Ok, Err } from "../../../misc/fp.js";
 
 export default class VFS {
-  constructor(rootDrive = new OFS()) {
-    this.mounts = {
-      "/": rootDrive
-    };
+  constructor(rootFS) {
+    this.mounts = { "/": rootFS };
   }
 
   // Mount a filesystem
   mount(fs, mountPoint) {
     const normalized = normalize(mountPoint);
-    const inode = this.resolve(normalized);
-    if (inode && inode.dir) {
-      this.mounts[normalized] = fs;
-      return normalized;
-    } else {
-      throw new Error("No directory to mount to");
-    }
+    this.resolve(normalized)
+      .chain(propR("directory"))
+      .map(
+        isDirectory =>
+          isDirectory
+            ? Ok((this.mounts[normalized] = fs))
+            : Err("No directory to mount to")
+      );
   }
 
   // Unmount a filesystem by mount point
   unmount(mountPoint) {
     const normalized = normalize(mountPoint);
-    this.mounts[normalized] = null;
-  }
-
-  // Resolve the path to the mounted filesystem
-  // This is the first step to trace a path, before any data containers (inodes etc) are involved
-  getMountPoint(path) {
-    // Get the segments of a path like this : ["/", "/path", "/path/example"]
-    const segments = (() => {
-      const pathArray = chop(path);
-      const segments = [];
-      // Applies to any other path
-      for (let i = 0; i <= pathArray.length; i++) {
-        let matchPath = pathArray.slice(0, i);
-        segments.push("/" + matchPath.join("/"));
-      }
-      return segments;
-    })();
-    // Array of resolved mounted disks
-    const resolves = [];
-    // Iterate all of the mount points
-    const mountPoints = Object.keys(this.mounts).sort(
-      (a, b) => a.length - b.length
-    );
-    mountPoints.forEach(point => {
-      for (let i in segments) {
-        if (segments[i] === point) {
-          resolves.push(point);
-        }
-      }
-    });
-    // The most relevent mount point will be the last one resolved
-    return resolves.pop();
+    return Ok(delete this.mounts[normalized]);
   }
 
   // Resolve a path to its mounted filesystem, and get its absolute path
   // relative to its local file system's root
   getPathInfo(path) {
     const normalized = normalize(path);
-    const mountPoint = this.getMountPoint(normalized);
+    const mountPoint = Object.keys(this.mounts)
+      .filter(mount => normalized.startsWith(mount))
+      .sort((a, b) => chop(b).length - chop(a).length)[0];
+
     const localFsPath = normalized.substring(mountPoint.length) || "/";
     return {
       localFs: this.mounts[mountPoint],
@@ -70,29 +41,30 @@ export default class VFS {
   }
 
   // Resolve a path to the fs provided data container
+  // String -> Result(Inode)
   resolve(path) {
     const { localFs, localFsPathArray } = this.getPathInfo(path);
     return localFs.resolve(localFsPathArray);
   }
 
   // Make a new file
-  create(path) {
+  // String -> Result(Inode)
+  createFile(path) {
     const { localFs, localFsPathArray } = this.getPathInfo(path);
-    return localFs.create(localFsPathArray);
+    return localFs.createFile(localFsPathArray);
   }
 
   // Make a new directory
-  mkdir(path) {
+  // String -> Result(Inode)
+  createDirectory(path) {
     const { localFs, localFsPathArray } = this.getPathInfo(path);
-    return localFs.mkdir(localFsPathArray);
+    return localFs.createDirectory(localFsPathArray);
   }
 
-  // Hard link newPath to the same inode as oldPath
-  link(oldPath, newPath) {}
-
-  // Unlink (remove) a file
-  unlink(path) {
+  // Remove
+  // String -> Result(Boolean)
+  remove(path) {
     const { localFs, localFsPathArray } = this.getPathInfo(path);
-    localFs.unlink(localFsPathArray);
+    return localFs.remove(localFsPathArray);
   }
 }
