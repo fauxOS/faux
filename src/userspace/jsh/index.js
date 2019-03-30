@@ -34,8 +34,11 @@ const insert = key => {
 }
 
 const remove = _ => {
-  state.input.splice(state.inputPosition-1, 1)
+  if (state.inputPosition == 0) {
+    return
+  }
   state.inputPosition--
+  state.input.splice(state.inputPosition, 1)
   const trailing = state.input.slice(state.inputPosition)
   print(
     cli.control.cursor.move.left() + cli.control.cursor.savePosition() + cli.control.line.eraseEnd() + trailing.join("") + cli.control.cursor.restorePosition()
@@ -59,10 +62,26 @@ const arrow = key =>
 : key == "\x1b[B"
     ? historyForward()
 : key == "\x1b[C"
-    ? state.inputPosition++ && print(cli.control.cursor.move.right())
+    ? right()
 : key == "\x1b[D"
-    ? state.inputPosition-- && print(cli.control.cursor.move.left())
+    ? left()
     : null
+
+const right = () => {
+  if (state.inputPosition == state.input.length) {
+    return
+  }
+  state.inputPosition++
+  print(cli.control.cursor.move.right())
+}
+
+const left = () => {
+  if (state.inputPosition == 0) {
+    return
+  }
+  state.inputPosition--
+  print(cli.control.cursor.move.left())
+}
 
 const historyBackward = () => {
   if (state.historyPosition == state.history.length-1) {
