@@ -13,28 +13,28 @@ class Inode {
     Object.assign(this, config);
   }
 
-  // Read file contents
+  // Irrelevent
   // Void -> Result(String)
   readFile() {
-    return Ok(this.raw.read());
+    return Err("Cannot read console");
   }
 
-  // Overwrite file contents
+  // Adds text to terminal
   // String -> Result(String)
   writeFile(contents) {
     return Ok(this.raw.write(contents));
   }
 
-  // Append file contents
+  // Same as writeFile
   // String -> Result(String)
   appendFile(contents) {
     return this.writeFile(contents);
   }
 
-  // Truncate file contents
+  // Clears the console
   // Void -> Result(String)
   truncateFile() {
-    return Ok("");
+    return Ok(this.writeFile("\x1bc"));
   }
 
   // Read a directory

@@ -40,5 +40,6 @@
   "bugs": {
     "url": "https://github.com/fauxOS/faux/issues"
   },
-  "homepage": "https://faux.js.org"
+  "homepage": "https://faux.js.org",
+  "dependencies": {}
 }

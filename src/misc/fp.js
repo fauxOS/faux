@@ -79,3 +79,15 @@ export const Task = run => ({
     run(console.error)
        (console.log)
 });
+
+export const match = to => (...cases) => def => {
+  for (let i in cases) {
+    const c = cases[i];
+    for (let i in c[0]) {
+      if (c[0][i] == to) {
+        return c[1](c[0][i]);
+      }
+    }
+  }
+  return def(to);
+}

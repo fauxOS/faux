@@ -1,24 +1,20 @@
 import prompt from "./prompt.js";
 import serialize from "../../misc/serialize.js";
+import { Ok, Err } from "../../misc/fp.js";
 
-export default async function evaluate(str) {
-  let formatted = "";
+export const runSafe = jsCodeString => {
+  let result;
   try {
-    // Raw result from eval()
-    const result = self.eval(str);
-    // Serialized (to string) output
-    const serialized = serialize(await result);
-    formatted = `${cli.colorize("green", serialized)}`;
-    // Resolve promises so that we don't just print the returned promise itself"
-    if (result instanceof Promise) {
-      formatted = `${cli.colorize("gray", "(Promise) ->")} ${cli.colorize(
-        "green",
-        serialized
-      )}`;
-    }
-  } catch (err) {
-    formatted = cli.colorize("red", err);
+    result = Ok(self.eval(jsCodeString))
   }
-  await println(formatted);
-  return await prompt();
+  catch(e) {
+    result = Err(e);
+  }
+  return result;
 }
+
+export default str =>
+  runSafe(str)
+    .map(serialize)
+    .fold(e => cli.colorize("red",   e))
+         (r => cli.colorize("green", r))

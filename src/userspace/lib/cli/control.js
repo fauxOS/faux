@@ -40,5 +40,6 @@ export const screen = {
 
 export const misc = {
   beep: () => beep,
-  setTitle: str => esc + "]0;" + str + beep
+  setTitle: str => esc + "]0;" + str + beep,
+  link: (url, str) => esc + "[8;;" + url + beep + (str || url) + esc + "[8;;" + beep
 };
