@@ -23,14 +23,9 @@ function tokenizeLine(line = "") {
 
 // Split by semicolons and then tokenize each line
 export default function lex(input = "") {
-  const allTokens = [];
   // Split by unescaped semicolons
-  const lines = input.match(/(\\;|[^;])+/g);
-  for (let i = 0; i < lines.length; i++) {
-    let tokens = tokenizeLine(lines[i]);
-    allTokens.push(tokens);
-  }
-  return allTokens;
+  return input.match(/(\\;|[^;])+/g)
+    .map(tokenizeLine)
 }
 
 /* Test with this

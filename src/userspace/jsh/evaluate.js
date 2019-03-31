@@ -1,4 +1,3 @@
-import prompt from "./prompt.js";
 import serialize from "../../misc/serialize.js";
 import { Ok, Err } from "../../misc/fp.js";
 

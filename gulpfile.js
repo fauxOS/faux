@@ -1,35 +1,20 @@
 const fs = require("fs");
 const gulp = require("gulp");
-const gulpIf = require("gulp-if");
 const inject = require("gulp-inject-string");
-const babili = require("gulp-babili");
 const rename = require("gulp-rename");
 const rollup = require("gulp-better-rollup");
 
 // A versatile compilation function
 // Uses Rollup to resolve dependencies, then minifies the result
-const build = (moduleName, path, minify = true, format = "iife") =>
+const build = (moduleName, path, format = "iife") =>
   gulp
     .src(path)
-    .pipe(
-      rollup({
-        moduleName,
-        format
-      })
-    )
-    .pipe(
-      gulpIf(
-        minify,
-        babili({
-          mangle: false
-        })
-      )
-    )
+    .pipe(rollup({ moduleName, format }))
     .pipe(rename(moduleName + ".js"))
     .pipe(gulp.dest("build/"));
 
 // The kernel is a foundation for userspace, which gets injected in later on
-gulp.task("kernel", () => build("faux", "src/kernel/index.js", false, "umd"));
+gulp.task("kernel", () => build("faux", "src/kernel/index.js", "umd"));
 
 // A core library
 gulp.task("lib", () => build("lib", "src/userspace/lib/index.js"));
@@ -53,7 +38,7 @@ gulp.task("builds", ["kernel", "lib", "init", "fsh", "jsh", "ls"]);
 const jsStringEmbed = path => JSON.stringify(fs.readFileSync(path).toString());
 
 // Inject everything
-gulp.task("injections", ["builds"], () =>
+gulp.task("default", ["builds"], () =>
   gulp
     .src("build/faux.js")
     // Inject core library into each process
@@ -70,15 +55,6 @@ gulp.task("injections", ["builds"], () =>
     .pipe(inject.replace(/inject-version/, require("./package.json").version))
     // Output to dist/
     .pipe(rename("fauxOS.js"))
-    .pipe(gulp.dest("dist/"))
-);
-
-// Final minification
-gulp.task("default", ["injections"], () =>
-  gulp
-    .src("dist/fauxOS.js")
-    .pipe(babili({ mangle: false }))
-    .pipe(rename("fauxOS.min.js"))
     .pipe(gulp.dest("dist/"))
 );
 
