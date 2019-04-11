@@ -1,2 +1,2 @@
-// For now, all init does is launch the fsh
-sys.exec("/bin/fsh");
+// For now, all init does is launch the jsh
+sys.exec("/bin/jsh");
