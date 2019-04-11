@@ -97,6 +97,7 @@ const historyBackward = () => {
     state.historyPosition++
   }
   state.input = state.history[state.historyPosition]
+  state.inputPosition = state.input.length;
   print(
     cli.control.line.erase() + cli.control.cursor.move.leftMost() + state.prompt + state.input.join("")
   )
@@ -108,6 +109,7 @@ const historyForward = () => {
   }
   state.historyPosition--
   state.input = state.history[state.historyPosition]
+  state.inputPosition = state.input.length;
   print(
     cli.control.line.erase() + cli.control.cursor.move.leftMost() + state.prompt + state.input.join("")
   )
